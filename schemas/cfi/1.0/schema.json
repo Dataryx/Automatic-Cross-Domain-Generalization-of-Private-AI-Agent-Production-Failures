@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cfi-fed.org/schemas/cfi/1.0",
+  "title": "Causal Failure Invariant",
+  "type": "object",
+  "required": ["schema", "id", "nodes", "edges", "failure_predicate", "oracle", "risk", "release", "provenance"],
+  "additionalProperties": false,
+  "properties": {
+    "schema": { "const": "cfi/1.0" },
+    "id": { "type": "string", "pattern": "^CFI-" },
+    "nodes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "type"],
+        "properties": {
+          "id": { "type": "string" },
+          "type": {
+            "enum": [
+              "Observation", "Condition", "Rule", "Exception", "Authority",
+              "Decision", "Verification", "Action", "ExternalEffect",
+              "Obligation", "Outcome"
+            ]
+          },
+          "role": { "type": "string" },
+          "value_class": { "type": ["string", "null"] },
+          "risk": { "type": ["string", "null"] },
+          "extensions": { "type": "object" }
+        }
+      }
+    },
+    "edges": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["source", "edge_type", "target"],
+        "properties": {
+          "source": { "type": "string" },
+          "edge_type": {
+            "type": "string",
+            "pattern": "^(precedes|depends_on|enables|forbids|overrides|requires|observed_as|commits|causes|compensates|violates|core\\.ext/supports)$"
+          },
+          "target": { "type": "string" },
+          "status": { "enum": ["present", "required_but_absent"] },
+          "provenance": { "enum": ["observed", "inferred", "asserted"] },
+          "confidence": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
+          "explanation": { "type": ["string", "null"] },
+          "reviewer_id": { "type": ["string", "null"] }
+        }
+      }
+    },
+    "failure_predicate": { "type": "string", "not": { "pattern": "(refund|customer|password|api_key)" } },
+    "controls": { "type": "array", "items": { "type": "string" } },
+    "temporal_constraints": { "type": "array" },
+    "cardinality_constraints": { "type": "array" },
+    "oracle": {
+      "type": "object",
+      "required": ["kind", "expression"],
+      "properties": {
+        "kind": { "enum": ["state_predicate", "event_order", "authorization", "adjudicated_rubric"] },
+        "expression": { "type": "string" },
+        "evidence_requirements": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "release": {
+      "type": "object",
+      "required": ["tier"],
+      "properties": {
+        "tier": {
+          "enum": ["public", "member-only", "restricted-bilateral", "embargoed", "non-shareable"]
+        },
+        "source_domain": { "const": "withheld" },
+        "free_text": { "const": false },
+        "exact_literals": { "const": false }
+      }
+    },
+    "provenance": { "type": "object" },
+    "risk": { "type": "object" },
+    "signature": { "type": ["string", "null"] },
+    "certificate_chain": { "type": "array", "items": { "type": "string" } }
+  }
+}
