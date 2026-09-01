@@ -22,6 +22,8 @@ STEPS = [
     ("verify_production_hardening", [sys.executable, "scripts/verify_production_hardening.py"]),
     ("verify_auth", [sys.executable, "scripts/verify_auth.py"]),
     ("verify_mtls", [sys.executable, "scripts/verify_mtls.py"]),
+    ("package_release", [sys.executable, "scripts/package_release.py"]),
+    ("verify_release", [sys.executable, "scripts/verify_release.py"]),
     ("consortium_pilot", [sys.executable, "eval/consortium/run_consortium_pilot.py"]),
     ("field_pilot", [sys.executable, "eval/field/run_prospective_pilot.py"]),
     ("redteam", [sys.executable, "eval/redteam/run_redteam.py"]),

@@ -49,6 +49,9 @@ python services/replay_mock/main.py
 | `CFI_RATE_LIMIT_RPM` | `0` (disabled) | Per-client requests/minute; set e.g. `120` in production |
 | `CFI_API_TOKEN` | unset | Bearer token for mutating API calls; health/metrics bypass |
 | `CFI_OTEL_ENDPOINT` | unset | OTLP HTTP trace exporter URL (requires `pip install -e ".[otel]"`) |
+| `CFI_AUDIT_SINK_PATH` | unset | Append-only NDJSON file for governance audit export |
+| `CFI_AUDIT_SINK_URL` | unset | Webhook URL for `POST /audit/sink` batch delivery |
+| `CFI_RELEASE_SIGNING_ORG` | `cfi-fed-release` | Org id embedded in signed release manifest |
 
 ```bash
 cfi-contribute replay-profiles
@@ -66,6 +69,8 @@ cfi-contribute extract --output cfi.json --replay-url http://127.0.0.1:8010/repl
 6. Monitor privacy accountant `remaining_epsilon` on aggregator (`GET /accountant`, `GET /metrics`).
 7. Re-run `python eval/verify_dod.py` after deploy.
 8. Ingest private incident bundles locally: `cfi-contribute ingest-corpus --input-dir ./bundles --output-dir ./out --extract`.
+9. Configure external audit sink (`CFI_AUDIT_SINK_PATH` or `CFI_AUDIT_SINK_URL`) and flush via `POST /audit/sink`.
+10. Build signed release checkpoint: `make verify-release` (writes `eval/output/release_manifest.json`).
 
 ## Observability
 
@@ -75,12 +80,15 @@ cfi-contribute extract --output cfi.json --replay-url http://127.0.0.1:8010/repl
 | `GET /ready` | registry, coordinator, aggregator | Readiness |
 | `GET /metrics` | all | Prometheus text gauges |
 | `GET /accountant` | aggregator | Privacy budget JSON snapshot |
+| `GET /audit/export` | registry | In-memory governance audit trail |
+| `POST /audit/sink` | registry | Flush audit events to external sink |
 
 ```bash
 python scripts/verify_observability.py
 make health
 python scripts/verify_production_hardening.py
 python scripts/verify_auth.py
+make verify-release
 ```
 
 ## Honesty guardrails

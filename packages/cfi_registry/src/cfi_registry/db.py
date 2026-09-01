@@ -12,6 +12,7 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, sess
 from cfi_core.wire import CohortManifest
 from cfi_governance import ArtifactRecord, LifecycleManager, LifecycleState
 from cfi_governance.audit_log import AuditLog
+from cfi_governance.audit_sink import AuditSink, flush_audit_events
 from cfi_governance.review import ReviewQueue, ReviewTicket
 
 
@@ -62,7 +63,7 @@ class CohortManifestRecord(Base):
 class PostgresRegistryStore:
     """Append-only registry backing store."""
 
-    def __init__(self, database_url: str) -> None:
+    def __init__(self, database_url: str, audit_sink: AuditSink | None = None) -> None:
         self._engine = create_engine(database_url, future=True)
         Base.metadata.create_all(self._engine)
         self._session_factory = sessionmaker(bind=self._engine, expire_on_commit=False)
@@ -70,12 +71,16 @@ class PostgresRegistryStore:
         self._records: dict[str, ArtifactRecord] = {}
         self._review = ReviewQueue()
         self._audit = AuditLog()
+        self._audit_sink = audit_sink if audit_sink is not None else AuditSink.from_env()
 
     def _log_audit(self, actor: str, action: str, resource_id: str, detail: dict[str, Any] | None = None) -> None:
         self._audit.append(actor, action, resource_id, detail)
 
     def export_audit_log(self) -> list[dict[str, Any]]:
         return self._audit.export()
+
+    def flush_audit_sink(self) -> dict[str, Any]:
+        return flush_audit_events(self._audit_sink, self.export_audit_log())
 
     def _session(self) -> Session:
         return self._session_factory()

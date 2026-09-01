@@ -92,6 +92,7 @@ Re-running `sim/run_cfi_sim.py` recreates all CSVs and figures from fixed seed 4
 - Phase 17: request tracing (`X-Request-ID`), optional rate limiting (`CFI_RATE_LIMIT_RPM`), production middleware
 - Phase 18: bearer API auth (`CFI_API_TOKEN`), OTLP tracing (`CFI_OTEL_ENDPOINT`), `GET /tracing` status
 - Phase 19: governance audit export (`GET /audit/export`), mTLS compose, release packaging (`scripts/package_release.py`)
+- Phase 20: signed release attestation, external audit sink (`POST /audit/sink`, `CFI_AUDIT_SINK_PATH` / `CFI_AUDIT_SINK_URL`), `scripts/verify_release.py`
 - Release-gate adversaries auto-scored in `ReleaseGate.run()`
 - CI workflow (`.github/workflows/ci.yml`) + `docker-compose.yml` for services
 - `eval/run_all.py` — runs pytest, DoD checks, and all pilots

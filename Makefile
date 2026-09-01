@@ -1,6 +1,6 @@
 # CFI-Fed developer commands
 
-.PHONY: install test sim dod golden tau stack stack-postgres stack-tls stack-mtls health live-replay mypy figures field-study ingest-corpus eval-all certs observability hardening auth release mtls
+.PHONY: install test sim dod golden tau stack stack-postgres stack-tls stack-mtls health live-replay mypy figures field-study ingest-corpus eval-all certs observability hardening auth release verify-release mtls
 
 install:
 	pip install -e ".[dev]"
@@ -57,6 +57,9 @@ auth:
 
 release:
 	python scripts/package_release.py
+
+verify-release: release
+	python scripts/verify_release.py
 
 mtls:
 	python scripts/verify_mtls.py

@@ -16,6 +16,7 @@ from cfi_core.tracing import tracing_status
 from cfi_core.wire import CohortManifest
 from cfi_governance import ArtifactRecord, LifecycleManager, LifecycleState
 from cfi_governance.audit_log import AuditLog
+from cfi_governance.audit_sink import AuditSink, flush_audit_events
 from cfi_governance.review import ReviewQueue, ReviewStatus, ReviewTicket
 from cfi_registry.review_ui import render_review_detail, render_review_ui, ticket_to_dict
 
@@ -61,24 +62,29 @@ class RegistryStoreProtocol(Protocol):
     def supersede(self, invariant_id: str, req: SupersessionRequest) -> ArtifactRecord: ...
     def stats(self) -> dict[str, int]: ...
     def export_audit_log(self) -> list[dict[str, Any]]: ...
+    def flush_audit_sink(self) -> dict[str, Any]: ...
 
 
 class RegistryStore:
     """In-memory store; production uses PostgreSQL append-only tables."""
 
-    def __init__(self) -> None:
+    def __init__(self, audit_sink: AuditSink | None = None) -> None:
         self._cfis: dict[str, dict[str, Any]] = {}
         self._records: dict[str, ArtifactRecord] = {}
         self._manifests: dict[str, CohortManifest] = {}
         self._lifecycle = LifecycleManager()
         self._review = ReviewQueue()
         self._audit = AuditLog()
+        self._audit_sink = audit_sink if audit_sink is not None else AuditSink.from_env()
 
     def _log_audit(self, actor: str, action: str, resource_id: str, detail: dict[str, Any] | None = None) -> None:
         self._audit.append(actor, action, resource_id, detail)
 
     def export_audit_log(self) -> list[dict[str, Any]]:
         return self._audit.export()
+
+    def flush_audit_sink(self) -> dict[str, Any]:
+        return flush_audit_events(self._audit_sink, self.export_audit_log())
 
     def register(self, package: dict[str, Any]) -> str:
         from cfi_contributor.adversaries import ReleaseGateAdversaries
@@ -261,6 +267,10 @@ def create_app(store: RegistryStoreProtocol | None = None) -> FastAPI:
                 "Not a substitute for tamper-evident external logging.",
             ],
         }
+
+    @app.post("/audit/sink")
+    def flush_audit_sink() -> dict[str, Any]:
+        return registry.flush_audit_sink()
 
     @app.get("/tracing")
     def tracing() -> dict[str, str | bool]:

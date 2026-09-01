@@ -1,7 +1,7 @@
 {
   "all_passed": true,
-  "passed": 49,
-  "total": 49,
+  "passed": 54,
+  "total": 54,
   "checks": [
     {
       "name": "cfi_schema_exists",
@@ -219,6 +219,21 @@
       "detail": ""
     },
     {
+      "name": "audit_sink_module",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "release_attestation_module",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "verify_release_script",
+      "passed": true,
+      "detail": ""
+    },
+    {
       "name": "mypy_ci_job",
       "passed": true,
       "detail": ""
@@ -245,6 +260,16 @@
     },
     {
       "name": "audit_export_smoke",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "release_attestation_smoke",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "audit_sink_smoke",
       "passed": true,
       "detail": ""
     }

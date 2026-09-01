@@ -127,6 +127,9 @@ def verify() -> DodReport:
     report.checks.append(DodCheck("audit_log_module", (ROOT / "packages" / "cfi_governance" / "src" / "cfi_governance" / "audit_log.py").exists()))
     report.checks.append(DodCheck("mtls_compose", (ROOT / "docker-compose.mtls.yml").exists()))
     report.checks.append(DodCheck("package_release_script", (ROOT / "scripts" / "package_release.py").exists()))
+    report.checks.append(DodCheck("audit_sink_module", (ROOT / "packages" / "cfi_governance" / "src" / "cfi_governance" / "audit_sink.py").exists()))
+    report.checks.append(DodCheck("release_attestation_module", (ROOT / "packages" / "cfi_governance" / "src" / "cfi_governance" / "release_attestation.py").exists()))
+    report.checks.append(DodCheck("verify_release_script", (ROOT / "scripts" / "verify_release.py").exists()))
     report.checks.append(DodCheck("mypy_ci_job", "mypy:" in (ROOT / ".github" / "workflows" / "ci.yml").read_text()))
 
     try:
@@ -227,6 +230,46 @@ def verify() -> DodReport:
         )
     except Exception as exc:
         report.checks.append(DodCheck("audit_export_smoke", False, str(exc)))
+
+    try:
+        import tempfile
+        from pathlib import Path as PathLib
+
+        from fastapi.testclient import TestClient
+
+        from cfi_contributor.packager import Packager
+        from cfi_contributor.release_gate import GateOutcome, ReleaseGate, ReleaseGateVerdict
+        from cfi_core.examples import build_exception_precedence_cfi
+        from cfi_core.signing import KeyPair
+        from cfi_governance.audit_sink import AuditSink
+        from cfi_governance.release_attestation import sign_release_manifest, verify_release_manifest
+        from cfi_registry import RegistryStore, create_app
+
+        manifest = {"package": "cfi-fed", "version": "0.1.0", "pytest_exit_code": 0}
+        signed = sign_release_manifest(manifest, KeyPair.generate("dod-release"))
+        report.checks.append(DodCheck("release_attestation_smoke", verify_release_manifest(signed)))
+
+        with tempfile.TemporaryDirectory() as tmp:
+            sink_path = PathLib(tmp) / "audit.ndjson"
+            store = RegistryStore(audit_sink=AuditSink(file_path=sink_path))
+            client = TestClient(create_app(store))
+            cfi = build_exception_precedence_cfi()
+            gate = ReleaseGate()
+            verdict = gate.run(cfi, {i: True for i in range(1, 13)})
+            if verdict.outcome != GateOutcome.APPROVE:
+                verdict = ReleaseGateVerdict(outcome=GateOutcome.APPROVE, residual_risk_score=0.1)
+            pkg = Packager(KeyPair.generate("dod-audit-sink")).package(cfi, verdict)
+            client.post("/cfi/register", json={"package": pkg.cfi.model_dump(mode="json")})
+            sink_result = client.post("/audit/sink").json()
+            report.checks.append(
+                DodCheck(
+                    "audit_sink_smoke",
+                    sink_result.get("flushed") is True and sink_path.exists(),
+                )
+            )
+    except Exception as exc:
+        report.checks.append(DodCheck("release_attestation_smoke", False, str(exc)))
+        report.checks.append(DodCheck("audit_sink_smoke", False, str(exc)))
 
     return report
 
