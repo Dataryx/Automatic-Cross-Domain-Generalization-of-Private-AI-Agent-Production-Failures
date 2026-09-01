@@ -1,6 +1,6 @@
 # CFI-Fed developer commands
 
-.PHONY: install test sim dod golden tau stack stack-postgres stack-tls health live-replay mypy figures field-study ingest-corpus eval-all certs observability hardening
+.PHONY: install test sim dod golden tau stack stack-postgres stack-tls health live-replay mypy figures field-study ingest-corpus eval-all certs observability hardening auth
 
 install:
 	pip install -e ".[dev]"
@@ -51,6 +51,9 @@ observability:
 
 hardening:
 	python scripts/verify_production_hardening.py
+
+auth:
+	python scripts/verify_auth.py
 
 mypy:
 	mypy packages/cfi_core/src packages/cfi_contributor/src packages/cfi_registry/src packages/cfi_recipient/src packages/cfi_federation/src packages/cfi_governance/src packages/cfi_cli/src

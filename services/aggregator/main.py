@@ -9,9 +9,12 @@ from pydantic import BaseModel
 
 from cfi_core.middleware import configure_service_app
 from cfi_core.observability import format_prometheus, service_health
+from cfi_core.tracing import configure_tracing, tracing_status
 from cfi_federation import ClippedContribution, secure_aggregate
 from cfi_federation.accountant import PrivacyAccountant
 from cfi_federation.zk_attestation import CircuitAttestation, verify_circuit_attestation
+
+configure_tracing("aggregator")
 
 app = FastAPI(title="CFI Aggregation Server")
 configure_service_app(app, "aggregator")
@@ -57,6 +60,11 @@ def metrics() -> str:
             "cfi_spent_epsilon": "Spent differential privacy budget (epsilon).",
         },
     )
+
+
+@app.get("/tracing")
+def tracing() -> dict[str, str | bool]:
+    return tracing_status()
 
 
 @app.post("/aggregate")

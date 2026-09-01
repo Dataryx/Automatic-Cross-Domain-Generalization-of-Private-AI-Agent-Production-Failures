@@ -20,6 +20,7 @@ STEPS = [
     ("verify_tls_stack", [sys.executable, "scripts/verify_tls_stack.py"]),
     ("verify_observability", [sys.executable, "scripts/verify_observability.py"]),
     ("verify_production_hardening", [sys.executable, "scripts/verify_production_hardening.py"]),
+    ("verify_auth", [sys.executable, "scripts/verify_auth.py"]),
     ("consortium_pilot", [sys.executable, "eval/consortium/run_consortium_pilot.py"]),
     ("field_pilot", [sys.executable, "eval/field/run_prospective_pilot.py"]),
     ("redteam", [sys.executable, "eval/redteam/run_redteam.py"]),

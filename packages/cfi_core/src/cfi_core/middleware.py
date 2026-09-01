@@ -12,12 +12,13 @@ from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoin
 from starlette.responses import JSONResponse
 from starlette.types import ASGIApp
 
+from cfi_core.auth import ApiTokenMiddleware, api_token_from_env
 from cfi_core.observability import new_request_id, trace_span
 
 REQUEST_ID_HEADER = "X-Request-ID"
 RATE_LIMIT_HEADER = "X-RateLimit-Limit"
 RATE_REMAINING_HEADER = "X-RateLimit-Remaining"
-BYPASS_PATHS = frozenset({"/health", "/ready", "/metrics", "/accountant"})
+BYPASS_PATHS = frozenset({"/health", "/ready", "/metrics", "/accountant", "/tracing"})
 
 
 class RequestContextMiddleware(BaseHTTPMiddleware):
@@ -92,6 +93,9 @@ def rate_limit_from_env() -> int:
 
 def configure_service_app(app: FastAPI, service: str) -> FastAPI:
     """Install production middleware on a FastAPI service."""
+    token = api_token_from_env()
+    if token:
+        app.add_middleware(ApiTokenMiddleware, token=token)
     app.add_middleware(RequestContextMiddleware, service=service)
     limit = rate_limit_from_env()
     if limit > 0:

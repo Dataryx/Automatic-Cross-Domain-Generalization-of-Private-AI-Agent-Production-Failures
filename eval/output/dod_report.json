@@ -1,7 +1,7 @@
 {
   "all_passed": true,
-  "passed": 42,
-  "total": 42,
+  "passed": 45,
+  "total": 45,
   "checks": [
     {
       "name": "cfi_schema_exists",
@@ -185,6 +185,21 @@
     },
     {
       "name": "verify_production_hardening",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "auth_module",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "tracing_module",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "verify_auth_script",
       "passed": true,
       "detail": ""
     },

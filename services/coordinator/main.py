@@ -11,6 +11,7 @@ from pydantic import BaseModel, Field
 
 from cfi_core.middleware import configure_service_app
 from cfi_core.observability import format_prometheus, service_health
+from cfi_core.tracing import configure_tracing, tracing_status
 
 from cfi_contributor.packager import Packager
 from cfi_contributor.release_gate import GateOutcome, ReleaseGate, ReleaseGateVerdict
@@ -18,6 +19,8 @@ from cfi_core.examples import build_exception_precedence_cfi
 from cfi_core.signing import KeyPair
 from cfi_core.wire import CohortManifest, MeasurementSpec
 from cfi_federation.consortium import ConsortiumConfig, ConsortiumCoordinator, TenantIdentity
+
+configure_tracing("coordinator")
 
 app = FastAPI(title="CFI Cohort Coordinator")
 configure_service_app(app, "coordinator")
@@ -68,6 +71,11 @@ def ready() -> dict[str, str]:
 @app.get("/metrics", response_class=PlainTextResponse)
 def metrics() -> str:
     return format_prometheus({"cfi_coordinator_up": 1.0})
+
+
+@app.get("/tracing")
+def tracing() -> dict[str, str | bool]:
+    return tracing_status()
 
 
 @app.post("/epoch/open")

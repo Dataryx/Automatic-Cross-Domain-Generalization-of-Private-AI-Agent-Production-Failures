@@ -10,6 +10,9 @@ from pydantic import BaseModel
 
 from cfi_core.middleware import configure_service_app
 from cfi_core.observability import service_health
+from cfi_core.tracing import configure_tracing, tracing_status
+
+configure_tracing("replay_mock")
 
 app = FastAPI(title="CFI Replay Mock")
 configure_service_app(app, "replay_mock")
@@ -31,6 +34,11 @@ def replay(req: ReplayRequest) -> dict[str, float]:
     if has_intervention:
         return {"failure_rate": 0.0}
     return {"failure_rate": 1.0 if has_policy else 0.5}
+
+
+@app.get("/tracing")
+def tracing() -> dict[str, str | bool]:
+    return tracing_status()
 
 
 @app.get("/health")

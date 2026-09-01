@@ -35,6 +35,10 @@ dev = [
     "ruff>=0.3",
     "types-jsonschema",
 ]
+otel = [
+    "opentelemetry-sdk>=1.23",
+    "opentelemetry-exporter-otlp-proto-http>=1.23",
+]
 
 [project.scripts]
 cfi-contribute = "cfi_cli.contribute:app"

@@ -45,6 +45,8 @@ python services/replay_mock/main.py
 | `CFI_AGENTRX_URL` | `http://127.0.0.1:8020/v1/replay` | AgentRx sandbox endpoint |
 | `CFI_CAUSALFLOW_URL` | `http://127.0.0.1:8021/v1/counterfactual` | CausalFlow sandbox endpoint |
 | `CFI_RATE_LIMIT_RPM` | `0` (disabled) | Per-client requests/minute; set e.g. `120` in production |
+| `CFI_API_TOKEN` | unset | Bearer token for mutating API calls; health/metrics bypass |
+| `CFI_OTEL_ENDPOINT` | unset | OTLP HTTP trace exporter URL (requires `pip install -e ".[otel]"`) |
 
 ```bash
 cfi-contribute replay-profiles
@@ -76,6 +78,7 @@ cfi-contribute extract --output cfi.json --replay-url http://127.0.0.1:8010/repl
 python scripts/verify_observability.py
 make health
 python scripts/verify_production_hardening.py
+python scripts/verify_auth.py
 ```
 
 ## Honesty guardrails

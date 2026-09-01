@@ -11,6 +11,7 @@ from pydantic import BaseModel
 
 from cfi_core.middleware import configure_service_app
 from cfi_core.observability import format_prometheus, service_health
+from cfi_core.tracing import tracing_status
 
 from cfi_core.wire import CohortManifest
 from cfi_governance import ArtifactRecord, LifecycleManager, LifecycleState
@@ -231,6 +232,10 @@ def create_app(store: RegistryStoreProtocol | None = None) -> FastAPI:
                 "cfi_registry_active_cfis": "CFIs in active lifecycle state.",
             },
         )
+
+    @app.get("/tracing")
+    def tracing() -> dict[str, str | bool]:
+        return tracing_status()
 
     @app.get("/cfi/{invariant_id}/audit")
     def audit_cfi(invariant_id: str) -> dict[str, Any]:

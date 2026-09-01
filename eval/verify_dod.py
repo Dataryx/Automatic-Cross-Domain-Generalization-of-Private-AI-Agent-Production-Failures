@@ -121,6 +121,9 @@ def verify() -> DodReport:
     report.checks.append(DodCheck("verify_observability_script", (ROOT / "scripts" / "verify_observability.py").exists()))
     report.checks.append(DodCheck("middleware_module", (ROOT / "packages" / "cfi_core" / "src" / "cfi_core" / "middleware.py").exists()))
     report.checks.append(DodCheck("verify_production_hardening", (ROOT / "scripts" / "verify_production_hardening.py").exists()))
+    report.checks.append(DodCheck("auth_module", (ROOT / "packages" / "cfi_core" / "src" / "cfi_core" / "auth.py").exists()))
+    report.checks.append(DodCheck("tracing_module", (ROOT / "packages" / "cfi_core" / "src" / "cfi_core" / "tracing.py").exists()))
+    report.checks.append(DodCheck("verify_auth_script", (ROOT / "scripts" / "verify_auth.py").exists()))
     report.checks.append(DodCheck("mypy_ci_job", "mypy:" in (ROOT / ".github" / "workflows" / "ci.yml").read_text()))
 
     try:
