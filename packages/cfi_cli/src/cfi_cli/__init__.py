@@ -36,16 +36,43 @@ def package_cfi(
     typer.echo(f"Signed CFI written to {output}")
 
 
+@contribute_app.command("gate")
+def run_release_gate(
+    invariant_path: str = typer.Option("golden", help="CFI JSON path or 'golden'"),
+    source_domain: str | None = typer.Option(None, help="Optional source domain for adversary test"),
+) -> None:
+    """Run Appendix C release gate and print adversary scores."""
+    import json
+    from pathlib import Path
+
+    from cfi_contributor.release_gate import ReleaseGate
+    from cfi_core.examples import build_exception_precedence_cfi
+    from cfi_core.models import CausalFailureInvariant
+
+    if invariant_path != "golden" and Path(invariant_path).exists():
+        cfi = CausalFailureInvariant.model_validate(json.loads(Path(invariant_path).read_text()))
+    else:
+        cfi = build_exception_precedence_cfi()
+    verdict = ReleaseGate().run(cfi, {i: True for i in range(1, 13)}, source_domain=source_domain)
+    typer.echo(f"Outcome: {verdict.outcome.value} risk={verdict.residual_risk_score:.3f}")
+    for stage, status in verdict.stage_verdicts.items():
+        typer.echo(f"  {stage}: {status}")
+    if verdict.outcome.value not in ("approve", "restrict_distribution"):
+        raise typer.Exit(1)
+
+
 @contribute_app.command("extract")
 def extract_from_incident(
     output: str = typer.Option(..., help="Output path for signed CFI JSON"),
     seed: int = typer.Option(421337),
+    replay_url: str | None = typer.Option(None, help="HTTP replay endpoint for live agent"),
 ) -> None:
     """Run contributor pipeline on synthetic incident evidence."""
     import json
     from pathlib import Path
 
     from cfi_contributor.pipeline import ContributorPipeline
+    from cfi_contributor.replay import HttpAgentReplayProvider, StructuralReplayProvider
     from cfi_core.models import EventType
     from cfi_core.signing import KeyPair
     from cfi_core.wire import Incident, MinimizationConfig, TraceEvent, TypedTrace
@@ -66,13 +93,16 @@ def extract_from_incident(
     minimization = MinimizationConfig(
         eta=0.9, delta=0.05, lambda_nodes=1.0, lambda_edges=1.0, lambda_literals=1.0, lambda_replay=1.0
     )
-    report = ContributorPipeline(KeyPair.generate("contributor"), seed=seed).extract_from_incident(
+    replay = HttpAgentReplayProvider(replay_url) if replay_url else StructuralReplayProvider()
+    report = ContributorPipeline(KeyPair.generate("contributor"), replay=replay, seed=seed).extract_from_incident(
         incident, raw, minimization, {i: True for i in range(1, 13)}
     )
     if not report.package or not report.package.success or report.package.cfi is None:
         typer.echo(f"Extraction failed: {report.package}", err=True)
         raise typer.Exit(1)
     Path(output).write_text(json.dumps(report.package.cfi.model_dump(mode="json"), indent=2))
+    if report.minimization and report.minimization.log:
+        typer.echo(f"Minimization log entries: {len(report.minimization.log)}")
     typer.echo(f"Extracted signed CFI written to {output}")
 
 
@@ -162,6 +192,48 @@ def mitigate_local(
     )
     if not report.accepted:
         raise typer.Exit(1)
+
+
+@recipient_app.command("evaluate")
+def evaluate_local(
+    invariant_path: str = typer.Option(...),
+    domain: str = typer.Option("procurement"),
+) -> None:
+    """Compile locally and report susceptibility metrics (Table III families)."""
+    import json
+    from pathlib import Path
+
+    from cfi_core.models import CausalFailureInvariant
+    from cfi_recipient.compiler import fail_closed_compile
+    from cfi_recipient.mitigation import susceptibility
+    from cfi_recipient.metrics import build_report
+    from cfi_recipient.ontology import build_recipient_context
+    from cfi_recipient.sandbox import Sandbox
+
+    data = json.loads(Path(invariant_path).read_text())
+    cfi = CausalFailureInvariant.model_validate(data)
+    ctx = build_recipient_context(domain, cfi.required_mapping_roles)
+    compilation = fail_closed_compile(cfi, ctx, manifest=None)
+    if compilation.abstained:
+        typer.echo(f"Abstained: {compilation.abstention_reason}", err=True)
+        raise typer.Exit(1)
+
+    def failing_agent(sb: Sandbox, trace) -> None:
+        trace.state["review_complete"] = False
+        sb.execute_tool(trace, "stub_po", {})
+
+    rate = susceptibility(compilation.cases, cfi.oracle.expression, failing_agent)
+    positive_cases = [c for c in compilation.cases if not c.is_negative_control]
+    coverage = len(positive_cases) / max(1, len(cfi.required_mapping_roles))
+    report = build_report(
+        spec_id="local-eval",
+        cohort_id=f"local-{domain}",
+        compilation_coverage=min(1.0, coverage),
+        structural_precision=1.0,
+        susceptibility=rate,
+        residual_privacy_risk=0.0,
+    )
+    typer.echo(json.dumps(report.to_dict(), indent=2))
 
 
 @aggregate_app.command("consortium")

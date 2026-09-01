@@ -48,6 +48,17 @@ class Packager:
         signed = canonical.model_copy(update={"signature": sig, "certificate_chain": chain})
         return PackageResult(success=True, cfi=signed)
 
+    def package_with_gate(
+        self,
+        cfi: CausalFailureInvariant,
+        checklist_answers: dict[int, bool],
+        source_domain: str | None = None,
+    ) -> PackageResult:
+        from cfi_contributor.release_gate import ReleaseGate
+
+        verdict = ReleaseGate().run(cfi, checklist_answers, source_domain=source_domain)
+        return self.package(cfi, verdict)
+
     def attempt_smuggle(self, cfi: CausalFailureInvariant, smuggled_field: str) -> PackageResult:
         """Adversarial helper — always fails closed."""
         from cfi_contributor.release_gate import ReleaseGateVerdict

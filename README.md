@@ -64,6 +64,7 @@ Re-running `sim/run_cfi_sim.py` recreates all CSVs and figures from fixed seed 4
 - [Governance](docs/governance.md)
 - [Release gate checklist](docs/release_gate_checklist.md)
 - [Limitations](docs/limitations.md)
+- [Deployment](docs/deployment.md)
 - [Known deviations from paper](docs/deviations.md)
 
 ## Schemas (`schemas/`)
@@ -80,6 +81,9 @@ Re-running `sim/run_cfi_sim.py` recreates all CSVs and figures from fixed seed 4
 - Phase 6: prospective field-study harness (`eval/field/`) + `cfi-recipient mitigate`
 - Phase 7: CI + Docker Compose + production ablation baselines
 - Phase 8: human review queue (`GET /review/ui`), trained attribution model, HTTP replay adapter, benchmark corpus
+- Phase 9: computed production baselines, replay mock service (`:8010`), `--replay-url` on extract
+- Phase 10: golden-path smoke (`scripts/golden_path.py`), τ-adapter, coordinator consortium API, `Makefile`
+- Phase 11: JCS stability tests, registry audit API, `cfi-contribute gate`, sim CI job
 - Release-gate adversaries auto-scored in `ReleaseGate.run()`
 - CI workflow (`.github/workflows/ci.yml`) + `docker-compose.yml` for services
 - `eval/run_all.py` — runs pytest, DoD checks, and all pilots

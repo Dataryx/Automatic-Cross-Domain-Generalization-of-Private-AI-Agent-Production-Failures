@@ -87,6 +87,18 @@ class ContributorPipeline:
         )
 
         cfi = build_exception_precedence_cfi() if use_golden_template else build_exception_precedence_cfi()
+        if report.minimization and report.minimization.log:
+            cfi = cfi.model_copy(
+                update={
+                    "provenance": cfi.provenance.model_copy(
+                        update={
+                            "process_attestation": (
+                                f"minimization_log_entries={len(report.minimization.log)}"
+                            )
+                        }
+                    )
+                }
+            )
         report.gate_verdict = self._gate.run(cfi, checklist_answers)
         if report.gate_verdict.outcome not in (GateOutcome.APPROVE, GateOutcome.RESTRICT_COHORT):
             report.gate_verdict = ReleaseGateVerdict(

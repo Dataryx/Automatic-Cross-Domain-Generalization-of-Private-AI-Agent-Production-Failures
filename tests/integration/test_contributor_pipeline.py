@@ -50,3 +50,4 @@ def test_contributor_pipeline_produces_signed_cfi() -> None:
     assert report.package.success
     assert report.package.cfi is not None
     assert report.package.cfi.signature is not None
+    assert "minimization_log_entries=" in (report.package.cfi.provenance.process_attestation or "")

@@ -17,6 +17,8 @@ STEPS = [
     ("redteam", [sys.executable, "eval/redteam/run_redteam.py"]),
     ("production_harness", [sys.executable, "eval/production/harness.py"]),
     ("corpus_benchmark", [sys.executable, "eval/benchmarks/run_corpus.py"]),
+    ("tau_adapter", [sys.executable, "eval/benchmarks/tau_adapter.py"]),
+    ("golden_path", [sys.executable, "scripts/golden_path.py"]),
 ]
 
 

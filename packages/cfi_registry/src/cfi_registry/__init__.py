@@ -35,6 +35,12 @@ class ReviewDecisionRequest(BaseModel):
     checklist_complete: bool = True
 
 
+class SupersessionRequest(BaseModel):
+    successor_id: str
+    actor: str
+    reason: str = ""
+
+
 class RegistryStoreProtocol(Protocol):
     def register(self, package: dict[str, Any]) -> str: ...
     def get(self, invariant_id: str) -> dict[str, Any]: ...
@@ -44,7 +50,9 @@ class RegistryStoreProtocol(Protocol):
         self, invariant_id: str, to_state: LifecycleState, actor: str, reason: str
     ) -> ArtifactRecord: ...
     def list_review_queue(self) -> list[ReviewTicket]: ...
+    def get_review_ticket(self, invariant_id: str) -> ReviewTicket: ...
     def review_decision(self, invariant_id: str, req: ReviewDecisionRequest) -> ReviewTicket: ...
+    def supersede(self, invariant_id: str, req: SupersessionRequest) -> ArtifactRecord: ...
 
 
 class RegistryStore:
@@ -112,6 +120,9 @@ class RegistryStore:
     def list_review_queue(self) -> list[ReviewTicket]:
         return self._review.list_pending()
 
+    def get_review_ticket(self, invariant_id: str) -> ReviewTicket:
+        return self._review.get(invariant_id)
+
     def review_decision(self, invariant_id: str, req: ReviewDecisionRequest) -> ReviewTicket:
         ticket = self._review.decide(
             invariant_id,
@@ -125,6 +136,15 @@ class RegistryStore:
         elif req.status == ReviewStatus.REJECTED:
             self.transition_lifecycle(invariant_id, LifecycleState.REVOKED, req.reviewer, req.notes)
         return ticket
+
+    def supersede(self, invariant_id: str, req: SupersessionRequest) -> ArtifactRecord:
+        if req.successor_id not in self._cfis:
+            raise ValueError("Successor CFI not registered")
+        record = self.get_lifecycle(invariant_id)
+        ts = datetime.now(timezone.utc).isoformat()
+        updated = self._lifecycle.supersede(record, req.successor_id, req.actor, ts)
+        self._records[invariant_id] = updated
+        return updated
 
 
 def create_app(store: RegistryStoreProtocol | None = None) -> FastAPI:
@@ -171,9 +191,36 @@ def create_app(store: RegistryStoreProtocol | None = None) -> FastAPI:
         except ValueError as exc:
             raise HTTPException(status_code=400, detail=str(exc)) from exc
 
+    @app.post("/cfi/{invariant_id}/supersede")
+    def supersede_cfi(invariant_id: str, req: SupersessionRequest) -> dict[str, Any]:
+        try:
+            record = registry.supersede(invariant_id, req)
+            return record.model_dump(mode="json")
+        except (KeyError, ValueError) as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+
     @app.get("/health")
     def health() -> dict[str, str]:
         return {"status": "ok", "timestamp": datetime.now(timezone.utc).isoformat()}
+
+    @app.get("/cfi/{invariant_id}/audit")
+    def audit_cfi(invariant_id: str) -> dict[str, Any]:
+        try:
+            ticket = registry.get_review_ticket(invariant_id)
+            lifecycle = registry.get_lifecycle(invariant_id)
+            return {
+                "invariant_id": invariant_id,
+                "lifecycle_state": lifecycle.state.value,
+                "review_status": ticket.status.value,
+                "adversary_scores": ticket.adversary_scores,
+                "reviewer": ticket.reviewer,
+                "assumptions": [
+                    "Audit record reflects registration-time adversary scores.",
+                    "Not a formal privacy audit.",
+                ],
+            }
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail="Not found") from exc
 
     @app.get("/review/queue")
     def review_queue() -> list[dict[str, Any]]:
@@ -190,19 +237,41 @@ def create_app(store: RegistryStoreProtocol | None = None) -> FastAPI:
     @app.get("/review/ui", response_class=HTMLResponse)
     def review_ui() -> str:
         pending = registry.list_review_queue()
-        rows = "".join(
-            f"<tr><td>{t.invariant_id}</td><td>{t.adversary_scores}</td>"
-            f"<td>{t.status.value}</td></tr>"
-            for t in pending
-        )
+        rows = []
+        for t in pending:
+            scores = ", ".join(f"{k}={v:.2f}" for k, v in t.adversary_scores.items())
+            rows.append(
+                f"""<tr>
+<td>{t.invariant_id}</td><td>{scores}</td><td>{t.status.value}</td>
+<td>
+  <button onclick="decide('{t.invariant_id}','approved')">Approve</button>
+  <button onclick="decide('{t.invariant_id}','rejected')">Reject</button>
+</td></tr>"""
+            )
+        body_rows = "".join(rows) or '<tr><td colspan="4">No pending reviews</td></tr>'
         return f"""<!DOCTYPE html>
 <html><head><title>CFI Review Queue</title></head>
 <body>
 <h1>Pending CFI reviews</h1>
 <p>Human authorization required before lifecycle promotion. Not a privacy proof.</p>
-<table border="1"><tr><th>ID</th><th>Adversary scores</th><th>Status</th></tr>
-{rows or '<tr><td colspan="3">No pending reviews</td></tr>'}
+<table border="1">
+<tr><th>ID</th><th>Adversary scores</th><th>Status</th><th>Actions</th></tr>
+{body_rows}
 </table>
+<script>
+async function decide(id, status) {{
+  const reviewer = prompt("Reviewer email:", "reviewer@org");
+  if (!reviewer) return;
+  const notes = prompt("Notes:", "");
+  const resp = await fetch(`/review/${{id}}/decision`, {{
+    method: "POST",
+    headers: {{"Content-Type": "application/json"}},
+    body: JSON.stringify({{status, reviewer, notes, checklist_complete: true}})
+  }});
+  if (resp.ok) location.reload();
+  else alert(await resp.text());
+}}
+</script>
 </body></html>"""
 
     return app

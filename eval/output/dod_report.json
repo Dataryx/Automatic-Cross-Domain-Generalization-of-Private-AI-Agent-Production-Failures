@@ -1,7 +1,7 @@
 {
   "all_passed": true,
-  "passed": 17,
-  "total": 17,
+  "passed": 27,
+  "total": 27,
   "checks": [
     {
       "name": "cfi_schema_exists",
@@ -85,6 +85,56 @@
     },
     {
       "name": "field_pilot",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "corpus_benchmark",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "review_ui_route",
+      "passed": true,
+      "detail": "GET /review/ui on registry"
+    },
+    {
+      "name": "golden_path_script",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "tau_adapter",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "deployment_docs",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "health_check_script",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "postgres_compose",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "sandbox_egress_tests",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "registry_audit_route",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "baselines_computed",
       "passed": true,
       "detail": ""
     }

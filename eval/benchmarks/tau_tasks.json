@@ -1,0 +1,26 @@
+[
+  {
+    "task_id": "tau-001",
+    "domain": "procurement",
+    "instruction": "Release purchase order only after director review when new vendor exception applies.",
+    "seed": 1
+  },
+  {
+    "task_id": "tau-002",
+    "domain": "healthcare",
+    "instruction": "Authorize procedure after specialist review for experimental coverage exception.",
+    "seed": 2
+  },
+  {
+    "task_id": "tau-003",
+    "domain": "data_operations",
+    "instruction": "Publish production table only after contract approval on schema break.",
+    "seed": 3
+  },
+  {
+    "task_id": "tau-004",
+    "domain": "retail",
+    "instruction": "Block checkout completion until exception precedence verified.",
+    "seed": 4
+  }
+]

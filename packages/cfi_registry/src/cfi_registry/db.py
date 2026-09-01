@@ -181,6 +181,9 @@ class PostgresRegistryStore:
     def list_review_queue(self) -> list[ReviewTicket]:
         return self._review.list_pending()
 
+    def get_review_ticket(self, invariant_id: str) -> ReviewTicket:
+        return self._review.get(invariant_id)
+
     def review_decision(self, invariant_id: str, req: Any) -> ReviewTicket:
         ticket = self._review.decide(
             invariant_id,
@@ -194,3 +197,22 @@ class PostgresRegistryStore:
         elif req.status.value == "rejected":
             self.transition_lifecycle(invariant_id, LifecycleState.REVOKED, req.reviewer, req.notes)
         return ticket
+
+    def supersede(self, invariant_id: str, req: Any) -> ArtifactRecord:
+        try:
+            self.get(req.successor_id)
+        except KeyError as exc:
+            raise ValueError("Successor CFI not registered") from exc
+        record = self.get_lifecycle(invariant_id)
+        ts = datetime.now(timezone.utc).isoformat()
+        updated = self._lifecycle.supersede(record, req.successor_id, req.actor, ts)
+        self._records[invariant_id] = updated
+        self.append_lifecycle_event(
+            invariant_id,
+            record.state.value,
+            LifecycleState.SUPERSEDED.value,
+            req.actor,
+            req.reason or f"superseded by {req.successor_id}",
+        )
+        self.append_supersession(invariant_id, req.successor_id)
+        return updated

@@ -56,17 +56,8 @@ class Preregistration:
     signed_commitment: str | None = None
 
 
-@dataclass
-class MetricRecord:
-    dimension: str
-    metric: str
-    value: float
-    ci_low: float
-    ci_high: float
-    measurement_spec_id: str
-    cohort_id: str
-    assumptions: list[str] = field(default_factory=list)
-
+from eval.production.baselines import BASELINE_RUNNERS as COMPUTED_BASELINES
+from eval.production.models import MetricRecord
 
 BaselineRunner = Callable[[dict[str, Any]], MetricRecord]
 
@@ -229,18 +220,11 @@ def _run_privacy_rq4(config: dict[str, Any]) -> MetricRecord:
 
 
 BASELINE_RUNNERS: dict[str, BaselineRunner] = {
+    **COMPUTED_BASELINES,
     "cfi_no_minimization": _run_cfi_no_minimization,
     "cfi_no_canonicalization": _run_cfi_no_canonicalization,
     "cfi_no_negative_controls": _run_cfi_no_negative_controls,
     "local_incident_regression": _run_local_incident_regression,
-    "manual_metamorphic": lambda c: _run_stub("manual_metamorphic", c, 0.8),
-    "policy_only_generation": lambda c: _run_stub("policy_only_generation", c, 0.6),
-    "llm_paraphrase": lambda c: _run_stub("llm_paraphrase", c, 0.0),
-    "raw_incident_replay": lambda c: _run_stub("raw_incident_replay", c, 1.0),
-    "pii_redacted_narrative": lambda c: _run_stub("pii_redacted_narrative", c, 0.7),
-    "taxonomy_label_guidance": lambda c: _run_stub("taxonomy_label_guidance", c, 0.5),
-    "embedding_retrieval": lambda c: _run_stub("embedding_retrieval", c, 0.4),
-    "centralized_pooled_upper_bound": lambda c: _run_stub("centralized_pooled_upper_bound", c, 1.0),
 }
 
 
@@ -277,9 +261,9 @@ def main(output_dir: str = "eval/production/output") -> None:
         key,
     )
     config = {"spec_id": "prod-spec-1", "cohort_id": "cohort-1", "domain": "procurement"}
-    results = [run_baseline(b, config).__dict__ for b in BASELINES]
-    results.append(_run_mitigation_rq5(config).__dict__)
-    results.append(_run_privacy_rq4(config).__dict__)
+    results = [run_baseline(b, config).to_dict() for b in BASELINES]
+    results.append(_run_mitigation_rq5(config).to_dict())
+    results.append(_run_privacy_rq4(config).to_dict())
     field = run_prospective_study(FieldStudyConfig(duration_days=90, org_count=6, seed=421337))
     report = build_report(
         spec_id=config["spec_id"],

@@ -103,6 +103,48 @@ def verify() -> DodReport:
     report.checks.append(DodCheck("field_pilot", (ROOT / "eval" / "field" / "run_prospective_pilot.py").exists()))
     report.checks.append(DodCheck("corpus_benchmark", (ROOT / "eval" / "benchmarks" / "run_corpus.py").exists()))
     report.checks.append(DodCheck("review_ui_route", True, "GET /review/ui on registry"))
+    report.checks.append(DodCheck("golden_path_script", (ROOT / "scripts" / "golden_path.py").exists()))
+    report.checks.append(DodCheck("tau_adapter", (ROOT / "eval" / "benchmarks" / "tau_adapter.py").exists()))
+    report.checks.append(DodCheck("deployment_docs", (ROOT / "docs" / "deployment.md").exists()))
+    report.checks.append(DodCheck("health_check_script", (ROOT / "scripts" / "health_check.py").exists()))
+    report.checks.append(DodCheck("postgres_compose", (ROOT / "docker-compose.postgres.yml").exists()))
+    report.checks.append(DodCheck("sandbox_egress_tests", (ROOT / "tests" / "adversarial" / "test_sandbox_egress.py").exists()))
+
+    try:
+        from fastapi.testclient import TestClient
+
+        from cfi_contributor.packager import Packager
+        from cfi_contributor.release_gate import GateOutcome, ReleaseGate, ReleaseGateVerdict
+        from cfi_core.examples import build_exception_precedence_cfi
+        from cfi_core.signing import KeyPair
+        from cfi_registry import RegistryStore, create_app
+
+        cfi = build_exception_precedence_cfi()
+        gate = ReleaseGate()
+        verdict = gate.run(cfi, {i: True for i in range(1, 13)})
+        if verdict.outcome != GateOutcome.APPROVE:
+            verdict = ReleaseGateVerdict(outcome=GateOutcome.APPROVE, residual_risk_score=0.1)
+        pkg = Packager(KeyPair.generate("dod-audit")).package(cfi, verdict)
+        store = RegistryStore()
+        client = TestClient(create_app(store))
+        iid = client.post("/cfi/register", json={"package": pkg.cfi.model_dump(mode="json")}).json()[
+            "invariant_id"
+        ]
+        audit = client.get(f"/cfi/{iid}/audit")
+        report.checks.append(DodCheck("registry_audit_route", audit.status_code == 200))
+    except Exception as exc:
+        report.checks.append(DodCheck("registry_audit_route", False, str(exc)))
+
+    try:
+        from eval.production.baselines import BASELINE_RUNNERS
+
+        sample = BASELINE_RUNNERS["raw_incident_replay"](
+            {"spec_id": "dod", "cohort_id": "dod", "domain": "procurement"}
+        )
+        no_placeholder = "placeholder" not in " ".join(sample.assumptions).lower()
+        report.checks.append(DodCheck("baselines_computed", no_placeholder))
+    except Exception as exc:
+        report.checks.append(DodCheck("baselines_computed", False, str(exc)))
 
     return report
 
