@@ -11,6 +11,7 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, sess
 
 from cfi_core.wire import CohortManifest
 from cfi_governance import ArtifactRecord, LifecycleManager, LifecycleState
+from cfi_governance.audit_log import AuditLog
 from cfi_governance.review import ReviewQueue, ReviewTicket
 
 
@@ -68,6 +69,13 @@ class PostgresRegistryStore:
         self._lifecycle = LifecycleManager()
         self._records: dict[str, ArtifactRecord] = {}
         self._review = ReviewQueue()
+        self._audit = AuditLog()
+
+    def _log_audit(self, actor: str, action: str, resource_id: str, detail: dict[str, Any] | None = None) -> None:
+        self._audit.append(actor, action, resource_id, detail)
+
+    def export_audit_log(self) -> list[dict[str, Any]]:
+        return self._audit.export()
 
     def _session(self) -> Session:
         return self._session_factory()
@@ -90,6 +98,7 @@ class PostgresRegistryStore:
         self.append_lifecycle_event(
             invariant_id, record.state.value, to_state.value, actor, reason
         )
+        self._log_audit(actor, "lifecycle.transition", invariant_id, {"to_state": to_state.value, "reason": reason})
         return updated
 
     def register(self, package: dict[str, Any]) -> str:
@@ -120,6 +129,7 @@ class PostgresRegistryStore:
                 "linkability": scores.linkability,
             },
         )
+        self._log_audit("system", "cfi.registered", cfi.id, {"state": LifecycleState.REVIEWED.value})
         return cfi.id
 
     def get(self, invariant_id: str) -> dict[str, Any]:
@@ -144,6 +154,7 @@ class PostgresRegistryStore:
                 )
             )
             session.commit()
+        self._log_audit("system", "cohort.published", manifest.invariant_id, {"epoch": manifest.aggregation_epoch})
         return manifest.aggregation_epoch
 
     def append_lifecycle_event(
@@ -196,6 +207,12 @@ class PostgresRegistryStore:
             self.transition_lifecycle(invariant_id, LifecycleState.ACTIVE, req.reviewer, req.notes)
         elif req.status.value == "rejected":
             self.transition_lifecycle(invariant_id, LifecycleState.REVOKED, req.reviewer, req.notes)
+        self._log_audit(
+            req.reviewer,
+            "review.decision",
+            invariant_id,
+            {"status": req.status.value, "checklist_complete": req.checklist_complete},
+        )
         return ticket
 
     def supersede(self, invariant_id: str, req: Any) -> ArtifactRecord:
@@ -215,6 +232,7 @@ class PostgresRegistryStore:
             req.reason or f"superseded by {req.successor_id}",
         )
         self.append_supersession(invariant_id, req.successor_id)
+        self._log_audit(req.actor, "cfi.superseded", invariant_id, {"successor_id": req.successor_id})
         return updated
 
     def stats(self) -> dict[str, int]:

@@ -15,6 +15,7 @@ from cfi_core.tracing import tracing_status
 
 from cfi_core.wire import CohortManifest
 from cfi_governance import ArtifactRecord, LifecycleManager, LifecycleState
+from cfi_governance.audit_log import AuditLog
 from cfi_governance.review import ReviewQueue, ReviewStatus, ReviewTicket
 from cfi_registry.review_ui import render_review_detail, render_review_ui, ticket_to_dict
 
@@ -59,6 +60,7 @@ class RegistryStoreProtocol(Protocol):
     def review_decision(self, invariant_id: str, req: ReviewDecisionRequest) -> ReviewTicket: ...
     def supersede(self, invariant_id: str, req: SupersessionRequest) -> ArtifactRecord: ...
     def stats(self) -> dict[str, int]: ...
+    def export_audit_log(self) -> list[dict[str, Any]]: ...
 
 
 class RegistryStore:
@@ -70,6 +72,13 @@ class RegistryStore:
         self._manifests: dict[str, CohortManifest] = {}
         self._lifecycle = LifecycleManager()
         self._review = ReviewQueue()
+        self._audit = AuditLog()
+
+    def _log_audit(self, actor: str, action: str, resource_id: str, detail: dict[str, Any] | None = None) -> None:
+        self._audit.append(actor, action, resource_id, detail)
+
+    def export_audit_log(self) -> list[dict[str, Any]]:
+        return self._audit.export()
 
     def register(self, package: dict[str, Any]) -> str:
         from cfi_contributor.adversaries import ReleaseGateAdversaries
@@ -93,6 +102,7 @@ class RegistryStore:
                 "linkability": scores.linkability,
             },
         )
+        self._log_audit("system", "cfi.registered", cfi.id, {"state": LifecycleState.REVIEWED.value})
         return cfi.id
 
     def get(self, invariant_id: str) -> dict[str, Any]:
@@ -107,6 +117,7 @@ class RegistryStore:
             raise ValueError("Manifest already frozen")
         manifest = manifest.model_copy(update={"frozen": True})
         self._manifests[manifest.aggregation_epoch] = manifest
+        self._log_audit("system", "cohort.published", manifest.invariant_id, {"epoch": manifest.aggregation_epoch})
         return manifest.aggregation_epoch
 
     def get_lifecycle(self, invariant_id: str) -> ArtifactRecord:
@@ -121,6 +132,7 @@ class RegistryStore:
         ts = datetime.now(timezone.utc).isoformat()
         updated = self._lifecycle.transition(record, to_state, actor, reason, ts)
         self._records[invariant_id] = updated
+        self._log_audit(actor, "lifecycle.transition", invariant_id, {"to_state": to_state.value, "reason": reason})
         return updated
 
     def list_review_queue(self) -> list[ReviewTicket]:
@@ -141,6 +153,12 @@ class RegistryStore:
             self.transition_lifecycle(invariant_id, LifecycleState.ACTIVE, req.reviewer, req.notes)
         elif req.status == ReviewStatus.REJECTED:
             self.transition_lifecycle(invariant_id, LifecycleState.REVOKED, req.reviewer, req.notes)
+        self._log_audit(
+            req.reviewer,
+            "review.decision",
+            invariant_id,
+            {"status": req.status.value, "checklist_complete": req.checklist_complete},
+        )
         return ticket
 
     def supersede(self, invariant_id: str, req: SupersessionRequest) -> ArtifactRecord:
@@ -150,6 +168,7 @@ class RegistryStore:
         ts = datetime.now(timezone.utc).isoformat()
         updated = self._lifecycle.supersede(record, req.successor_id, req.actor, ts)
         self._records[invariant_id] = updated
+        self._log_audit(req.actor, "cfi.superseded", invariant_id, {"successor_id": req.successor_id})
         return updated
 
     def stats(self) -> dict[str, int]:
@@ -232,6 +251,16 @@ def create_app(store: RegistryStoreProtocol | None = None) -> FastAPI:
                 "cfi_registry_active_cfis": "CFIs in active lifecycle state.",
             },
         )
+
+    @app.get("/audit/export")
+    def export_audit_log() -> dict[str, Any]:
+        return {
+            "events": registry.export_audit_log(),
+            "assumptions": [
+                "Audit log records registry governance actions only.",
+                "Not a substitute for tamper-evident external logging.",
+            ],
+        }
 
     @app.get("/tracing")
     def tracing() -> dict[str, str | bool]:

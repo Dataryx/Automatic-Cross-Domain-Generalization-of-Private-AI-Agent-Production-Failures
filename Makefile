@@ -1,6 +1,6 @@
 # CFI-Fed developer commands
 
-.PHONY: install test sim dod golden tau stack stack-postgres stack-tls health live-replay mypy figures field-study ingest-corpus eval-all certs observability hardening auth
+.PHONY: install test sim dod golden tau stack stack-postgres stack-tls stack-mtls health live-replay mypy figures field-study ingest-corpus eval-all certs observability hardening auth release mtls
 
 install:
 	pip install -e ".[dev]"
@@ -54,6 +54,16 @@ hardening:
 
 auth:
 	python scripts/verify_auth.py
+
+release:
+	python scripts/package_release.py
+
+mtls:
+	python scripts/verify_mtls.py
+
+stack-mtls:
+	python scripts/generate_dev_certs.py
+	docker compose -f docker-compose.mtls.yml up --build
 
 mypy:
 	mypy packages/cfi_core/src packages/cfi_contributor/src packages/cfi_registry/src packages/cfi_recipient/src packages/cfi_federation/src packages/cfi_governance/src packages/cfi_cli/src

@@ -124,6 +124,9 @@ def verify() -> DodReport:
     report.checks.append(DodCheck("auth_module", (ROOT / "packages" / "cfi_core" / "src" / "cfi_core" / "auth.py").exists()))
     report.checks.append(DodCheck("tracing_module", (ROOT / "packages" / "cfi_core" / "src" / "cfi_core" / "tracing.py").exists()))
     report.checks.append(DodCheck("verify_auth_script", (ROOT / "scripts" / "verify_auth.py").exists()))
+    report.checks.append(DodCheck("audit_log_module", (ROOT / "packages" / "cfi_governance" / "src" / "cfi_governance" / "audit_log.py").exists()))
+    report.checks.append(DodCheck("mtls_compose", (ROOT / "docker-compose.mtls.yml").exists()))
+    report.checks.append(DodCheck("package_release_script", (ROOT / "scripts" / "package_release.py").exists()))
     report.checks.append(DodCheck("mypy_ci_job", "mypy:" in (ROOT / ".github" / "workflows" / "ci.yml").read_text()))
 
     try:
@@ -195,6 +198,35 @@ def verify() -> DodReport:
         )
     except Exception as exc:
         report.checks.append(DodCheck("observability_smoke", False, str(exc)))
+
+    try:
+        from fastapi.testclient import TestClient
+
+        from cfi_contributor.packager import Packager
+        from cfi_contributor.release_gate import GateOutcome, ReleaseGate, ReleaseGateVerdict
+        from cfi_core.examples import build_exception_precedence_cfi
+        from cfi_core.signing import KeyPair
+        from cfi_registry import RegistryStore, create_app
+
+        cfi = build_exception_precedence_cfi()
+        gate = ReleaseGate()
+        verdict = gate.run(cfi, {i: True for i in range(1, 13)})
+        if verdict.outcome != GateOutcome.APPROVE:
+            verdict = ReleaseGateVerdict(outcome=GateOutcome.APPROVE, residual_risk_score=0.1)
+        pkg = Packager(KeyPair.generate("dod-audit-export")).package(cfi, verdict)
+        client = TestClient(create_app(RegistryStore()))
+        iid = client.post("/cfi/register", json={"package": pkg.cfi.model_dump(mode="json")}).json()[
+            "invariant_id"
+        ]
+        export = client.get("/audit/export").json()
+        report.checks.append(
+            DodCheck(
+                "audit_export_smoke",
+                any(e["action"] == "cfi.registered" and e["resource_id"] == iid for e in export["events"]),
+            )
+        )
+    except Exception as exc:
+        report.checks.append(DodCheck("audit_export_smoke", False, str(exc)))
 
     return report
 

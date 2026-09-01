@@ -5,6 +5,7 @@ __pycache__/
 .mypy_cache/
 sim/output/
 deploy/tls/certs/
+deploy/tls/certs/ca.key.pem
 eval/benchmarks/output/
 eval/field/output/
 eval/output/

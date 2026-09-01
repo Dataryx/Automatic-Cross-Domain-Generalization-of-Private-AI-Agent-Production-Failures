@@ -1,7 +1,7 @@
 {
   "all_passed": true,
-  "passed": 45,
-  "total": 45,
+  "passed": 49,
+  "total": 49,
   "checks": [
     {
       "name": "cfi_schema_exists",
@@ -204,6 +204,21 @@
       "detail": ""
     },
     {
+      "name": "audit_log_module",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "mtls_compose",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "package_release_script",
+      "passed": true,
+      "detail": ""
+    },
+    {
       "name": "mypy_ci_job",
       "passed": true,
       "detail": ""
@@ -225,6 +240,11 @@
     },
     {
       "name": "observability_smoke",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "audit_export_smoke",
       "passed": true,
       "detail": ""
     }

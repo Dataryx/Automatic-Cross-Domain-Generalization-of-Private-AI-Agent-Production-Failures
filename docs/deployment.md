@@ -26,6 +26,8 @@ docker compose -f docker-compose.postgres.yml up --build
 # TLS-terminated stack (dev self-signed certs on :8443):
 python scripts/generate_dev_certs.py
 docker compose -f docker-compose.tls.yml up --build
+# mTLS-terminated stack (optional client certs):
+docker compose -f docker-compose.mtls.yml up --build
 # or individually:
 cfi-registry serve
 python services/coordinator/main.py
