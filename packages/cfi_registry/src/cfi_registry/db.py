@@ -216,3 +216,16 @@ class PostgresRegistryStore:
         )
         self.append_supersession(invariant_id, req.successor_id)
         return updated
+
+    def stats(self) -> dict[str, int]:
+        from sqlalchemy import func, select
+
+        with self._session() as session:
+            registered = session.scalar(select(func.count()).select_from(CFIRecord)) or 0
+            manifests = session.scalar(select(func.count()).select_from(CohortManifestRecord)) or 0
+        return {
+            "registered_cfis": int(registered),
+            "pending_reviews": len(self.list_review_queue()),
+            "active_cfis": sum(1 for r in self._records.values() if r.state == LifecycleState.ACTIVE),
+            "cohort_manifests": int(manifests),
+        }

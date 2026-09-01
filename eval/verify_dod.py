@@ -117,6 +117,10 @@ def verify() -> DodReport:
     report.checks.append(DodCheck("tls_compose", (ROOT / "docker-compose.tls.yml").exists()))
     report.checks.append(DodCheck("nginx_tls_config", (ROOT / "deploy" / "nginx" / "nginx.conf").exists()))
     report.checks.append(DodCheck("incident_bundle_corpus", (ROOT / "eval" / "benchmarks" / "corpus" / "bundles").exists()))
+    report.checks.append(DodCheck("observability_module", (ROOT / "packages" / "cfi_core" / "src" / "cfi_core" / "observability.py").exists()))
+    report.checks.append(DodCheck("verify_observability_script", (ROOT / "scripts" / "verify_observability.py").exists()))
+    report.checks.append(DodCheck("middleware_module", (ROOT / "packages" / "cfi_core" / "src" / "cfi_core" / "middleware.py").exists()))
+    report.checks.append(DodCheck("verify_production_hardening", (ROOT / "scripts" / "verify_production_hardening.py").exists()))
     report.checks.append(DodCheck("mypy_ci_job", "mypy:" in (ROOT / ".github" / "workflows" / "ci.yml").read_text()))
 
     try:
@@ -171,6 +175,23 @@ def verify() -> DodReport:
         )
     except Exception as exc:
         report.checks.append(DodCheck("corpus_ingest_smoke", False, str(exc)))
+
+    try:
+        from fastapi.testclient import TestClient
+
+        from services.aggregator.main import app as aggregator_app
+
+        client = TestClient(aggregator_app)
+        metrics = client.get("/metrics").text
+        accountant = client.get("/accountant").json()
+        report.checks.append(
+            DodCheck(
+                "observability_smoke",
+                "cfi_remaining_epsilon" in metrics and "remaining_epsilon" in accountant,
+            )
+        )
+    except Exception as exc:
+        report.checks.append(DodCheck("observability_smoke", False, str(exc)))
 
     return report
 

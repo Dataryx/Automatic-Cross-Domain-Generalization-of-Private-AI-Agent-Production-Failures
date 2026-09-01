@@ -6,7 +6,11 @@ import os
 
 import uvicorn
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import PlainTextResponse
 from pydantic import BaseModel, Field
+
+from cfi_core.middleware import configure_service_app
+from cfi_core.observability import format_prometheus, service_health
 
 from cfi_contributor.packager import Packager
 from cfi_contributor.release_gate import GateOutcome, ReleaseGate, ReleaseGateVerdict
@@ -16,6 +20,7 @@ from cfi_core.wire import CohortManifest, MeasurementSpec
 from cfi_federation.consortium import ConsortiumConfig, ConsortiumCoordinator, TenantIdentity
 
 app = FastAPI(title="CFI Cohort Coordinator")
+configure_service_app(app, "coordinator")
 
 
 class PublishRequest(BaseModel):
@@ -48,6 +53,21 @@ def _signed_cfi_package() -> dict:
     if not result.success or result.cfi is None:
         raise RuntimeError("Failed to build coordinator CFI package")
     return result.cfi.model_dump(mode="json")
+
+
+@app.get("/health")
+def health() -> dict[str, str]:
+    return service_health("coordinator")
+
+
+@app.get("/ready")
+def ready() -> dict[str, str]:
+    return service_health("coordinator", ready=True)
+
+
+@app.get("/metrics", response_class=PlainTextResponse)
+def metrics() -> str:
+    return format_prometheus({"cfi_coordinator_up": 1.0})
 
 
 @app.post("/epoch/open")
@@ -105,11 +125,6 @@ def run_consortium_round(req: ConsortiumRoundRequest) -> dict:
         "noisy_prevalence": result.noisy_prevalence,
         "assumptions": result.assumptions,
     }
-
-
-@app.get("/health")
-def health() -> dict[str, str]:
-    return {"status": "ok"}
 
 
 if __name__ == "__main__":

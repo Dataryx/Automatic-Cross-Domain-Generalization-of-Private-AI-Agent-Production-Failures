@@ -1,6 +1,6 @@
 # CFI-Fed developer commands
 
-.PHONY: install test sim dod golden tau stack stack-postgres stack-tls health live-replay mypy figures field-study ingest-corpus eval-all certs
+.PHONY: install test sim dod golden tau stack stack-postgres stack-tls health live-replay mypy figures field-study ingest-corpus eval-all certs observability hardening
 
 install:
 	pip install -e ".[dev]"
@@ -45,6 +45,12 @@ certs:
 stack-tls:
 	python scripts/generate_dev_certs.py
 	docker compose -f docker-compose.tls.yml up --build
+
+observability:
+	python scripts/verify_observability.py
+
+hardening:
+	python scripts/verify_production_hardening.py
 
 mypy:
 	mypy packages/cfi_core/src packages/cfi_contributor/src packages/cfi_registry/src packages/cfi_recipient/src packages/cfi_federation/src packages/cfi_governance/src packages/cfi_cli/src

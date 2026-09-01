@@ -44,6 +44,7 @@ python services/replay_mock/main.py
 | `CFI_REPLAY_MOCK_URL` | `http://127.0.0.1:8010/replay` | Mock replay profile |
 | `CFI_AGENTRX_URL` | `http://127.0.0.1:8020/v1/replay` | AgentRx sandbox endpoint |
 | `CFI_CAUSALFLOW_URL` | `http://127.0.0.1:8021/v1/counterfactual` | CausalFlow sandbox endpoint |
+| `CFI_RATE_LIMIT_RPM` | `0` (disabled) | Per-client requests/minute; set e.g. `120` in production |
 
 ```bash
 cfi-contribute replay-profiles
@@ -58,9 +59,24 @@ cfi-contribute extract --output cfi.json --replay-url http://127.0.0.1:8010/repl
 3. Configure TLS termination at load balancer.
 4. Wire `HttpAgentReplayProvider` to sandboxed agent runtime (`--replay-url`).
 5. Require human review via `/review/ui` before lifecycle `active`.
-6. Monitor privacy accountant `remaining_epsilon` on aggregator.
+6. Monitor privacy accountant `remaining_epsilon` on aggregator (`GET /accountant`, `GET /metrics`).
 7. Re-run `python eval/verify_dod.py` after deploy.
 8. Ingest private incident bundles locally: `cfi-contribute ingest-corpus --input-dir ./bundles --output-dir ./out --extract`.
+
+## Observability
+
+| Endpoint | Service | Purpose |
+|----------|---------|---------|
+| `GET /health` | all | Liveness |
+| `GET /ready` | registry, coordinator, aggregator | Readiness |
+| `GET /metrics` | all | Prometheus text gauges |
+| `GET /accountant` | aggregator | Privacy budget JSON snapshot |
+
+```bash
+python scripts/verify_observability.py
+make health
+python scripts/verify_production_hardening.py
+```
 
 ## Honesty guardrails
 

@@ -8,7 +8,11 @@ import uvicorn
 from fastapi import FastAPI
 from pydantic import BaseModel
 
+from cfi_core.middleware import configure_service_app
+from cfi_core.observability import service_health
+
 app = FastAPI(title="CFI Replay Mock")
+configure_service_app(app, "replay_mock")
 
 
 class ReplayRequest(BaseModel):
@@ -31,7 +35,7 @@ def replay(req: ReplayRequest) -> dict[str, float]:
 
 @app.get("/health")
 def health() -> dict[str, str]:
-    return {"status": "ok"}
+    return service_health("replay_mock")
 
 
 if __name__ == "__main__":

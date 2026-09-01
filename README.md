@@ -88,6 +88,8 @@ Re-running `sim/run_cfi_sim.py` recreates all CSVs and figures from fixed seed 4
 - Phase 13: mypy CI, enhanced review UI + ticket API, live replay smoke (`scripts/live_replay_smoke.py`)
 - Phase 14: replay profiles (`mock`/`agentrx`/`causalflow`), figure + field-study verification in CI
 - Phase 15: private corpus ingestion (`cfi-contribute ingest-corpus`), TLS compose (`docker-compose.tls.yml`)
+- Phase 16: observability (`/health`, `/ready`, `/metrics`, `/accountant`) + privacy budget monitoring
+- Phase 17: request tracing (`X-Request-ID`), optional rate limiting (`CFI_RATE_LIMIT_RPM`), production middleware
 - Release-gate adversaries auto-scored in `ReleaseGate.run()`
 - CI workflow (`.github/workflows/ci.yml`) + `docker-compose.yml` for services
 - `eval/run_all.py` — runs pytest, DoD checks, and all pilots

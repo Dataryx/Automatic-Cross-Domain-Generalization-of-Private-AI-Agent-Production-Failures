@@ -20,29 +20,19 @@ from services.replay_mock.main import app as replay_app
 
 def main() -> int:
     checks = [
-        ("registry", TestClient(create_app(RegistryStore())), "/health"),
-        ("coordinator", TestClient(coordinator_app), "/health"),
-        ("aggregator", TestClient(aggregator_app), None),
-        ("replay_mock", TestClient(replay_app), "/health"),
+        ("registry", TestClient(create_app(RegistryStore())), ["/health", "/ready", "/metrics"]),
+        ("coordinator", TestClient(coordinator_app), ["/health", "/ready", "/metrics"]),
+        ("aggregator", TestClient(aggregator_app), ["/health", "/ready", "/metrics", "/accountant"]),
+        ("replay_mock", TestClient(replay_app), ["/health"]),
     ]
     failed = []
-    for name, client, path in checks:
-        if path:
+    for name, client, paths in checks:
+        for path in paths:
             resp = client.get(path)
-        else:
-            resp = client.post(
-                "/aggregate",
-                json={
-                    "contributions": [],
-                    "epsilon": 1.0,
-                    "minimum_k": 10,
-                    "measurement_spec_id": "health",
-                },
-            )
-        ok = resp.status_code in (200, 400)
-        print(f"{name}: {'OK' if ok else 'FAIL'} ({resp.status_code})")
-        if not ok:
-            failed.append(name)
+            ok = resp.status_code == 200
+            print(f"{name}{path}: {'OK' if ok else 'FAIL'} ({resp.status_code})")
+            if not ok:
+                failed.append(f"{name}{path}")
     return 1 if failed else 0
 
 

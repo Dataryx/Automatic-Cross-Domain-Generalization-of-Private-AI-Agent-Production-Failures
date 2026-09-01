@@ -6,8 +6,11 @@ from datetime import datetime, timezone
 from typing import Any, Protocol
 
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, PlainTextResponse
 from pydantic import BaseModel
+
+from cfi_core.middleware import configure_service_app
+from cfi_core.observability import format_prometheus, service_health
 
 from cfi_core.wire import CohortManifest
 from cfi_governance import ArtifactRecord, LifecycleManager, LifecycleState
@@ -54,6 +57,7 @@ class RegistryStoreProtocol(Protocol):
     def get_review_ticket(self, invariant_id: str) -> ReviewTicket: ...
     def review_decision(self, invariant_id: str, req: ReviewDecisionRequest) -> ReviewTicket: ...
     def supersede(self, invariant_id: str, req: SupersessionRequest) -> ArtifactRecord: ...
+    def stats(self) -> dict[str, int]: ...
 
 
 class RegistryStore:
@@ -147,9 +151,18 @@ class RegistryStore:
         self._records[invariant_id] = updated
         return updated
 
+    def stats(self) -> dict[str, int]:
+        return {
+            "registered_cfis": len(self._cfis),
+            "pending_reviews": len(self.list_review_queue()),
+            "active_cfis": sum(1 for r in self._records.values() if r.state == LifecycleState.ACTIVE),
+            "cohort_manifests": len(self._manifests),
+        }
+
 
 def create_app(store: RegistryStoreProtocol | None = None) -> FastAPI:
     app = FastAPI(title="CFI Registry", version="0.1.0")
+    configure_service_app(app, "registry")
     registry: RegistryStoreProtocol = store or RegistryStore()
 
     @app.post("/cfi/register")
@@ -202,7 +215,22 @@ def create_app(store: RegistryStoreProtocol | None = None) -> FastAPI:
 
     @app.get("/health")
     def health() -> dict[str, str]:
-        return {"status": "ok", "timestamp": datetime.now(timezone.utc).isoformat()}
+        return service_health("registry")
+
+    @app.get("/ready")
+    def ready() -> dict[str, str]:
+        return service_health("registry", ready=True)
+
+    @app.get("/metrics", response_class=PlainTextResponse)
+    def metrics() -> str:
+        stats = registry.stats()
+        return format_prometheus(
+            {f"cfi_registry_{key}": float(value) for key, value in stats.items()},
+            help_text={
+                "cfi_registry_pending_reviews": "CFIs awaiting human review.",
+                "cfi_registry_active_cfis": "CFIs in active lifecycle state.",
+            },
+        )
 
     @app.get("/cfi/{invariant_id}/audit")
     def audit_cfi(invariant_id: str) -> dict[str, Any]:

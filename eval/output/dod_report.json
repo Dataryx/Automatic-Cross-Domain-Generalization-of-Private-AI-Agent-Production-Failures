@@ -1,7 +1,7 @@
 {
   "all_passed": true,
-  "passed": 37,
-  "total": 37,
+  "passed": 42,
+  "total": 42,
   "checks": [
     {
       "name": "cfi_schema_exists",
@@ -169,6 +169,26 @@
       "detail": ""
     },
     {
+      "name": "observability_module",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "verify_observability_script",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "middleware_module",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "verify_production_hardening",
+      "passed": true,
+      "detail": ""
+    },
+    {
       "name": "mypy_ci_job",
       "passed": true,
       "detail": ""
@@ -187,6 +207,11 @@
       "name": "corpus_ingest_smoke",
       "passed": true,
       "detail": "validated=5 extracted=5"
+    },
+    {
+      "name": "observability_smoke",
+      "passed": true,
+      "detail": ""
     }
   ]
 }

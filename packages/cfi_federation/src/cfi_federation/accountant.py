@@ -43,3 +43,23 @@ class PrivacyAccountant:
         self._spent += epsilon
         self._history.append(BudgetEntry(epsilon=epsilon, delta=0.0, cohort_id=cohort_id, epoch=epoch))
         return AccountantVerdict(allowed=True, remaining_epsilon=self._total - self._spent)
+
+    @property
+    def total_epsilon(self) -> float:
+        return self._total
+
+    @property
+    def spent_epsilon(self) -> float:
+        return self._spent
+
+    @property
+    def release_count(self) -> int:
+        return len(self._history)
+
+    def snapshot(self) -> dict[str, float | int]:
+        return {
+            "total_epsilon": self._total,
+            "spent_epsilon": self._spent,
+            "remaining_epsilon": self._total - self._spent,
+            "release_count": len(self._history),
+        }
