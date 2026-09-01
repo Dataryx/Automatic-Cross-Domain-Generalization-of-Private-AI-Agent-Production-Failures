@@ -23,6 +23,9 @@ make golden                     # end-to-end smoke (in-process)
 docker compose up --build
 # Postgres-backed registry:
 docker compose -f docker-compose.postgres.yml up --build
+# TLS-terminated stack (dev self-signed certs on :8443):
+python scripts/generate_dev_certs.py
+docker compose -f docker-compose.tls.yml up --build
 # or individually:
 cfi-registry serve
 python services/coordinator/main.py
@@ -57,6 +60,7 @@ cfi-contribute extract --output cfi.json --replay-url http://127.0.0.1:8010/repl
 5. Require human review via `/review/ui` before lifecycle `active`.
 6. Monitor privacy accountant `remaining_epsilon` on aggregator.
 7. Re-run `python eval/verify_dod.py` after deploy.
+8. Ingest private incident bundles locally: `cfi-contribute ingest-corpus --input-dir ./bundles --output-dir ./out --extract`.
 
 ## Honesty guardrails
 

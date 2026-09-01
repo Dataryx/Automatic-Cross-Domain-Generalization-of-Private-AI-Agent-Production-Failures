@@ -4,6 +4,10 @@ __pycache__/
 .pytest_cache/
 .mypy_cache/
 sim/output/
+deploy/tls/certs/
+eval/benchmarks/output/
+eval/field/output/
+eval/output/
 *.egg-info/
 dist/
 build/

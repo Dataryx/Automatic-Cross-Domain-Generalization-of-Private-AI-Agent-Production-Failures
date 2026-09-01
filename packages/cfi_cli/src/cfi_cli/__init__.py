@@ -115,6 +115,36 @@ def extract_from_incident(
     typer.echo(f"Extracted signed CFI written to {output}")
 
 
+@contribute_app.command("ingest-corpus")
+def ingest_corpus_local(
+    input_dir: str = typer.Option(..., help="Directory of incident-bundle JSON files"),
+    output_dir: str = typer.Option(..., help="Output directory for ingest manifest"),
+    extract: bool = typer.Option(False, help="Run contributor extraction per bundle"),
+    replay_profile: str | None = typer.Option(None, help="Optional replay profile"),
+    seed: int = typer.Option(421337),
+) -> None:
+    """Validate local private incident bundles; optional extraction (no egress)."""
+    from pathlib import Path
+
+    from cfi_contributor.corpus_ingest import ingest_directory, write_manifest
+
+    report = ingest_directory(
+        Path(input_dir),
+        extract=extract,
+        replay_profile=replay_profile,
+        seed=seed,
+    )
+    manifest = write_manifest(report, Path(output_dir))
+    typer.echo(
+        f"Ingested {report.validated_count}/{len(report.records)} bundles "
+        f"(extracted={report.extracted_count}) -> {manifest}"
+    )
+    for note in report.assumptions:
+        typer.echo(f"Assumption: {note}")
+    if report.validated_count != len(report.records):
+        raise typer.Exit(1)
+
+
 @contribute_app.command("replay-profiles")
 def list_replay_profiles() -> None:
     """List production replay profiles and environment variables."""

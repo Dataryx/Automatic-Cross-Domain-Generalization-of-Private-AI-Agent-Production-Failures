@@ -1,6 +1,6 @@
 # CFI-Fed developer commands
 
-.PHONY: install test sim dod golden tau stack stack-postgres health live-replay mypy figures field-study eval-all
+.PHONY: install test sim dod golden tau stack stack-postgres stack-tls health live-replay mypy figures field-study ingest-corpus eval-all certs
 
 install:
 	pip install -e ".[dev]"
@@ -35,6 +35,16 @@ figures:
 
 field-study:
 	python scripts/verify_field_study.py
+
+ingest-corpus:
+	python scripts/verify_corpus_ingest.py
+
+certs:
+	python scripts/generate_dev_certs.py
+
+stack-tls:
+	python scripts/generate_dev_certs.py
+	docker compose -f docker-compose.tls.yml up --build
 
 mypy:
 	mypy packages/cfi_core/src packages/cfi_contributor/src packages/cfi_registry/src packages/cfi_recipient/src packages/cfi_federation/src packages/cfi_governance/src packages/cfi_cli/src

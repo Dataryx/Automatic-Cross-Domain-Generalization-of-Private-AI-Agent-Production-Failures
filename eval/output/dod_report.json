@@ -1,7 +1,7 @@
 {
   "all_passed": true,
-  "passed": 32,
-  "total": 32,
+  "passed": 37,
+  "total": 37,
   "checks": [
     {
       "name": "cfi_schema_exists",
@@ -149,6 +149,26 @@
       "detail": ""
     },
     {
+      "name": "corpus_ingest_module",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "tls_compose",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "nginx_tls_config",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "incident_bundle_corpus",
+      "passed": true,
+      "detail": ""
+    },
+    {
       "name": "mypy_ci_job",
       "passed": true,
       "detail": ""
@@ -162,6 +182,11 @@
       "name": "baselines_computed",
       "passed": true,
       "detail": ""
+    },
+    {
+      "name": "corpus_ingest_smoke",
+      "passed": true,
+      "detail": "validated=5 extracted=5"
     }
   ]
 }

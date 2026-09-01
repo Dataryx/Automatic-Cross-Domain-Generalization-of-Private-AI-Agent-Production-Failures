@@ -113,6 +113,10 @@ def verify() -> DodReport:
     report.checks.append(DodCheck("verify_figures_script", (ROOT / "scripts" / "verify_figures.py").exists()))
     report.checks.append(DodCheck("verify_field_study_script", (ROOT / "scripts" / "verify_field_study.py").exists()))
     report.checks.append(DodCheck("replay_profiles_module", (ROOT / "packages" / "cfi_contributor" / "src" / "cfi_contributor" / "replay_profiles.py").exists()))
+    report.checks.append(DodCheck("corpus_ingest_module", (ROOT / "packages" / "cfi_contributor" / "src" / "cfi_contributor" / "corpus_ingest.py").exists()))
+    report.checks.append(DodCheck("tls_compose", (ROOT / "docker-compose.tls.yml").exists()))
+    report.checks.append(DodCheck("nginx_tls_config", (ROOT / "deploy" / "nginx" / "nginx.conf").exists()))
+    report.checks.append(DodCheck("incident_bundle_corpus", (ROOT / "eval" / "benchmarks" / "corpus" / "bundles").exists()))
     report.checks.append(DodCheck("mypy_ci_job", "mypy:" in (ROOT / ".github" / "workflows" / "ci.yml").read_text()))
 
     try:
@@ -150,6 +154,23 @@ def verify() -> DodReport:
         report.checks.append(DodCheck("baselines_computed", no_placeholder))
     except Exception as exc:
         report.checks.append(DodCheck("baselines_computed", False, str(exc)))
+
+    try:
+        from cfi_contributor.corpus_ingest import ingest_directory
+        from cfi_core.schema_validate import validate_incident_bundle
+
+        bundle_path = ROOT / "eval" / "benchmarks" / "corpus" / "bundles" / "bench-001.json"
+        validate_incident_bundle(json.loads(bundle_path.read_text(encoding="utf-8")))
+        ingest = ingest_directory(bundle_path.parent, extract=True)
+        report.checks.append(
+            DodCheck(
+                "corpus_ingest_smoke",
+                ingest.validated_count >= 1 and ingest.extracted_count >= 1,
+                f"validated={ingest.validated_count} extracted={ingest.extracted_count}",
+            )
+        )
+    except Exception as exc:
+        report.checks.append(DodCheck("corpus_ingest_smoke", False, str(exc)))
 
     return report
 
