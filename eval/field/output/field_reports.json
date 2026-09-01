@@ -1,0 +1,426 @@
+[
+  {
+    "org_id": "org-07",
+    "day": 5,
+    "type": "cfi_released",
+    "invariant_id": "CFI-FIELD-007",
+    "susceptible": null,
+    "notes": ""
+  },
+  {
+    "org_id": "org-06",
+    "day": 7,
+    "type": "cfi_released",
+    "invariant_id": "CFI-FIELD-006",
+    "susceptible": null,
+    "notes": ""
+  },
+  {
+    "org_id": "org-01",
+    "day": 9,
+    "type": "recipient_evaluation",
+    "invariant_id": "CFI-FIELD-007",
+    "susceptible": true,
+    "notes": "recipient_evaluation"
+  },
+  {
+    "org_id": "org-04",
+    "day": 9,
+    "type": "recipient_evaluation",
+    "invariant_id": "CFI-FIELD-007",
+    "susceptible": true,
+    "notes": "recipient_evaluation"
+  },
+  {
+    "org_id": "org-01",
+    "day": 10,
+    "type": "recipient_evaluation",
+    "invariant_id": "CFI-FIELD-006",
+    "susceptible": true,
+    "notes": "recipient_evaluation"
+  },
+  {
+    "org_id": "org-02",
+    "day": 11,
+    "type": "cfi_released",
+    "invariant_id": "CFI-FIELD-002",
+    "susceptible": null,
+    "notes": ""
+  },
+  {
+    "org_id": "org-07",
+    "day": 12,
+    "type": "recipient_evaluation",
+    "invariant_id": "CFI-FIELD-006",
+    "susceptible": true,
+    "notes": "recipient_evaluation"
+  },
+  {
+    "org_id": "org-01",
+    "day": 13,
+    "type": "non_shareable",
+    "invariant_id": null,
+    "susceptible": null,
+    "notes": "release_gate_reject"
+  },
+  {
+    "org_id": "org-03",
+    "day": 13,
+    "type": "recipient_evaluation",
+    "invariant_id": "CFI-FIELD-006",
+    "susceptible": true,
+    "notes": "recipient_evaluation"
+  },
+  {
+    "org_id": "org-05",
+    "day": 13,
+    "type": "recipient_evaluation",
+    "invariant_id": "CFI-FIELD-006",
+    "susceptible": true,
+    "notes": "recipient_evaluation"
+  },
+  {
+    "org_id": "org-05",
+    "day": 13,
+    "type": "recipient_evaluation",
+    "invariant_id": "CFI-FIELD-007",
+    "susceptible": true,
+    "notes": "recipient_evaluation"
+  },
+  {
+    "org_id": "org-00",
+    "day": 14,
+    "type": "recipient_evaluation",
+    "invariant_id": "CFI-FIELD-007",
+    "susceptible": true,
+    "notes": "recipient_evaluation"
+  },
+  {
+    "org_id": "org-03",
+    "day": 14,
+    "type": "recipient_evaluation",
+    "invariant_id": "CFI-FIELD-007",
+    "susceptible": true,
+    "notes": "recipient_evaluation"
+  },
+  {
+    "org_id": "org-07",
+    "day": 14,
+    "type": "recipient_evaluation",
+    "invariant_id": "CFI-FIELD-002",
+    "susceptible": true,
+    "notes": "recipient_evaluation"
+  },
+  {
+    "org_id": "org-06",
+    "day": 15,
+    "type": "recipient_evaluation",
+    "invariant_id": "CFI-FIELD-007",
+    "susceptible": true,
+    "notes": "recipient_evaluation"
+  },
+  {
+    "org_id": "org-02",
+    "day": 16,
+    "type": "recipient_evaluation",
+    "invariant_id": "CFI-FIELD-006",
+    "susceptible": true,
+    "notes": "recipient_evaluation"
+  },
+  {
+    "org_id": "org-04",
+    "day": 16,
+    "type": "recipient_evaluation",
+    "invariant_id": "CFI-FIELD-002",
+    "susceptible": true,
+    "notes": "recipient_evaluation"
+  },
+  {
+    "org_id": "org-04",
+    "day": 17,
+    "type": "recipient_evaluation",
+    "invariant_id": "CFI-FIELD-006",
+    "susceptible": true,
+    "notes": "recipient_evaluation"
+  },
+  {
+    "org_id": "org-05",
+    "day": 17,
+    "type": "recipient_evaluation",
+    "invariant_id": "CFI-FIELD-002",
+    "susceptible": true,
+    "notes": "recipient_evaluation"
+  },
+  {
+    "org_id": "org-02",
+    "day": 18,
+    "type": "recipient_evaluation",
+    "invariant_id": "CFI-FIELD-007",
+    "susceptible": true,
+    "notes": "recipient_evaluation"
+  },
+  {
+    "org_id": "org-03",
+    "day": 18,
+    "type": "recipient_evaluation",
+    "invariant_id": "CFI-FIELD-002",
+    "susceptible": true,
+    "notes": "recipient_evaluation"
+  },
+  {
+    "org_id": "org-03",
+    "day": 19,
+    "type": "cfi_released",
+    "invariant_id": "CFI-FIELD-003",
+    "susceptible": null,
+    "notes": ""
+  },
+  {
+    "org_id": "org-05",
+    "day": 19,
+    "type": "cfi_released",
+    "invariant_id": "CFI-FIELD-005",
+    "susceptible": null,
+    "notes": ""
+  },
+  {
+    "org_id": "org-01",
+    "day": 20,
+    "type": "recipient_evaluation",
+    "invariant_id": "CFI-FIELD-003",
+    "susceptible": true,
+    "notes": "recipient_evaluation"
+  },
+  {
+    "org_id": "org-02",
+    "day": 20,
+    "type": "recipient_evaluation",
+    "invariant_id": "CFI-FIELD-005",
+    "susceptible": true,
+    "notes": "recipient_evaluation"
+  },
+  {
+    "org_id": "org-06",
+    "day": 20,
+    "type": "recipient_evaluation",
+    "invariant_id": "CFI-FIELD-005",
+    "susceptible": true,
+    "notes": "recipient_evaluation"
+  },
+  {
+    "org_id": "org-00",
+    "day": 21,
+    "type": "recipient_evaluation",
+    "invariant_id": "CFI-FIELD-006",
+    "susceptible": true,
+    "notes": "recipient_evaluation"
+  },
+  {
+    "org_id": "org-05",
+    "day": 21,
+    "type": "recipient_evaluation",
+    "invariant_id": "CFI-FIELD-003",
+    "susceptible": true,
+    "notes": "recipient_evaluation"
+  },
+  {
+    "org_id": "org-00",
+    "day": 22,
+    "type": "extraction_failed",
+    "invariant_id": null,
+    "susceptible": null,
+    "notes": "minimizer_rejected"
+  },
+  {
+    "org_id": "org-03",
+    "day": 22,
+    "type": "recipient_evaluation",
+    "invariant_id": "CFI-FIELD-005",
+    "susceptible": true,
+    "notes": "recipient_evaluation"
+  },
+  {
+    "org_id": "org-04",
+    "day": 22,
+    "type": "recipient_evaluation",
+    "invariant_id": "CFI-FIELD-005",
+    "susceptible": true,
+    "notes": "recipient_evaluation"
+  },
+  {
+    "org_id": "org-06",
+    "day": 22,
+    "type": "recipient_evaluation",
+    "invariant_id": "CFI-FIELD-002",
+    "susceptible": true,
+    "notes": "recipient_evaluation"
+  },
+  {
+    "org_id": "org-00",
+    "day": 23,
+    "type": "recipient_evaluation",
+    "invariant_id": "CFI-FIELD-002",
+    "susceptible": true,
+    "notes": "recipient_evaluation"
+  },
+  {
+    "org_id": "org-02",
+    "day": 23,
+    "type": "recipient_evaluation",
+    "invariant_id": "CFI-FIELD-003",
+    "susceptible": true,
+    "notes": "recipient_evaluation"
+  },
+  {
+    "org_id": "org-04",
+    "day": 23,
+    "type": "cfi_released",
+    "invariant_id": "CFI-FIELD-004",
+    "susceptible": null,
+    "notes": ""
+  },
+  {
+    "org_id": "org-07",
+    "day": 24,
+    "type": "recipient_evaluation",
+    "invariant_id": "CFI-FIELD-003",
+    "susceptible": true,
+    "notes": "recipient_evaluation"
+  },
+  {
+    "org_id": "org-00",
+    "day": 25,
+    "type": "recipient_evaluation",
+    "invariant_id": "CFI-FIELD-003",
+    "susceptible": true,
+    "notes": "recipient_evaluation"
+  },
+  {
+    "org_id": "org-01",
+    "day": 25,
+    "type": "recipient_evaluation",
+    "invariant_id": "CFI-FIELD-002",
+    "susceptible": true,
+    "notes": "recipient_evaluation"
+  },
+  {
+    "org_id": "org-01",
+    "day": 25,
+    "type": "recipient_evaluation",
+    "invariant_id": "CFI-FIELD-004",
+    "susceptible": true,
+    "notes": "recipient_evaluation"
+  },
+  {
+    "org_id": "org-07",
+    "day": 25,
+    "type": "recipient_evaluation",
+    "invariant_id": "CFI-FIELD-005",
+    "susceptible": true,
+    "notes": "recipient_evaluation"
+  },
+  {
+    "org_id": "org-03",
+    "day": 27,
+    "type": "recipient_evaluation",
+    "invariant_id": "CFI-FIELD-004",
+    "susceptible": true,
+    "notes": "recipient_evaluation"
+  },
+  {
+    "org_id": "org-06",
+    "day": 28,
+    "type": "recipient_evaluation",
+    "invariant_id": "CFI-FIELD-004",
+    "susceptible": true,
+    "notes": "recipient_evaluation"
+  },
+  {
+    "org_id": "org-01",
+    "day": 29,
+    "type": "recipient_evaluation",
+    "invariant_id": "CFI-FIELD-005",
+    "susceptible": true,
+    "notes": "recipient_evaluation"
+  },
+  {
+    "org_id": "org-02",
+    "day": 30,
+    "type": "recipient_evaluation",
+    "invariant_id": "CFI-FIELD-004",
+    "susceptible": true,
+    "notes": "recipient_evaluation"
+  },
+  {
+    "org_id": "org-04",
+    "day": 30,
+    "type": "recipient_evaluation",
+    "invariant_id": "CFI-FIELD-003",
+    "susceptible": true,
+    "notes": "recipient_evaluation"
+  },
+  {
+    "org_id": "org-07",
+    "day": 32,
+    "type": "recipient_evaluation",
+    "invariant_id": "CFI-FIELD-004",
+    "susceptible": true,
+    "notes": "recipient_evaluation"
+  },
+  {
+    "org_id": "org-00",
+    "day": 33,
+    "type": "recipient_evaluation",
+    "invariant_id": "CFI-FIELD-005",
+    "susceptible": true,
+    "notes": "recipient_evaluation"
+  },
+  {
+    "org_id": "org-06",
+    "day": 33,
+    "type": "recipient_evaluation",
+    "invariant_id": "CFI-FIELD-003",
+    "susceptible": true,
+    "notes": "recipient_evaluation"
+  },
+  {
+    "org_id": "org-00",
+    "day": 34,
+    "type": "recipient_evaluation",
+    "invariant_id": "CFI-FIELD-004",
+    "susceptible": true,
+    "notes": "recipient_evaluation"
+  },
+  {
+    "org_id": "org-05",
+    "day": 37,
+    "type": "recipient_evaluation",
+    "invariant_id": "CFI-FIELD-004",
+    "susceptible": true,
+    "notes": "recipient_evaluation"
+  },
+  {
+    "org_id": "org-02",
+    "day": 49,
+    "type": "production_incident",
+    "invariant_id": null,
+    "susceptible": null,
+    "notes": ""
+  },
+  {
+    "org_id": "org-01",
+    "day": 62,
+    "type": "production_incident",
+    "invariant_id": null,
+    "susceptible": null,
+    "notes": ""
+  },
+  {
+    "org_id": "org-04",
+    "day": 167,
+    "type": "production_incident",
+    "invariant_id": null,
+    "susceptible": null,
+    "notes": ""
+  }
+]

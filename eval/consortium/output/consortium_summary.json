@@ -1,0 +1,14 @@
+{
+  "seed": 421337,
+  "tenants_requested": 12,
+  "released": true,
+  "participants": 12,
+  "noisy_prevalence": 1.0,
+  "rejected_count": 0,
+  "reason": "",
+  "assumptions": [
+    "Aggregate prevalence is cohort- and specification-dependent.",
+    "DP protects tenant influence; not poorly generalized CFIs.",
+    "Secure aggregation assumes fewer than threshold servers collude."
+  ]
+}

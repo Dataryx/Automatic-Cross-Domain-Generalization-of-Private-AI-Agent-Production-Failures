@@ -1,0 +1,63 @@
+{
+  "adversary_count": 9,
+  "results": [
+    {
+      "adversary": "honest_but_curious_registry",
+      "success_rate": 0.0,
+      "metric": "source_domain_inference",
+      "notes": ""
+    },
+    {
+      "adversary": "malicious_recipient",
+      "success_rate": 0.0,
+      "metric": "schema_probe",
+      "notes": ""
+    },
+    {
+      "adversary": "malicious_contributor",
+      "success_rate": 0.0,
+      "metric": "payload_scan",
+      "notes": ""
+    },
+    {
+      "adversary": "sybil_organizations",
+      "success_rate": 1.0,
+      "metric": "contribution_cap",
+      "notes": ""
+    },
+    {
+      "adversary": "collusion",
+      "success_rate": 1.0,
+      "metric": "share_recovery",
+      "notes": ""
+    },
+    {
+      "adversary": "external_observer",
+      "success_rate": 0.0,
+      "metric": "timing_correlation",
+      "notes": ""
+    },
+    {
+      "adversary": "model_provider",
+      "success_rate": 1.0,
+      "metric": "tool_overlap",
+      "notes": ""
+    },
+    {
+      "adversary": "release_gate_attribution",
+      "success_rate": 0.0,
+      "metric": "source_attribution",
+      "notes": "Heuristic adversary; not a privacy guarantee."
+    },
+    {
+      "adversary": "release_gate_reconstruction",
+      "success_rate": 0.0,
+      "metric": "reconstruction",
+      "notes": "Heuristic adversary; not a privacy guarantee."
+    }
+  ],
+  "assumptions": [
+    "Heuristic adversaries; not a formal privacy audit.",
+    "Canonical CFI should score low on attribution/reconstruction."
+  ]
+}

@@ -1,8 +1,13 @@
 """Deployable registry service entrypoint."""
 
+import os
+
 import uvicorn
 
 from cfi_registry import create_app
+from cfi_registry.config import ServiceConfig, create_registry_store
 
 if __name__ == "__main__":
-    uvicorn.run(create_app(), host="0.0.0.0", port=8000)
+    config = ServiceConfig.from_env()
+    store = create_registry_store(config)
+    uvicorn.run(create_app(store), host=config.host, port=config.port)

@@ -1,0 +1,92 @@
+{
+  "all_passed": true,
+  "passed": 17,
+  "total": 17,
+  "checks": [
+    {
+      "name": "cfi_schema_exists",
+      "passed": true,
+      "detail": "C:\\Indominus\\Project\\Automatic Cross-Domain Generalization of Private AI-Agent Production Failures\\schemas\\cfi\\1.0\\schema.json"
+    },
+    {
+      "name": "doc_architecture",
+      "passed": true,
+      "detail": "C:\\Indominus\\Project\\Automatic Cross-Domain Generalization of Private AI-Agent Production Failures\\docs\\architecture.md"
+    },
+    {
+      "name": "doc_threat_model",
+      "passed": true,
+      "detail": "C:\\Indominus\\Project\\Automatic Cross-Domain Generalization of Private AI-Agent Production Failures\\docs\\threat_model.md"
+    },
+    {
+      "name": "doc_governance",
+      "passed": true,
+      "detail": "C:\\Indominus\\Project\\Automatic Cross-Domain Generalization of Private AI-Agent Production Failures\\docs\\governance.md"
+    },
+    {
+      "name": "doc_release_gate_checklist",
+      "passed": true,
+      "detail": "C:\\Indominus\\Project\\Automatic Cross-Domain Generalization of Private AI-Agent Production Failures\\docs\\release_gate_checklist.md"
+    },
+    {
+      "name": "doc_limitations",
+      "passed": true,
+      "detail": "C:\\Indominus\\Project\\Automatic Cross-Domain Generalization of Private AI-Agent Production Failures\\docs\\limitations.md"
+    },
+    {
+      "name": "doc_deviations",
+      "passed": true,
+      "detail": "C:\\Indominus\\Project\\Automatic Cross-Domain Generalization of Private AI-Agent Production Failures\\docs\\deviations.md"
+    },
+    {
+      "name": "appendix_a_validates",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "cross_domain_compiles",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "twelve_baselines_defined",
+      "passed": true,
+      "detail": "count=12"
+    },
+    {
+      "name": "seven_redteam_adversaries",
+      "passed": true,
+      "detail": "count=7"
+    },
+    {
+      "name": "example_procurement",
+      "passed": true,
+      "detail": "C:\\Indominus\\Project\\Automatic Cross-Domain Generalization of Private AI-Agent Production Failures\\examples\\retail_to_procurement\\mappings.py"
+    },
+    {
+      "name": "example_healthcare",
+      "passed": true,
+      "detail": "C:\\Indominus\\Project\\Automatic Cross-Domain Generalization of Private AI-Agent Production Failures\\examples\\retail_to_healthcare\\mappings.py"
+    },
+    {
+      "name": "example_data_operations",
+      "passed": true,
+      "detail": "C:\\Indominus\\Project\\Automatic Cross-Domain Generalization of Private AI-Agent Production Failures\\examples\\retail_to_dataops\\mappings.py"
+    },
+    {
+      "name": "sim_script",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "consortium_pilot",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "field_pilot",
+      "passed": true,
+      "detail": ""
+    }
+  ]
+}

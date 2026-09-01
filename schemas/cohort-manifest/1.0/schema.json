@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cfi-fed.org/schemas/cohort-manifest/1.0",
+  "title": "Cohort Manifest",
+  "type": "object",
+  "required": [
+    "schema",
+    "invariant_id",
+    "eligible_compiler_versions",
+    "measurement_spec",
+    "trial_count",
+    "clipping_f",
+    "clipping_n",
+    "privacy_budget_epsilon",
+    "aggregation_epoch",
+    "expiration",
+    "minimum_cohort_k"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema": { "const": "cohort-manifest/1.0" },
+    "invariant_id": { "type": "string" },
+    "eligible_compiler_versions": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string" }
+    },
+    "measurement_spec": {
+      "type": "object",
+      "required": [
+        "spec_id", "invariant_id", "simulated_user", "tool_behavior", "judge",
+        "evidence_bar", "trial_count", "aggregation_rule", "compiler_version", "assumptions"
+      ],
+      "properties": {
+        "schema": { "const": "measurement-spec/1.0" },
+        "spec_id": { "type": "string" },
+        "invariant_id": { "type": "string" },
+        "simulated_user": { "type": "string" },
+        "tool_behavior": { "type": "string" },
+        "judge": { "type": "string" },
+        "evidence_bar": { "type": "string" },
+        "trial_count": { "type": "integer", "minimum": 1 },
+        "aggregation_rule": { "type": "string" },
+        "compiler_version": { "type": "string" },
+        "assumptions": { "type": "array", "items": { "type": "string" } },
+        "signature": { "type": ["string", "null"] }
+      }
+    },
+    "trial_count": { "type": "integer", "minimum": 1 },
+    "clipping_f": { "type": "integer", "minimum": 1 },
+    "clipping_n": { "type": "integer", "minimum": 1 },
+    "privacy_budget_epsilon": { "type": "number", "exclusiveMinimum": 0 },
+    "aggregation_epoch": { "type": "string" },
+    "expiration": { "type": "string" },
+    "minimum_cohort_k": { "type": "integer", "minimum": 1 },
+    "signature": { "type": ["string", "null"] },
+    "frozen": { "type": "boolean" }
+  }
+}

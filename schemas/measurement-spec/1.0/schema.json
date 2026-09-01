@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cfi-fed.org/schemas/measurement-spec/1.0",
+  "title": "Measurement Specification",
+  "type": "object",
+  "required": [
+    "schema",
+    "spec_id",
+    "invariant_id",
+    "simulated_user",
+    "tool_behavior",
+    "judge",
+    "evidence_bar",
+    "trial_count",
+    "aggregation_rule",
+    "compiler_version",
+    "assumptions"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema": { "const": "measurement-spec/1.0" },
+    "spec_id": { "type": "string" },
+    "invariant_id": { "type": "string" },
+    "simulated_user": { "type": "string" },
+    "tool_behavior": { "type": "string" },
+    "judge": { "type": "string" },
+    "evidence_bar": { "type": "string" },
+    "trial_count": { "type": "integer", "minimum": 1 },
+    "aggregation_rule": { "type": "string" },
+    "compiler_version": { "type": "string" },
+    "assumptions": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string" }
+    },
+    "signature": { "type": ["string", "null"] }
+  }
+}

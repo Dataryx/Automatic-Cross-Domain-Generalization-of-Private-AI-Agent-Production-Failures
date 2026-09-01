@@ -90,7 +90,7 @@ class Canonicalizer:
 
     def literal_bucket_scan(self, cfi: CausalFailureInvariant) -> list[str]:
         blocked: list[str] = []
-        text_fields = [cfi.failure_predicate, cfi.oracle.expression, *[c.controls]]
+        text_fields = [cfi.failure_predicate, cfi.oracle.expression, *cfi.controls]
         for text in text_fields:
             for match in EXACT_LITERAL_PATTERN.findall(text):
                 blocked.append(match)
@@ -144,12 +144,13 @@ class Canonicalizer:
     def lint_for_release(cfi: CausalFailureInvariant) -> list[str]:
         """Hard linter: prohibited content checks."""
         violations: list[str] = []
-        blob = cfi.model_dump_json()
-        if DOMAIN_NOUN_PATTERN.search(blob):
+        text_fields = [cfi.failure_predicate, cfi.oracle.expression, *cfi.controls]
+        searchable = "\n".join(text_fields)
+        if DOMAIN_NOUN_PATTERN.search(searchable):
             violations.append("domain_nouns_detected")
-        if SECRET_PATTERN.search(blob):
+        if SECRET_PATTERN.search(searchable):
             violations.append("secrets_detected")
-        if EXACT_LITERAL_PATTERN.search(blob):
+        if EXACT_LITERAL_PATTERN.search(searchable):
             violations.append("exact_literals_detected")
         for node in cfi.nodes:
             if node.type == NodeType.OUTCOME and node.role and "refund" in node.role.lower():

@@ -65,3 +65,30 @@ Re-running `sim/run_cfi_sim.py` recreates all CSVs and figures from fixed seed 4
 - [Release gate checklist](docs/release_gate_checklist.md)
 - [Limitations](docs/limitations.md)
 - [Known deviations from paper](docs/deviations.md)
+
+## Schemas (`schemas/`)
+
+- `cfi/1.0` — Causal Failure Invariant
+- `incident-bundle/1.0` — local contributor incident (never egress)
+- `measurement-spec/1.0` — signed measurement specification
+- `cohort-manifest/1.0` — frozen cohort configuration
+- `share-envelope/1.0` — clipped secret-share wire format
+
+## Recent additions
+
+- PostgreSQL/SQLite registry persistence (`cfi_registry.db`)
+- Lifecycle API: `GET/POST /cfi/{id}/lifecycle`
+- Contributor pipeline (`cfi_contributor.pipeline`) + replay provider
+- Federation protocol helpers (`cfi_federation.protocol`)
+- Optional ZK attestation for deterministic circuits (`cfi_federation.zk_attestation`)
+- Phase 4 e2e integration tests (34 passing)
+- Mitigation loop with regression promotion (`cfi_recipient.mitigation`)
+- Separate metric families reporter (`cfi_recipient.metrics`)
+
+## Environment variables
+
+| Variable | Default | Purpose |
+|----------|---------|---------|
+| `CFI_DATABASE_URL` | `sqlite:///./cfi_registry.db` | Registry persistence |
+| `CFI_MINIMUM_COHORT_K` | `10` | Consortium release threshold |
+| `CFI_TOTAL_EPSILON` | `10.0` | Privacy budget for aggregator |

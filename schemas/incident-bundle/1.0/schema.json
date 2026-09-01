@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cfi-fed.org/schemas/incident-bundle/1.0",
+  "title": "Local Incident Bundle",
+  "description": "Contributor-local only; must never cross trust boundary.",
+  "type": "object",
+  "required": [
+    "schema",
+    "incident_id",
+    "initiating_request_digest",
+    "trace",
+    "policy_digest",
+    "initial_state_digest",
+    "terminal_state_digest",
+    "expected_outcome",
+    "observed_outcome",
+    "evidence_store_ref"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema": { "const": "incident-bundle/1.0" },
+    "incident_id": { "type": "string" },
+    "initiating_request_digest": { "type": "string" },
+    "trace": {
+      "type": "object",
+      "required": ["events"],
+      "properties": {
+        "events": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["event_type", "actor"],
+            "properties": {
+              "event_type": {
+                "enum": [
+                  "observation", "policy_lookup", "decision", "tool_call",
+                  "approval", "action", "state_mutation", "compensation", "termination"
+                ]
+              },
+              "actor": { "type": "string" },
+              "inputs": { "type": "object" },
+              "outputs": { "type": "object" },
+              "state_before": { "type": "string" },
+              "state_after": { "type": "string" },
+              "artifact_digest": { "type": "string" },
+              "sequence_index": { "type": "integer" }
+            }
+          }
+        }
+      }
+    },
+    "policy_digest": { "type": "string" },
+    "initial_state_digest": { "type": "string" },
+    "terminal_state_digest": { "type": "string" },
+    "expected_outcome": { "type": "string" },
+    "observed_outcome": { "type": "string" },
+    "severity": { "type": "number", "minimum": 0, "maximum": 1 },
+    "evidence_store_ref": { "type": "string" },
+    "metadata": { "type": "object" }
+  }
+}

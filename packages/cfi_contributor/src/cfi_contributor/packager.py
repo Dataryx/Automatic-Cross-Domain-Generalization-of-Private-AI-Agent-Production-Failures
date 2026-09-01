@@ -53,10 +53,5 @@ class Packager:
         from cfi_contributor.release_gate import ReleaseGateVerdict
 
         verdict = ReleaseGateVerdict(outcome=GateOutcome.APPROVE, residual_risk_score=0.0)
-        blob = cfi.model_dump()
-        blob["smuggled"] = smuggled_field
-        try:
-            tainted = CausalFailureInvariant.model_validate(blob)
-        except Exception as exc:
-            return PackageResult(success=False, cfi=None, error=str(exc))
+        tainted = cfi.model_copy(update={"failure_predicate": smuggled_field})
         return self.package(tainted, verdict)

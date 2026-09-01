@@ -8,6 +8,7 @@ from typing import Any
 
 from cfi_core.canonicalize import Canonicalizer
 from cfi_core.models import CausalFailureInvariant, DisclosureTier
+from cfi_contributor.adversaries import ReleaseGateAdversaries
 
 
 class GateOutcome(str, Enum):
@@ -64,8 +65,15 @@ class ReleaseGate:
         cfi: CausalFailureInvariant,
         checklist_answers: dict[int, bool],
         adversary_scores: dict[str, float] | None = None,
+        source_domain: str | None = None,
     ) -> ReleaseGateVerdict:
-        adversary_scores = adversary_scores or {}
+        if adversary_scores is None:
+            report = ReleaseGateAdversaries().score_cfi(cfi, source_domain=source_domain)
+            adversary_scores = {
+                "source_attribution": report.source_attribution,
+                "reconstruction": report.reconstruction,
+                "linkability": report.linkability,
+            }
         checklist = [
             ChecklistItem(id=i, question=q, answer=checklist_answers.get(i))
             for i, q in APPENDIX_C_CHECKLIST

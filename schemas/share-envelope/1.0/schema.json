@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cfi-fed.org/schemas/share-envelope/1.0",
+  "title": "Clipped Secret Share Envelope",
+  "type": "object",
+  "required": ["schema", "tenant_id_hash", "epoch", "shares_f", "shares_n", "coverage_share"],
+  "additionalProperties": false,
+  "properties": {
+    "schema": { "const": "share-envelope/1.0" },
+    "tenant_id_hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "epoch": { "type": "string" },
+    "shares_f": {
+      "type": "array",
+      "items": {
+        "type": "array",
+        "minItems": 2,
+        "maxItems": 2,
+        "items": { "type": "integer" }
+      }
+    },
+    "shares_n": {
+      "type": "array",
+      "items": {
+        "type": "array",
+        "minItems": 2,
+        "maxItems": 2,
+        "items": { "type": "integer" }
+      }
+    },
+    "coverage_share": { "type": "number", "minimum": 0, "maximum": 1 },
+    "measurement_spec_id": { "type": "string" }
+  }
+}

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 
 @dataclass
@@ -25,10 +25,7 @@ class PrivacyAccountant:
         self._total = total_epsilon
         self._spent = 0.0
         self._min_slice = min_cohort_for_slice
-        self._history: list[BudgetEntry] = field(default_factory=list)  # type: ignore[misc]
-
-    def __post_init__(self) -> None:
-        self._history = []
+        self._history: list[BudgetEntry] = []
 
     def request_release(self, epsilon: float, cohort_size: int, cohort_id: str, epoch: str) -> AccountantVerdict:
         if cohort_size < self._min_slice:

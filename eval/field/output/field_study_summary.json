@@ -1,0 +1,19 @@
+{
+  "seed": 421337,
+  "duration_days": 180,
+  "org_count": 8,
+  "total_reports": 53,
+  "cfi_releases": 6,
+  "failed_extractions": 1,
+  "non_shareable": 1,
+  "production_incidents": 3,
+  "susceptible_before_incident": 3,
+  "prevention_rate": 1.0,
+  "lead_time_median_days": 37.0,
+  "assumptions": [
+    "Compressed simulation; not a live six-month field deployment.",
+    "Susceptibility uses sandbox stub agents, not production systems.",
+    "Anti-survivorship requires reporting failed extractions and non-shareable incidents.",
+    "Prevention attribution is correlational, not causal proof."
+  ]
+}
