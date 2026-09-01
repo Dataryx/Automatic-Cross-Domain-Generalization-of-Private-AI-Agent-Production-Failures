@@ -76,14 +76,34 @@ Re-running `sim/run_cfi_sim.py` recreates all CSVs and figures from fixed seed 4
 
 ## Recent additions
 
+- Phase 5: consortium coordinator (`cfi_federation.consortium`) + `cfi-aggregate consortium`
+- Phase 6: prospective field-study harness (`eval/field/`) + `cfi-recipient mitigate`
+- Release-gate adversaries auto-scored in `ReleaseGate.run()`
+- CI workflow (`.github/workflows/ci.yml`) + `docker-compose.yml` for services
+- `eval/run_all.py` — runs pytest, DoD checks, and all pilots
 - PostgreSQL/SQLite registry persistence (`cfi_registry.db`)
 - Lifecycle API: `GET/POST /cfi/{id}/lifecycle`
 - Contributor pipeline (`cfi_contributor.pipeline`) + replay provider
 - Federation protocol helpers (`cfi_federation.protocol`)
 - Optional ZK attestation for deterministic circuits (`cfi_federation.zk_attestation`)
-- Phase 4 e2e integration tests (34 passing)
 - Mitigation loop with regression promotion (`cfi_recipient.mitigation`)
 - Separate metric families reporter (`cfi_recipient.metrics`)
+
+## Evaluation harnesses
+
+```bash
+python eval/run_all.py              # full suite
+python eval/verify_dod.py           # Section 15 checks
+python eval/consortium/run_consortium_pilot.py
+python eval/field/run_prospective_pilot.py
+python eval/production/harness.py
+```
+
+## Docker
+
+```bash
+docker compose up --build
+```
 
 ## Environment variables
 

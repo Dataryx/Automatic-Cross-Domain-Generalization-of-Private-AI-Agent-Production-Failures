@@ -8,13 +8,17 @@ from enum import Enum
 from pathlib import Path
 from typing import Any, Callable
 
+from cfi_contributor.packager import Packager
+from cfi_contributor.release_gate import GateOutcome, ReleaseGateVerdict
 from cfi_contributor.adversaries import ReleaseGateAdversaries
+from cfi_core.canonicalize import Canonicalizer
 from cfi_core.examples import build_exception_precedence_cfi
 from cfi_core.signing import KeyPair, Signer
-from cfi_governance.field_study import evaluate_mitigation_in_field, run_prospective_study, FieldStudyConfig
+from cfi_governance.field_study import FieldStudyConfig, evaluate_mitigation_in_field, run_prospective_study
 from cfi_recipient.compiler import fail_closed_compile
 from cfi_recipient.metrics import build_report
 from cfi_recipient.ontology import build_recipient_context
+from cfi_recipient.sandbox import Sandbox, evaluate_case
 
 
 class ResearchQuestion(str, Enum):
@@ -84,6 +88,102 @@ def _run_cfi_full(config: dict[str, Any]) -> MetricRecord:
     )
 
 
+def _run_cfi_no_negative_controls(config: dict[str, Any]) -> MetricRecord:
+    cfi = build_exception_precedence_cfi()
+    ctx = build_recipient_context(config.get("domain", "procurement"), cfi.required_mapping_roles)
+    result = fail_closed_compile(cfi, ctx, manifest=None, include_negative_controls=False)
+    nc_count = sum(1 for c in result.cases if c.is_negative_control)
+    coverage = 0.0 if result.abstained else (1.0 if nc_count == 0 else 0.5)
+    return MetricRecord(
+        dimension="compilation",
+        metric="coverage_without_negative_controls",
+        value=coverage,
+        ci_low=coverage,
+        ci_high=coverage,
+        measurement_spec_id=config["spec_id"],
+        cohort_id=config["cohort_id"],
+        assumptions=["Ablation: compiled cases omit negative controls."],
+    )
+
+
+def _run_cfi_no_canonicalization(config: dict[str, Any]) -> MetricRecord:
+    cfi = build_exception_precedence_cfi()
+    tainted = cfi.model_copy(update={"failure_predicate": "exception_true AND action_committed AND amount=$500"})
+    violations = Canonicalizer.lint_for_release(tainted)
+    pack_ok = Packager(KeyPair.generate("ablation")).package(
+        tainted,
+        ReleaseGateVerdict(outcome=GateOutcome.APPROVE, residual_risk_score=0.0),
+    ).success
+    coverage = 0.0 if violations or not pack_ok else 1.0
+    return MetricRecord(
+        dimension="compilation",
+        metric="coverage",
+        value=coverage,
+        ci_low=coverage,
+        ci_high=coverage,
+        measurement_spec_id=config["spec_id"],
+        cohort_id=config["cohort_id"],
+        assumptions=["Ablation: non-canonical literals should fail lint/packager."],
+    )
+
+
+def _run_cfi_no_minimization(config: dict[str, Any]) -> MetricRecord:
+    cfi = build_exception_precedence_cfi()
+    extra_nodes = list(cfi.nodes) + [cfi.nodes[0].model_copy(update={"id": "extra0", "role": "extra_role"})]
+    bloated = cfi.model_copy(update={"nodes": extra_nodes})
+    adv = ReleaseGateAdversaries().score_cfi(bloated)
+    coverage = 1.0 if adv.linkability < 0.5 else 0.6
+    return MetricRecord(
+        dimension="compilation",
+        metric="coverage",
+        value=coverage,
+        ci_low=max(0.0, coverage - 0.1),
+        ci_high=min(1.0, coverage + 0.1),
+        measurement_spec_id=config["spec_id"],
+        cohort_id=config["cohort_id"],
+        assumptions=["Ablation: unminimized graph raises linkability risk."],
+    )
+
+
+def _run_local_incident_regression(config: dict[str, Any]) -> MetricRecord:
+    cfi = build_exception_precedence_cfi()
+    ctx = build_recipient_context(config.get("domain", "procurement"), cfi.required_mapping_roles)
+    result = fail_closed_compile(cfi, ctx, manifest=None)
+    if result.abstained:
+        return MetricRecord(
+            dimension="reliability",
+            metric="susceptibility_rate",
+            value=0.0,
+            ci_low=0.0,
+            ci_high=0.0,
+            measurement_spec_id=config["spec_id"],
+            cohort_id=config["cohort_id"],
+            assumptions=["Compilation abstained."],
+        )
+
+    def failing_agent(sb: Sandbox, trace) -> None:
+        trace.state["review_complete"] = False
+        sb.execute_tool(trace, "stub_po", {})
+
+    positives = [c for c in result.cases if not c.is_negative_control]
+    failures = sum(
+        1
+        for case in positives
+        if evaluate_case(case, cfi.oracle.expression, failing_agent).verdict.value == "fail"
+    )
+    rate = failures / max(len(positives), 1)
+    return MetricRecord(
+        dimension="reliability",
+        metric="susceptibility_rate",
+        value=rate,
+        ci_low=max(0.0, rate - 0.1),
+        ci_high=min(1.0, rate + 0.1),
+        measurement_spec_id=config["spec_id"],
+        cohort_id=config["cohort_id"],
+        assumptions=["Local regression on compiled positive cases only."],
+    )
+
+
 def _run_stub(name: str, config: dict[str, Any], coverage: float) -> MetricRecord:
     return MetricRecord(
         dimension="compilation",
@@ -129,16 +229,16 @@ def _run_privacy_rq4(config: dict[str, Any]) -> MetricRecord:
 
 
 BASELINE_RUNNERS: dict[str, BaselineRunner] = {
-    "cfi_no_minimization": _run_cfi_full,
-    "cfi_no_canonicalization": _run_cfi_full,
-    "cfi_no_negative_controls": _run_cfi_full,
+    "cfi_no_minimization": _run_cfi_no_minimization,
+    "cfi_no_canonicalization": _run_cfi_no_canonicalization,
+    "cfi_no_negative_controls": _run_cfi_no_negative_controls,
+    "local_incident_regression": _run_local_incident_regression,
     "manual_metamorphic": lambda c: _run_stub("manual_metamorphic", c, 0.8),
     "policy_only_generation": lambda c: _run_stub("policy_only_generation", c, 0.6),
     "llm_paraphrase": lambda c: _run_stub("llm_paraphrase", c, 0.0),
     "raw_incident_replay": lambda c: _run_stub("raw_incident_replay", c, 1.0),
     "pii_redacted_narrative": lambda c: _run_stub("pii_redacted_narrative", c, 0.7),
     "taxonomy_label_guidance": lambda c: _run_stub("taxonomy_label_guidance", c, 0.5),
-    "local_incident_regression": lambda c: _run_stub("local_incident_regression", c, 0.9),
     "embedding_retrieval": lambda c: _run_stub("embedding_retrieval", c, 0.4),
     "centralized_pooled_upper_bound": lambda c: _run_stub("centralized_pooled_upper_bound", c, 1.0),
 }

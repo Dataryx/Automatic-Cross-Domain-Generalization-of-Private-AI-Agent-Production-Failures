@@ -96,6 +96,7 @@ def fail_closed_compile(
     manifest: CohortManifest | None,
     case_budget: int = 1,
     seed: int = 0,
+    include_negative_controls: bool = True,
 ) -> CompilationResult:
     """Algorithm 3."""
     if invariant.signature:
@@ -143,14 +144,15 @@ def fail_closed_compile(
         return CompilationResult(abstained=True, abstention_reason="validation_failed")
 
     # Negative controls — break exactly one invariant at a time
-    for control in invariant.controls[:3]:
-        nc = CompiledCase(
-            case_id=f"nc-{control}",
-            mapping=valid[0],
-            initial_state={"sandbox_id": "sandbox-nc", "domain": context.domain},
-            is_negative_control=True,
-            broken_invariant=control,
-        )
-        cases.append(nc)
+    if include_negative_controls:
+        for control in invariant.controls[:3]:
+            nc = CompiledCase(
+                case_id=f"nc-{control}",
+                mapping=valid[0],
+                initial_state={"sandbox_id": "sandbox-nc", "domain": context.domain},
+                is_negative_control=True,
+                broken_invariant=control,
+            )
+            cases.append(nc)
 
     return CompilationResult(cases=cases)

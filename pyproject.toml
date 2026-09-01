@@ -78,6 +78,7 @@ pythonpath = [
     "packages/cfi_governance/src",
     "packages/cfi_cli/src",
     "eval",
+    "services",
     "examples/retail_to_procurement",
     "examples/retail_to_healthcare",
     "examples/retail_to_dataops",

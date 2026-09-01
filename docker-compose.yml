@@ -1,0 +1,33 @@
+name: cfi-fed
+
+services:
+  registry:
+    build: .
+    command: python services/registry/main.py
+    environment:
+      CFI_DATABASE_URL: sqlite:////data/cfi_registry.db
+      CFI_HOST: 0.0.0.0
+      CFI_PORT: 8000
+    ports:
+      - "8000:8000"
+    volumes:
+      - registry_data:/data
+
+  coordinator:
+    build: .
+    command: uvicorn services.coordinator.main:app --host 0.0.0.0 --port 8001
+    ports:
+      - "8001:8001"
+
+  aggregator:
+    build: .
+    command: python services/aggregator/main.py
+    environment:
+      CFI_TOTAL_EPSILON: "10.0"
+      CFI_HOST: 0.0.0.0
+      CFI_PORT: 8002
+    ports:
+      - "8002:8002"
+
+volumes:
+  registry_data:
