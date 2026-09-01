@@ -1,6 +1,6 @@
 # CFI-Fed developer commands
 
-.PHONY: install test sim dod golden tau stack stack-postgres health
+.PHONY: install test sim dod golden tau stack stack-postgres health live-replay mypy figures field-study eval-all
 
 install:
 	pip install -e ".[dev]"
@@ -29,6 +29,12 @@ health:
 
 live-replay:
 	python scripts/live_replay_smoke.py
+
+figures:
+	python scripts/verify_figures.py
+
+field-study:
+	python scripts/verify_field_study.py
 
 mypy:
 	mypy packages/cfi_core/src packages/cfi_contributor/src packages/cfi_registry/src packages/cfi_recipient/src packages/cfi_federation/src packages/cfi_governance/src packages/cfi_cli/src

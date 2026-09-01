@@ -38,6 +38,15 @@ python services/replay_mock/main.py
 | `CFI_MINIMUM_COHORT_K` | `10` | Consortium release threshold |
 | `CFI_TOTAL_EPSILON` | `10.0` | Aggregator privacy budget |
 | `CFI_HOST` / `CFI_PORT` | per service | Bind address |
+| `CFI_REPLAY_MOCK_URL` | `http://127.0.0.1:8010/replay` | Mock replay profile |
+| `CFI_AGENTRX_URL` | `http://127.0.0.1:8020/v1/replay` | AgentRx sandbox endpoint |
+| `CFI_CAUSALFLOW_URL` | `http://127.0.0.1:8021/v1/counterfactual` | CausalFlow sandbox endpoint |
+
+```bash
+cfi-contribute replay-profiles
+cfi-contribute extract --output cfi.json --replay-profile mock
+cfi-contribute extract --output cfi.json --replay-url http://127.0.0.1:8010/replay
+```
 
 ## Production checklist
 

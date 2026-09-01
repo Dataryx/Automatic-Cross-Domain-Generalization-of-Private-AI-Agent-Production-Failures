@@ -10,6 +10,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 SIM = ROOT / "sim" / "run_cfi_sim.py"
 OUT = ROOT / "sim" / "output" / "q1_lodo_summary.csv"
+VERIFY_FIGURES = ROOT / "scripts" / "verify_figures.py"
 
 
 def main() -> int:
@@ -23,6 +24,9 @@ def main() -> int:
         result = subprocess.run([sys.executable, str(SIM)], cwd=ROOT)
         if result.returncode != 0:
             return result.returncode
+    fig = subprocess.run([sys.executable, str(VERIFY_FIGURES)], cwd=ROOT)
+    if fig.returncode != 0:
+        return fig.returncode
     print(f"Sim verification OK: {OUT}")
     return 0
 

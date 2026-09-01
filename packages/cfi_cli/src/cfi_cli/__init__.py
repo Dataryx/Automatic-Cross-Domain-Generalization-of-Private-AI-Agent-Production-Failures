@@ -66,13 +66,16 @@ def extract_from_incident(
     output: str = typer.Option(..., help="Output path for signed CFI JSON"),
     seed: int = typer.Option(421337),
     replay_url: str | None = typer.Option(None, help="HTTP replay endpoint for live agent"),
+    replay_profile: str | None = typer.Option(
+        None, help="Named replay profile: mock, agentrx, or causalflow"
+    ),
 ) -> None:
     """Run contributor pipeline on synthetic incident evidence."""
     import json
     from pathlib import Path
 
     from cfi_contributor.pipeline import ContributorPipeline
-    from cfi_contributor.replay import HttpAgentReplayProvider, StructuralReplayProvider
+    from cfi_contributor.replay_profiles import profile_assumptions, resolve_replay_provider
     from cfi_core.models import EventType
     from cfi_core.signing import KeyPair
     from cfi_core.wire import Incident, MinimizationConfig, TraceEvent, TypedTrace
@@ -93,7 +96,13 @@ def extract_from_incident(
     minimization = MinimizationConfig(
         eta=0.9, delta=0.05, lambda_nodes=1.0, lambda_edges=1.0, lambda_literals=1.0, lambda_replay=1.0
     )
-    replay = HttpAgentReplayProvider(replay_url) if replay_url else StructuralReplayProvider()
+    try:
+        replay = resolve_replay_provider(replay_url=replay_url, replay_profile=replay_profile)
+    except ValueError as exc:
+        typer.echo(str(exc), err=True)
+        raise typer.Exit(1) from exc
+    for note in profile_assumptions(replay_profile):
+        typer.echo(f"Assumption: {note}")
     report = ContributorPipeline(KeyPair.generate("contributor"), replay=replay, seed=seed).extract_from_incident(
         incident, raw, minimization, {i: True for i in range(1, 13)}
     )
@@ -104,6 +113,16 @@ def extract_from_incident(
     if report.minimization and report.minimization.log:
         typer.echo(f"Minimization log entries: {len(report.minimization.log)}")
     typer.echo(f"Extracted signed CFI written to {output}")
+
+
+@contribute_app.command("replay-profiles")
+def list_replay_profiles() -> None:
+    """List production replay profiles and environment variables."""
+    from cfi_contributor.replay_profiles import REPLAY_PROFILES
+
+    for name, spec in sorted(REPLAY_PROFILES.items()):
+        typer.echo(f"{name}: env={spec.endpoint_env} default={spec.default_url}")
+        typer.echo(f"  {spec.notes}")
 
 
 @registry_app.command("serve")

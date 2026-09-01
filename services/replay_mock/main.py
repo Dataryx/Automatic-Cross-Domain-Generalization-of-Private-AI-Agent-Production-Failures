@@ -18,6 +18,8 @@ class ReplayRequest(BaseModel):
 
 
 @app.post("/replay")
+@app.post("/v1/replay")
+@app.post("/v1/counterfactual")
 def replay(req: ReplayRequest) -> dict[str, float]:
     # Deterministic structural oracle: fail when policy_flow edges present without intervention
     has_intervention = any("intervention" in v for v in req.nodes.values())

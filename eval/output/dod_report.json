@@ -1,7 +1,7 @@
 {
   "all_passed": true,
-  "passed": 29,
-  "total": 29,
+  "passed": 32,
+  "total": 32,
   "checks": [
     {
       "name": "cfi_schema_exists",
@@ -130,6 +130,21 @@
     },
     {
       "name": "live_replay_smoke",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "verify_figures_script",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "verify_field_study_script",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "replay_profiles_module",
       "passed": true,
       "detail": ""
     },
