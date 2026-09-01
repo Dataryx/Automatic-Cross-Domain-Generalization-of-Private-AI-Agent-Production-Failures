@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 from jsonschema import Draft202012Validator
 from referencing import Registry, Resource
@@ -14,7 +14,7 @@ SCHEMA_ROOT = Path(__file__).resolve().parents[4] / "schemas"
 
 def _load_raw(name: str, version: str = "1.0") -> dict[str, Any]:
     path = SCHEMA_ROOT / name / version / "schema.json"
-    return json.loads(path.read_text(encoding="utf-8"))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
 def _schema_registry() -> Registry:

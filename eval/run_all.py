@@ -12,6 +12,9 @@ ROOT = Path(__file__).resolve().parents[1]
 STEPS = [
     ("pytest", [sys.executable, "-m", "pytest", "tests/", "-q"]),
     ("verify_dod", [sys.executable, "eval/verify_dod.py"]),
+    ("health_check", [sys.executable, "scripts/health_check.py"]),
+    ("verify_sim", [sys.executable, "scripts/verify_sim.py"]),
+    ("live_replay_smoke", [sys.executable, "scripts/live_replay_smoke.py"]),
     ("consortium_pilot", [sys.executable, "eval/consortium/run_consortium_pilot.py"]),
     ("field_pilot", [sys.executable, "eval/field/run_prospective_pilot.py"]),
     ("redteam", [sys.executable, "eval/redteam/run_redteam.py"]),

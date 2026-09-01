@@ -12,6 +12,7 @@ from pydantic import BaseModel
 from cfi_core.wire import CohortManifest
 from cfi_governance import ArtifactRecord, LifecycleManager, LifecycleState
 from cfi_governance.review import ReviewQueue, ReviewStatus, ReviewTicket
+from cfi_registry.review_ui import render_review_detail, render_review_ui, ticket_to_dict
 
 
 class RegisterRequest(BaseModel):
@@ -224,54 +225,38 @@ def create_app(store: RegistryStoreProtocol | None = None) -> FastAPI:
 
     @app.get("/review/queue")
     def review_queue() -> list[dict[str, Any]]:
-        return [t.__dict__ for t in registry.list_review_queue()]
+        return [ticket_to_dict(t) for t in registry.list_review_queue()]
+
+    @app.get("/review/ui", response_class=HTMLResponse)
+    def review_ui() -> str:
+        return render_review_ui(registry.list_review_queue())
+
+    @app.get("/review/{invariant_id}")
+    def review_ticket(invariant_id: str) -> dict[str, Any]:
+        try:
+            ticket = registry.get_review_ticket(invariant_id)
+            lifecycle = registry.get_lifecycle(invariant_id)
+            payload = ticket_to_dict(ticket)
+            payload["lifecycle_state"] = lifecycle.state.value
+            return payload
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail="Not found") from exc
+
+    @app.get("/review/{invariant_id}/ui", response_class=HTMLResponse)
+    def review_detail_ui(invariant_id: str) -> str:
+        try:
+            ticket = registry.get_review_ticket(invariant_id)
+            lifecycle = registry.get_lifecycle(invariant_id)
+            return render_review_detail(ticket, lifecycle.state.value)
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail="Not found") from exc
 
     @app.post("/review/{invariant_id}/decision")
     def review_decision(invariant_id: str, req: ReviewDecisionRequest) -> dict[str, Any]:
         try:
             ticket = registry.review_decision(invariant_id, req)
-            return ticket.__dict__
+            return ticket_to_dict(ticket)
         except (KeyError, ValueError) as exc:
             raise HTTPException(status_code=400, detail=str(exc)) from exc
-
-    @app.get("/review/ui", response_class=HTMLResponse)
-    def review_ui() -> str:
-        pending = registry.list_review_queue()
-        rows = []
-        for t in pending:
-            scores = ", ".join(f"{k}={v:.2f}" for k, v in t.adversary_scores.items())
-            rows.append(
-                f"""<tr>
-<td>{t.invariant_id}</td><td>{scores}</td><td>{t.status.value}</td>
-<td>
-  <button onclick="decide('{t.invariant_id}','approved')">Approve</button>
-  <button onclick="decide('{t.invariant_id}','rejected')">Reject</button>
-</td></tr>"""
-            )
-        body_rows = "".join(rows) or '<tr><td colspan="4">No pending reviews</td></tr>'
-        return f"""<!DOCTYPE html>
-<html><head><title>CFI Review Queue</title></head>
-<body>
-<h1>Pending CFI reviews</h1>
-<p>Human authorization required before lifecycle promotion. Not a privacy proof.</p>
-<table border="1">
-<tr><th>ID</th><th>Adversary scores</th><th>Status</th><th>Actions</th></tr>
-{body_rows}
-</table>
-<script>
-async function decide(id, status) {{
-  const reviewer = prompt("Reviewer email:", "reviewer@org");
-  if (!reviewer) return;
-  const notes = prompt("Notes:", "");
-  const resp = await fetch(`/review/${{id}}/decision`, {{
-    method: "POST",
-    headers: {{"Content-Type": "application/json"}},
-    body: JSON.stringify({{status, reviewer, notes, checklist_complete: true}})
-  }});
-  if (resp.ok) location.reload();
-  else alert(await resp.text());
-}}
-</script>
-</body></html>"""
 
     return app

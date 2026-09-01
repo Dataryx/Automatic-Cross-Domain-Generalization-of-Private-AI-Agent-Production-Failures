@@ -54,3 +54,16 @@ def test_review_ui_returns_html() -> None:
     resp = client.get("/review/ui")
     assert resp.status_code == 200
     assert "CFI Review Queue" in resp.text
+    assert "release-gate checklist" in resp.text.lower()
+
+
+def test_review_ticket_detail_includes_checklist() -> None:
+    client = TestClient(create_app(RegistryStore()))
+    pkg = _signed_package()
+    iid = client.post("/cfi/register", json={"package": pkg}).json()["invariant_id"]
+    detail = client.get(f"/review/{iid}").json()
+    assert detail["invariant_id"] == iid
+    assert len(detail["checklist"]) == 12
+    ui = client.get(f"/review/{iid}/ui")
+    assert ui.status_code == 200
+    assert "Release gate checklist" in ui.text

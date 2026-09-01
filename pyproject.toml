@@ -54,7 +54,7 @@ packages = [
 ]
 
 [tool.mypy]
-python_version = "3.11"
+python_version = "3.12"
 strict = true
 packages = ["cfi_core", "cfi_contributor", "cfi_registry", "cfi_recipient", "cfi_federation", "cfi_governance", "cfi_cli"]
 mypy_path = [
@@ -66,6 +66,12 @@ mypy_path = [
     "packages/cfi_governance/src",
     "packages/cfi_cli/src",
 ]
+
+[[tool.mypy.overrides]]
+module = ["sklearn.*", "numpy", "numpy.*"]
+ignore_missing_imports = true
+follow_imports = "skip"
+ignore_errors = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
+from typing import Any, Protocol
 
 from cfi_contributor.graph import IncidentGraph
 
@@ -123,6 +124,13 @@ class CallableAgentReplayProvider(ReplayProvider):
         return self.estimate_failure_rate(g, trials, seed)
 
 
+class ReplayHttpClient(Protocol):
+    def post(
+        self, url: str, json: dict[str, Any] | None = None, timeout: float = 30.0
+    ) -> Any:
+        ...
+
+
 class HttpAgentReplayProvider(ReplayProvider):
     """POST incident graph to external replay service (AgentRx/CausalFlow hook).
 
@@ -130,9 +138,10 @@ class HttpAgentReplayProvider(ReplayProvider):
     Sandbox-only; causal identification not guaranteed.
     """
 
-    def __init__(self, endpoint: str, timeout: float = 30.0) -> None:
+    def __init__(self, endpoint: str, timeout: float = 30.0, client: ReplayHttpClient | None = None) -> None:
         self._endpoint = endpoint
         self._timeout = timeout
+        self._client = client
 
     def _call(self, graph: IncidentGraph, seed: int) -> float:
         import httpx
@@ -142,7 +151,10 @@ class HttpAgentReplayProvider(ReplayProvider):
             "edges": [{"source": e.source, "target": e.target, "relation": e.relation.value} for e in graph.edges],
             "seed": seed,
         }
-        resp = httpx.post(self._endpoint, json=payload, timeout=self._timeout)
+        if self._client is not None:
+            resp = self._client.post(self._endpoint, json=payload, timeout=self._timeout)
+        else:
+            resp = httpx.post(self._endpoint, json=payload, timeout=self._timeout)
         resp.raise_for_status()
         data = resp.json()
         if "failure_rate" in data:

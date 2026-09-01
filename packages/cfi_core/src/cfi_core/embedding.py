@@ -52,7 +52,7 @@ def preserves(
         if local_id not in scenario.nodes:
             return result.fail(f"unknown_local_node:{local_id}")
         inv_node = inv_nodes[inv_id]
-        inv_type = inv_node.type.value if hasattr(inv_node, "type") else str(inv_node.get("type"))
+        inv_type = inv_node.type.value
         local_type = scenario.nodes[local_id].get("type")
         if inv_type != local_type:
             return result.fail(f"type_mismatch:{inv_id}->{local_id}")
@@ -102,7 +102,7 @@ def preserves(
     # 6. Action reversibility class
     for inv_id, local_id in mapping.items():
         inv_node = inv_nodes[inv_id]
-        inv_risk = inv_node.risk if hasattr(inv_node, "risk") else inv_node.get("risk")
+        inv_risk = inv_node.risk
         if inv_risk and local_id in scenario.reversibility:
             if scenario.reversibility[local_id] not in ("reversible", "partially_reversible", "irreversible"):
                 return result.fail(f"invalid_reversibility:{local_id}")

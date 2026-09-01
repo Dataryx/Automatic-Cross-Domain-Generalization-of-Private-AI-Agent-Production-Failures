@@ -4,6 +4,11 @@ from __future__ import annotations
 
 import os
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from cfi_registry import RegistryStore
+    from cfi_registry.db import PostgresRegistryStore
 
 
 @dataclass
@@ -26,14 +31,13 @@ class ServiceConfig:
         )
 
 
-def create_registry_store(config: ServiceConfig | None = None):
+def create_registry_store(config: ServiceConfig | None = None) -> RegistryStore | PostgresRegistryStore:
     """Factory: SQLite/Postgres when URL set, else in-memory."""
+    from cfi_registry import RegistryStore
+    from cfi_registry.db import PostgresRegistryStore
+
     config = config or ServiceConfig.from_env()
     url = config.database_url
     if url.startswith("memory://"):
-        from cfi_registry import RegistryStore
-
         return RegistryStore()
-    from cfi_registry.db import PostgresRegistryStore
-
     return PostgresRegistryStore(url)

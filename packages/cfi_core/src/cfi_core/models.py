@@ -182,7 +182,7 @@ class CFIEdge(BaseModel):
 class CausalFailureInvariant(BaseModel):
     """Definition 5 — Causal Failure Invariant I = (G_I, C_I, Q_I, M_I, π_I, σ_I)."""
 
-    schema: Literal["cfi/1.0"] = "cfi/1.0"
+    schema: Literal["cfi/1.0"] = "cfi/1.0"  # type: ignore[assignment]
     id: str
     nodes: list[CFINode]
     edges: list[CFIEdge]

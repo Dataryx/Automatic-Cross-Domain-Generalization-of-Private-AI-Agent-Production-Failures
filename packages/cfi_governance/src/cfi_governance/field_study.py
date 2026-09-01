@@ -17,7 +17,7 @@ from cfi_core.examples import build_exception_precedence_cfi
 from cfi_recipient.compiler import fail_closed_compile
 from cfi_recipient.mitigation import MitigationCandidate, MitigationLayer, evaluate_mitigation, susceptibility
 from cfi_recipient.ontology import build_recipient_context
-from cfi_recipient.sandbox import Sandbox
+from cfi_recipient.sandbox import Sandbox, SandboxTrace
 
 
 class ReportType(str, Enum):
@@ -69,7 +69,7 @@ class FieldStudyResult:
     ])
 
 
-def _failing_agent(sb: Sandbox, trace) -> None:
+def _failing_agent(sb: Sandbox, trace: SandboxTrace) -> None:
     trace.state["review_complete"] = False
     sb.execute_tool(trace, "stub_po", {})
 
@@ -173,7 +173,7 @@ def evaluate_mitigation_in_field(domain: str = "procurement") -> dict[str, Any]:
     ctx = build_recipient_context(domain, cfi.required_mapping_roles)
     compilation = fail_closed_compile(cfi, ctx, manifest=None)
 
-    def fixed_agent(sb: Sandbox, trace) -> None:
+    def fixed_agent(sb: Sandbox, trace: SandboxTrace) -> None:
         trace.state["review_complete"] = True
         sb.execute_tool(trace, "stub_po", {})
 

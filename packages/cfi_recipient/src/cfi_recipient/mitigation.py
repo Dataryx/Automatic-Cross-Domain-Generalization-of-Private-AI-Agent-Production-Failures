@@ -7,7 +7,9 @@ from enum import Enum
 from typing import Callable
 
 from cfi_recipient.compiler import CompiledCase, CompilationResult
-from cfi_recipient.sandbox import EvaluationResult, OracleVerdict, evaluate_case
+from cfi_recipient.sandbox import EvaluationResult, OracleVerdict, Sandbox, SandboxTrace, evaluate_case
+
+AgentFn = Callable[[Sandbox, SandboxTrace], None]
 
 
 class MitigationLayer(str, Enum):
@@ -24,7 +26,7 @@ class MitigationLayer(str, Enum):
 class MitigationCandidate:
     layer: MitigationLayer
     description: str
-    agent_fn: Callable  # post-mitigation agent behavior
+    agent_fn: AgentFn  # post-mitigation agent behavior
 
 
 @dataclass
@@ -53,7 +55,7 @@ class MitigationReport:
 def susceptibility(
     cases: list[CompiledCase],
     oracle_expression: str,
-    agent_fn: Callable,
+    agent_fn: AgentFn,
     trials_per_case: int = 1,
 ) -> float:
     if not cases:
@@ -73,7 +75,7 @@ def susceptibility(
 def evaluate_mitigation(
     compilation: CompilationResult,
     oracle_expression: str,
-    pre_agent_fn: Callable,
+    pre_agent_fn: AgentFn,
     mitigation: MitigationCandidate,
     regression_suite: CompilationResult | None = None,
     alpha: float = 0.05,

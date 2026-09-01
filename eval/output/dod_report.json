@@ -1,7 +1,7 @@
 {
   "all_passed": true,
-  "passed": 27,
-  "total": 27,
+  "passed": 29,
+  "total": 29,
   "checks": [
     {
       "name": "cfi_schema_exists",
@@ -125,6 +125,16 @@
     },
     {
       "name": "sandbox_egress_tests",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "live_replay_smoke",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "mypy_ci_job",
       "passed": true,
       "detail": ""
     },

@@ -109,6 +109,8 @@ def verify() -> DodReport:
     report.checks.append(DodCheck("health_check_script", (ROOT / "scripts" / "health_check.py").exists()))
     report.checks.append(DodCheck("postgres_compose", (ROOT / "docker-compose.postgres.yml").exists()))
     report.checks.append(DodCheck("sandbox_egress_tests", (ROOT / "tests" / "adversarial" / "test_sandbox_egress.py").exists()))
+    report.checks.append(DodCheck("live_replay_smoke", (ROOT / "scripts" / "live_replay_smoke.py").exists()))
+    report.checks.append(DodCheck("mypy_ci_job", "mypy:" in (ROOT / ".github" / "workflows" / "ci.yml").read_text()))
 
     try:
         from fastapi.testclient import TestClient

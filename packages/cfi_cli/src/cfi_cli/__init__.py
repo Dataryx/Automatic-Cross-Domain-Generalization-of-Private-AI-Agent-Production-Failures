@@ -161,7 +161,7 @@ def mitigate_local(
     from cfi_recipient.compiler import fail_closed_compile
     from cfi_recipient.mitigation import MitigationCandidate, MitigationLayer, evaluate_mitigation
     from cfi_recipient.ontology import build_recipient_context
-    from cfi_recipient.sandbox import Sandbox
+    from cfi_recipient.sandbox import Sandbox, SandboxTrace
 
     data = json.loads(Path(invariant_path).read_text())
     cfi = CausalFailureInvariant.model_validate(data)
@@ -171,11 +171,11 @@ def mitigate_local(
         typer.echo(f"Abstained: {compilation.abstention_reason}", err=True)
         raise typer.Exit(1)
 
-    def failing_agent(sb: Sandbox, trace) -> None:
+    def failing_agent(sb: Sandbox, trace: SandboxTrace) -> None:
         trace.state["review_complete"] = False
         sb.execute_tool(trace, "stub_po", {})
 
-    def fixed_agent(sb: Sandbox, trace) -> None:
+    def fixed_agent(sb: Sandbox, trace: SandboxTrace) -> None:
         trace.state["review_complete"] = True
         sb.execute_tool(trace, "stub_po", {})
 
@@ -208,7 +208,7 @@ def evaluate_local(
     from cfi_recipient.mitigation import susceptibility
     from cfi_recipient.metrics import build_report
     from cfi_recipient.ontology import build_recipient_context
-    from cfi_recipient.sandbox import Sandbox
+    from cfi_recipient.sandbox import Sandbox, SandboxTrace
 
     data = json.loads(Path(invariant_path).read_text())
     cfi = CausalFailureInvariant.model_validate(data)
@@ -218,7 +218,7 @@ def evaluate_local(
         typer.echo(f"Abstained: {compilation.abstention_reason}", err=True)
         raise typer.Exit(1)
 
-    def failing_agent(sb: Sandbox, trace) -> None:
+    def failing_agent(sb: Sandbox, trace: SandboxTrace) -> None:
         trace.state["review_complete"] = False
         sb.execute_tool(trace, "stub_po", {})
 

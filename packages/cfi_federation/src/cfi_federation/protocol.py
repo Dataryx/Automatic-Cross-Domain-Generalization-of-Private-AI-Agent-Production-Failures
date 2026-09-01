@@ -11,7 +11,7 @@ from cfi_federation import ClippedContribution, secure_aggregate, shamir_share
 from cfi_federation.zk_attestation import prove_circuit_execution
 from cfi_recipient.compiler import fail_closed_compile
 from cfi_recipient.ontology import MappingStatus, OntologyMapping, RecipientContext
-from cfi_recipient.sandbox import Sandbox, evaluate_case
+from cfi_recipient.sandbox import Sandbox, SandboxTrace, evaluate_case
 
 
 def tenant_id_hash(tenant_id: str) -> str:
@@ -60,7 +60,7 @@ def recipient_evaluate_and_contribute(
     if compilation.abstained:
         raise ValueError(f"Compilation abstained: {compilation.abstention_reason}")
 
-    def failing_agent(sb: Sandbox, trace) -> None:
+    def failing_agent(sb: Sandbox, trace: SandboxTrace) -> None:
         trace.state["review_complete"] = False
         sb.execute_tool(trace, "stub_po", {})
 

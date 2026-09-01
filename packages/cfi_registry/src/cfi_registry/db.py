@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 from datetime import datetime, timezone
-from typing import Any
+from typing import Any, cast
 
 from sqlalchemy import DateTime, String, Text, create_engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, sessionmaker
@@ -127,7 +127,7 @@ class PostgresRegistryStore:
             row = session.get(CFIRecord, invariant_id)
             if row is None:
                 raise KeyError(invariant_id)
-            return json.loads(row.package_json)
+            return cast(dict[str, Any], json.loads(row.package_json))
 
     def publish_cohort(self, manifest: CohortManifest) -> str:
         if manifest.frozen:

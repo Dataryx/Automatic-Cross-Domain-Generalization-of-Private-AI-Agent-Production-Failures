@@ -27,6 +27,12 @@ eval-all:
 health:
 	python scripts/health_check.py
 
+live-replay:
+	python scripts/live_replay_smoke.py
+
+mypy:
+	mypy packages/cfi_core/src packages/cfi_contributor/src packages/cfi_registry/src packages/cfi_recipient/src packages/cfi_federation/src packages/cfi_governance/src packages/cfi_cli/src
+
 stack:
 	docker compose up --build
 

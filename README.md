@@ -84,6 +84,8 @@ Re-running `sim/run_cfi_sim.py` recreates all CSVs and figures from fixed seed 4
 - Phase 9: computed production baselines, replay mock service (`:8010`), `--replay-url` on extract
 - Phase 10: golden-path smoke (`scripts/golden_path.py`), τ-adapter, coordinator consortium API, `Makefile`
 - Phase 11: JCS stability tests, registry audit API, `cfi-contribute gate`, sim CI job
+- Phase 12: Postgres compose, supersession API, sandbox egress tests, `cfi-recipient evaluate`, health check
+- Phase 13: mypy CI, enhanced review UI + ticket API, live replay smoke (`scripts/live_replay_smoke.py`)
 - Release-gate adversaries auto-scored in `ReleaseGate.run()`
 - CI workflow (`.github/workflows/ci.yml`) + `docker-compose.yml` for services
 - `eval/run_all.py` — runs pytest, DoD checks, and all pilots

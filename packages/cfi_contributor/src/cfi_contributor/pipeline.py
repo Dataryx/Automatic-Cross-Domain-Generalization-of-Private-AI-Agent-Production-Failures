@@ -7,7 +7,7 @@ from typing import Any
 
 from cfi_contributor.causal import CausalCandidate, counterfactual_candidate_scoring
 from cfi_contributor.evidence import EvidenceAdapter, JsonTraceAdapter, build_typed_trace
-from cfi_contributor.graph import GraphBuilder
+from cfi_contributor.graph import GraphBuilder, IncidentGraph
 from cfi_contributor.minimizer import MinimizationResult, typed_causal_core_minimization
 from cfi_contributor.packager import PackageResult, Packager
 from cfi_contributor.release_gate import GateOutcome, ReleaseGate, ReleaseGateVerdict
@@ -60,7 +60,7 @@ class ContributorPipeline:
         trace = build_typed_trace(records)
         graph = self._graph_builder.build(trace, incident.policy_digest)
 
-        def oracle(g) -> float:
+        def oracle(g: IncidentGraph) -> float:
             return self._replay.estimate_failure_rate(g, trials=3, seed=self._seed).failure_rate
 
         def intervention_generator(z: str) -> list[str]:
