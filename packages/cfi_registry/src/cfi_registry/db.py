@@ -11,6 +11,7 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, sess
 
 from cfi_core.wire import CohortManifest
 from cfi_governance import ArtifactRecord, LifecycleManager, LifecycleState
+from cfi_governance.review import ReviewQueue, ReviewTicket
 
 
 class Base(DeclarativeBase):
@@ -66,6 +67,7 @@ class PostgresRegistryStore:
         self._session_factory = sessionmaker(bind=self._engine, expire_on_commit=False)
         self._lifecycle = LifecycleManager()
         self._records: dict[str, ArtifactRecord] = {}
+        self._review = ReviewQueue()
 
     def _session(self) -> Session:
         return self._session_factory()
@@ -91,6 +93,7 @@ class PostgresRegistryStore:
         return updated
 
     def register(self, package: dict[str, Any]) -> str:
+        from cfi_contributor.adversaries import ReleaseGateAdversaries
         from cfi_registry.validation import validate_and_parse_package
 
         cfi = validate_and_parse_package(package)
@@ -107,6 +110,15 @@ class PostgresRegistryStore:
             session.commit()
         self._records[cfi.id] = ArtifactRecord(
             invariant_id=cfi.id, state=LifecycleState.REVIEWED, version="1.0.0"
+        )
+        scores = ReleaseGateAdversaries().score_cfi(cfi)
+        self._review.enqueue(
+            cfi.id,
+            {
+                "source_attribution": scores.source_attribution,
+                "reconstruction": scores.reconstruction,
+                "linkability": scores.linkability,
+            },
         )
         return cfi.id
 
@@ -165,3 +177,20 @@ class PostgresRegistryStore:
                 )
             )
             session.commit()
+
+    def list_review_queue(self) -> list[ReviewTicket]:
+        return self._review.list_pending()
+
+    def review_decision(self, invariant_id: str, req: Any) -> ReviewTicket:
+        ticket = self._review.decide(
+            invariant_id,
+            req.status,
+            req.reviewer,
+            req.notes,
+            req.checklist_complete,
+        )
+        if req.status.value == "approved":
+            self.transition_lifecycle(invariant_id, LifecycleState.ACTIVE, req.reviewer, req.notes)
+        elif req.status.value == "rejected":
+            self.transition_lifecycle(invariant_id, LifecycleState.REVOKED, req.reviewer, req.notes)
+        return ticket

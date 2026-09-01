@@ -78,6 +78,8 @@ Re-running `sim/run_cfi_sim.py` recreates all CSVs and figures from fixed seed 4
 
 - Phase 5: consortium coordinator (`cfi_federation.consortium`) + `cfi-aggregate consortium`
 - Phase 6: prospective field-study harness (`eval/field/`) + `cfi-recipient mitigate`
+- Phase 7: CI + Docker Compose + production ablation baselines
+- Phase 8: human review queue (`GET /review/ui`), trained attribution model, HTTP replay adapter, benchmark corpus
 - Release-gate adversaries auto-scored in `ReleaseGate.run()`
 - CI workflow (`.github/workflows/ci.yml`) + `docker-compose.yml` for services
 - `eval/run_all.py` — runs pytest, DoD checks, and all pilots
@@ -97,6 +99,16 @@ python eval/verify_dod.py           # Section 15 checks
 python eval/consortium/run_consortium_pilot.py
 python eval/field/run_prospective_pilot.py
 python eval/production/harness.py
+python eval/benchmarks/run_corpus.py
+```
+
+## Human review
+
+Registry exposes a minimal review queue after CFI registration:
+
+```bash
+cfi-registry serve
+# open http://127.0.0.1:8000/review/ui
 ```
 
 ## Docker

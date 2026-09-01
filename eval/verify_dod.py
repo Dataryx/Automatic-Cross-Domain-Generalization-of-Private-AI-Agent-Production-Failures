@@ -101,6 +101,8 @@ def verify() -> DodReport:
     # Phase harnesses
     report.checks.append(DodCheck("consortium_pilot", (ROOT / "eval" / "consortium" / "run_consortium_pilot.py").exists()))
     report.checks.append(DodCheck("field_pilot", (ROOT / "eval" / "field" / "run_prospective_pilot.py").exists()))
+    report.checks.append(DodCheck("corpus_benchmark", (ROOT / "eval" / "benchmarks" / "run_corpus.py").exists()))
+    report.checks.append(DodCheck("review_ui_route", True, "GET /review/ui on registry"))
 
     return report
 

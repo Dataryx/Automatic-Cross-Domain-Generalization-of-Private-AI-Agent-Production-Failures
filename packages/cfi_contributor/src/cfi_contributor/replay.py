@@ -121,3 +121,57 @@ class CallableAgentReplayProvider(ReplayProvider):
         if component in g.nodes:
             g.nodes[component]["intervention"] = intervention
         return self.estimate_failure_rate(g, trials, seed)
+
+
+class HttpAgentReplayProvider(ReplayProvider):
+    """POST incident graph to external replay service (AgentRx/CausalFlow hook).
+
+    Expected JSON response: {"failure_rate": 0.0..1.0} or {"fail": true/false}.
+    Sandbox-only; causal identification not guaranteed.
+    """
+
+    def __init__(self, endpoint: str, timeout: float = 30.0) -> None:
+        self._endpoint = endpoint
+        self._timeout = timeout
+
+    def _call(self, graph: IncidentGraph, seed: int) -> float:
+        import httpx
+
+        payload = {
+            "nodes": graph.nodes,
+            "edges": [{"source": e.source, "target": e.target, "relation": e.relation.value} for e in graph.edges],
+            "seed": seed,
+        }
+        resp = httpx.post(self._endpoint, json=payload, timeout=self._timeout)
+        resp.raise_for_status()
+        data = resp.json()
+        if "failure_rate" in data:
+            return float(data["failure_rate"])
+        if "fail" in data:
+            return 1.0 if data["fail"] else 0.0
+        raise ValueError("Replay endpoint must return failure_rate or fail")
+
+    def estimate_failure_rate(self, graph: IncidentGraph, trials: int, seed: int) -> ReplayEvidence:
+        rates = [self._call(graph, seed + i) for i in range(trials)]
+        binary = [1.0 if r >= 0.5 else 0.0 for r in rates]
+        return ReplayEvidence(
+            failure_rate=sum(binary) / max(len(binary), 1),
+            trials=trials,
+            seeds=[seed + i for i in range(trials)],
+            notes=f"HTTP replay to {self._endpoint}",
+        )
+
+    def replay_intervention(
+        self,
+        graph: IncidentGraph,
+        component: str,
+        intervention: str,
+        trials: int,
+        seed: int,
+    ) -> ReplayEvidence:
+        import copy
+
+        g = copy.deepcopy(graph)
+        if component in g.nodes:
+            g.nodes[component]["intervention"] = intervention
+        return self.estimate_failure_rate(g, trials, seed)

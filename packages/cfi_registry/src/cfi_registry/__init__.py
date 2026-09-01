@@ -6,10 +6,12 @@ from datetime import datetime, timezone
 from typing import Any, Protocol
 
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 
 from cfi_core.wire import CohortManifest
 from cfi_governance import ArtifactRecord, LifecycleManager, LifecycleState
+from cfi_governance.review import ReviewQueue, ReviewStatus, ReviewTicket
 
 
 class RegisterRequest(BaseModel):
@@ -26,6 +28,13 @@ class LifecycleTransitionRequest(BaseModel):
     reason: str
 
 
+class ReviewDecisionRequest(BaseModel):
+    status: ReviewStatus
+    reviewer: str
+    notes: str = ""
+    checklist_complete: bool = True
+
+
 class RegistryStoreProtocol(Protocol):
     def register(self, package: dict[str, Any]) -> str: ...
     def get(self, invariant_id: str) -> dict[str, Any]: ...
@@ -34,6 +43,8 @@ class RegistryStoreProtocol(Protocol):
     def transition_lifecycle(
         self, invariant_id: str, to_state: LifecycleState, actor: str, reason: str
     ) -> ArtifactRecord: ...
+    def list_review_queue(self) -> list[ReviewTicket]: ...
+    def review_decision(self, invariant_id: str, req: ReviewDecisionRequest) -> ReviewTicket: ...
 
 
 class RegistryStore:
@@ -44,8 +55,10 @@ class RegistryStore:
         self._records: dict[str, ArtifactRecord] = {}
         self._manifests: dict[str, CohortManifest] = {}
         self._lifecycle = LifecycleManager()
+        self._review = ReviewQueue()
 
     def register(self, package: dict[str, Any]) -> str:
+        from cfi_contributor.adversaries import ReleaseGateAdversaries
         from cfi_registry.validation import validate_and_parse_package
 
         cfi = validate_and_parse_package(package)
@@ -56,6 +69,15 @@ class RegistryStore:
             invariant_id=cfi.id,
             state=LifecycleState.REVIEWED,
             version="1.0.0",
+        )
+        scores = ReleaseGateAdversaries().score_cfi(cfi)
+        self._review.enqueue(
+            cfi.id,
+            {
+                "source_attribution": scores.source_attribution,
+                "reconstruction": scores.reconstruction,
+                "linkability": scores.linkability,
+            },
         )
         return cfi.id
 
@@ -86,6 +108,23 @@ class RegistryStore:
         updated = self._lifecycle.transition(record, to_state, actor, reason, ts)
         self._records[invariant_id] = updated
         return updated
+
+    def list_review_queue(self) -> list[ReviewTicket]:
+        return self._review.list_pending()
+
+    def review_decision(self, invariant_id: str, req: ReviewDecisionRequest) -> ReviewTicket:
+        ticket = self._review.decide(
+            invariant_id,
+            req.status,
+            req.reviewer,
+            req.notes,
+            req.checklist_complete,
+        )
+        if req.status == ReviewStatus.APPROVED:
+            self.transition_lifecycle(invariant_id, LifecycleState.ACTIVE, req.reviewer, req.notes)
+        elif req.status == ReviewStatus.REJECTED:
+            self.transition_lifecycle(invariant_id, LifecycleState.REVOKED, req.reviewer, req.notes)
+        return ticket
 
 
 def create_app(store: RegistryStoreProtocol | None = None) -> FastAPI:
@@ -135,5 +174,35 @@ def create_app(store: RegistryStoreProtocol | None = None) -> FastAPI:
     @app.get("/health")
     def health() -> dict[str, str]:
         return {"status": "ok", "timestamp": datetime.now(timezone.utc).isoformat()}
+
+    @app.get("/review/queue")
+    def review_queue() -> list[dict[str, Any]]:
+        return [t.__dict__ for t in registry.list_review_queue()]
+
+    @app.post("/review/{invariant_id}/decision")
+    def review_decision(invariant_id: str, req: ReviewDecisionRequest) -> dict[str, Any]:
+        try:
+            ticket = registry.review_decision(invariant_id, req)
+            return ticket.__dict__
+        except (KeyError, ValueError) as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    @app.get("/review/ui", response_class=HTMLResponse)
+    def review_ui() -> str:
+        pending = registry.list_review_queue()
+        rows = "".join(
+            f"<tr><td>{t.invariant_id}</td><td>{t.adversary_scores}</td>"
+            f"<td>{t.status.value}</td></tr>"
+            for t in pending
+        )
+        return f"""<!DOCTYPE html>
+<html><head><title>CFI Review Queue</title></head>
+<body>
+<h1>Pending CFI reviews</h1>
+<p>Human authorization required before lifecycle promotion. Not a privacy proof.</p>
+<table border="1"><tr><th>ID</th><th>Adversary scores</th><th>Status</th></tr>
+{rows or '<tr><td colspan="3">No pending reviews</td></tr>'}
+</table>
+</body></html>"""
 
     return app

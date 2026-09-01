@@ -16,6 +16,7 @@ STEPS = [
     ("field_pilot", [sys.executable, "eval/field/run_prospective_pilot.py"]),
     ("redteam", [sys.executable, "eval/redteam/run_redteam.py"]),
     ("production_harness", [sys.executable, "eval/production/harness.py"]),
+    ("corpus_benchmark", [sys.executable, "eval/benchmarks/run_corpus.py"]),
 ]
 
 
