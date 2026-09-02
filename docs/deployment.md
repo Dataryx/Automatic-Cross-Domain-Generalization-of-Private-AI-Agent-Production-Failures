@@ -63,6 +63,12 @@ python services/causalflow_stub/main.py
 | `CFI_RELEASE_SIGNING_KEY_PEM` | unset | Ed25519 private key PEM for stable release signatures |
 | `CFI_RELEASE_SIGNING_KEY_PATH` | unset | Path to Ed25519 private key PEM (alternative to inline PEM) |
 | `CFI_AUDIT_SINK_WATERMARK_PATH` | unset | Persist audit sink cursor across restarts |
+| `CFI_AUDIT_SIGNING_KEY_PEM` | unset | Ed25519 key for signed audit exports |
+| `CFI_AUDIT_SIGNING_KEY_PATH` | unset | Path to audit signing key PEM |
+| `CFI_AUDIT_SINK_SIGNED` | `0` | Emit signed batch on `POST /audit/sink` |
+| `CFI_AUDIT_SINK_WORM` | `0` | Append-only hash chain wrapper on file sink |
+| `CFI_AUDIT_SINK_IDEMPOTENCY` | `0` | Skip duplicate batch ids (SIEM replay protection) |
+| `CFI_AUDIT_SINK_IDEMPOTENCY_PATH` | unset | Persist flushed batch id ledger |
 
 ```bash
 cfi-contribute replay-profiles
@@ -84,6 +90,7 @@ cfi-contribute extract --output cfi.json --replay-url http://127.0.0.1:8010/repl
 9. Configure external audit sink (`CFI_AUDIT_SINK_PATH` or `CFI_AUDIT_SINK_URL`) and flush via `POST /audit/sink`.
 10. Build signed release checkpoint: `make verify-release` (writes `eval/output/release_manifest.json`).
 11. For reproducible release signatures: `python scripts/generate_release_signing_key.py` then set `CFI_RELEASE_SIGNING_KEY_PATH`.
+12. Kubernetes (prototype): flat manifests `deploy/k8s/cfi-fed.yaml` or Helm chart `deploy/helm/cfi-fed/`.
 
 ## Observability
 
@@ -95,6 +102,7 @@ cfi-contribute extract --output cfi.json --replay-url http://127.0.0.1:8010/repl
 | `GET /accountant` | aggregator | Privacy budget JSON snapshot |
 | `GET /audit/export` | registry | In-memory governance audit trail |
 | `GET /audit/status` | registry | Audit cursor, pending export count |
+| `GET /audit/export/signed` | registry | Ed25519-signed audit batch |
 | `POST /audit/sink` | registry | Flush audit events to external sink |
 
 ```bash

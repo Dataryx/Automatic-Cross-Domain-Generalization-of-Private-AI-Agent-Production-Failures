@@ -1,0 +1,6 @@
+apiVersion: v2
+name: cfi-fed
+description: CFI-Fed registry, coordinator, and aggregator (research prototype)
+type: application
+version: 0.1.0
+appVersion: "0.28.0"

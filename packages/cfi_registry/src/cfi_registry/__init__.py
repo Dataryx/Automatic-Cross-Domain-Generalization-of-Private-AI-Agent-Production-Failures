@@ -65,6 +65,7 @@ class RegistryStoreProtocol(Protocol):
     def export_audit_log(self) -> list[dict[str, Any]]: ...
     def flush_audit_sink(self) -> dict[str, Any]: ...
     def audit_status(self) -> dict[str, Any]: ...
+    def export_signed_audit_log(self) -> dict[str, Any]: ...
 
 
 class RegistryStore:
@@ -90,10 +91,19 @@ class RegistryStore:
         return self.export_audit_log()[after_index:]
 
     def flush_audit_sink(self) -> dict[str, Any]:
-        events = self.export_audit_log_since(self._watermark.value)
-        result = flush_audit_events(self._audit_sink, events)
+        from cfi_registry.audit_helpers import maybe_signed_flush_batch
+
+        watermark_before = self._watermark.value
+        events = self.export_audit_log_since(watermark_before)
+        watermark_after = watermark_before + len(events)
+        signed_batch = maybe_signed_flush_batch(
+            events,
+            watermark_before=watermark_before,
+            watermark_after=watermark_after,
+        )
+        result = flush_audit_events(self._audit_sink, events, signed_batch=signed_batch)
         if events and result.get("flushed"):
-            self._watermark.advance(self._watermark.value + len(events))
+            self._watermark.advance(watermark_after)
         result["watermark"] = self._watermark.value
         result["exported_count"] = len(events)
         return result
@@ -107,6 +117,21 @@ class RegistryStore:
             "pending_export": max(0, total - watermark),
             "sink_configured": self._audit_sink is not None,
         }
+
+    def export_signed_audit_log(self) -> dict[str, Any]:
+        from cfi_governance.audit_attestation import sign_audit_export
+
+        return sign_audit_export(
+            {
+                "events": self.export_audit_log(),
+                "watermark": self._watermark.value,
+                "exported_at": datetime.now(timezone.utc).isoformat(),
+                "assumptions": [
+                    "Signed export binds event list at export time; not a WORM store.",
+                    "Verification requires the embedded public key in certificate_chain.",
+                ],
+            }
+        )
 
     def register(self, package: dict[str, Any]) -> str:
         from cfi_contributor.adversaries import ReleaseGateAdversaries
@@ -298,6 +323,10 @@ def create_app(store: RegistryStoreProtocol | None = None) -> FastAPI:
             "pending_export is approximate when using external SIEM deduplication.",
         ]
         return status
+
+    @app.get("/audit/export/signed")
+    def export_signed_audit_log() -> dict[str, Any]:
+        return registry.export_signed_audit_log()
 
     @app.post("/audit/sink")
     def flush_audit_sink() -> dict[str, Any]:

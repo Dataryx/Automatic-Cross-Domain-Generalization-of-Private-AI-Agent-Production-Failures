@@ -98,6 +98,9 @@ Re-running `sim/run_cfi_sim.py` recreates all CSVs and figures from fixed seed 4
 - Phase 23: TLS/mTLS nginx routes for replay stubs, `GET /audit/status`, multi-profile live replay smoke
 - Phase 24: Postgres persistence for lifecycle + review queue, expanded CI verify scripts, mypy on `services/`
 - Phase 25: eval harness CI gate (`verify_eval_harnesses.py`), Docker Compose stack smoke (`verify_compose_stack.py`)
+- Phase 26: signed audit export (`GET /audit/export/signed`), K8s manifests (`deploy/k8s/`), full `eval/run_all.py` CI job
+- Phase 27: signed audit sink flush (`CFI_AUDIT_SINK_SIGNED`), `cfi-registry audit-export/audit-verify`, Postgres compose smoke
+- Phase 28: Helm chart (`deploy/helm/cfi-fed/`), audit sink WORM hash chain (`CFI_AUDIT_SINK_WORM`), SIEM idempotency (`CFI_AUDIT_SINK_IDEMPOTENCY`)
 - Release-gate adversaries auto-scored in `ReleaseGate.run()`
 - CI workflow (`.github/workflows/ci.yml`) + `docker-compose.yml` for services
 - `eval/run_all.py` — runs pytest, DoD checks, and all pilots

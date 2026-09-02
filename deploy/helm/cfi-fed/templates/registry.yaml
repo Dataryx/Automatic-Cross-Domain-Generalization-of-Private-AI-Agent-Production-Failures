@@ -1,0 +1,69 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cfi-registry
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: cfi-registry
+    {{- include "cfi-fed.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.registry.replicas }}
+  selector:
+    matchLabels:
+      app: cfi-registry
+  template:
+    metadata:
+      labels:
+        app: cfi-registry
+    spec:
+      containers:
+        - name: registry
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: ["python", "services/registry/main.py"]
+          ports:
+            - containerPort: {{ .Values.registry.port }}
+          envFrom:
+            - configMapRef:
+                name: cfi-fed-config
+          env:
+            - name: CFI_HOST
+              value: "0.0.0.0"
+            - name: CFI_PORT
+              value: {{ .Values.registry.port | quote }}
+            - name: CFI_DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: cfi-fed-secrets
+                  key: database_url
+            {{- if .Values.audit.signingKeyPem }}
+            - name: CFI_AUDIT_SIGNING_KEY_PEM
+              valueFrom:
+                secretKeyRef:
+                  name: cfi-fed-secrets
+                  key: audit_signing_key_pem
+            {{- end }}
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: {{ .Values.registry.port }}
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          {{- with .Values.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cfi-registry
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: cfi-registry
+spec:
+  selector:
+    app: cfi-registry
+  ports:
+    - port: {{ .Values.registry.port }}
+      targetPort: {{ .Values.registry.port }}

@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cfi-coordinator
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: cfi-coordinator
+    {{- include "cfi-fed.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.coordinator.replicas }}
+  selector:
+    matchLabels:
+      app: cfi-coordinator
+  template:
+    metadata:
+      labels:
+        app: cfi-coordinator
+    spec:
+      containers:
+        - name: coordinator
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command:
+            - uvicorn
+            - services.coordinator.main:app
+            - --host
+            - "0.0.0.0"
+            - --port
+            - {{ .Values.coordinator.port | quote }}
+          ports:
+            - containerPort: {{ .Values.coordinator.port }}
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: {{ .Values.coordinator.port }}
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          {{- with .Values.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cfi-coordinator
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: cfi-coordinator
+spec:
+  selector:
+    app: cfi-coordinator
+  ports:
+    - port: {{ .Values.coordinator.port }}
+      targetPort: {{ .Values.coordinator.port }}

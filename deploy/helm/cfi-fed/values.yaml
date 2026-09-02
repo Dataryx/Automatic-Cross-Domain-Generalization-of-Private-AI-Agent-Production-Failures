@@ -1,0 +1,40 @@
+image:
+  repository: cfi-fed
+  tag: latest
+  pullPolicy: IfNotPresent
+
+namespace: cfi-fed
+createNamespace: true
+
+registry:
+  replicas: 1
+  port: 8000
+  databaseUrl: ""  # set via --set registry.databaseUrl=... or secret
+
+coordinator:
+  replicas: 1
+  port: 8001
+
+aggregator:
+  replicas: 1
+  port: 8002
+
+config:
+  minimumCohortK: "10"
+  totalEpsilon: "10.0"
+
+audit:
+  sinkSigned: "0"
+  sinkWorm: "0"
+  sinkIdempotency: "0"
+  sinkPath: ""
+  sinkUrl: ""
+  signingKeyPem: ""
+
+ingress:
+  enabled: false
+  className: nginx
+  host: cfi-fed.local
+  tls: false
+
+resources: {}

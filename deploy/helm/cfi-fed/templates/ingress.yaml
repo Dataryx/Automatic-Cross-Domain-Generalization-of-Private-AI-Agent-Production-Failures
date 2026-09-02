@@ -1,0 +1,42 @@
+{{- if .Values.ingress.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: cfi-fed
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "cfi-fed.labels" . | nindent 4 }}
+spec:
+  ingressClassName: {{ .Values.ingress.className }}
+  {{- if .Values.ingress.tls }}
+  tls:
+    - hosts:
+        - {{ .Values.ingress.host }}
+      secretName: cfi-fed-tls
+  {{- end }}
+  rules:
+    - host: {{ .Values.ingress.host }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: cfi-registry
+                port:
+                  number: {{ .Values.registry.port }}
+          - path: /coordinator
+            pathType: Prefix
+            backend:
+              service:
+                name: cfi-coordinator
+                port:
+                  number: {{ .Values.coordinator.port }}
+          - path: /aggregator
+            pathType: Prefix
+            backend:
+              service:
+                name: cfi-aggregator
+                port:
+                  number: {{ .Values.aggregator.port }}
+{{- end }}

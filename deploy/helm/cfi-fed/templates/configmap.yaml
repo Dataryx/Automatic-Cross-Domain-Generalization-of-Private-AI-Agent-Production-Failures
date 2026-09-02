@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cfi-fed-config
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "cfi-fed.labels" . | nindent 4 }}
+data:
+  CFI_MINIMUM_COHORT_K: {{ .Values.config.minimumCohortK | quote }}
+  CFI_TOTAL_EPSILON: {{ .Values.config.totalEpsilon | quote }}
+  CFI_AUDIT_SINK_SIGNED: {{ .Values.audit.sinkSigned | quote }}
+  CFI_AUDIT_SINK_WORM: {{ .Values.audit.sinkWorm | quote }}
+  CFI_AUDIT_SINK_IDEMPOTENCY: {{ .Values.audit.sinkIdempotency | quote }}
+  {{- if .Values.audit.sinkPath }}
+  CFI_AUDIT_SINK_PATH: {{ .Values.audit.sinkPath | quote }}
+  {{- end }}
+  {{- if .Values.audit.sinkUrl }}
+  CFI_AUDIT_SINK_URL: {{ .Values.audit.sinkUrl | quote }}
+  {{- end }}

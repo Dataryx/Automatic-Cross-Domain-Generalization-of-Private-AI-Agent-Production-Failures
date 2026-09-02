@@ -226,8 +226,16 @@ class PostgresRegistryStore:
             return events, new_watermark
 
     def flush_audit_sink(self) -> dict[str, Any]:
-        events, new_watermark = self.export_audit_log_since(self._watermark.value)
-        result = flush_audit_events(self._audit_sink, events)
+        from cfi_registry.audit_helpers import maybe_signed_flush_batch
+
+        watermark_before = self._watermark.value
+        events, new_watermark = self.export_audit_log_since(watermark_before)
+        signed_batch = maybe_signed_flush_batch(
+            events,
+            watermark_before=watermark_before,
+            watermark_after=new_watermark,
+        )
+        result = flush_audit_events(self._audit_sink, events, signed_batch=signed_batch)
         if events and result.get("flushed"):
             self._watermark.advance(new_watermark)
         result["watermark"] = self._watermark.value
@@ -254,6 +262,21 @@ class PostgresRegistryStore:
             "pending_export": pending,
             "sink_configured": self._audit_sink is not None,
         }
+
+    def export_signed_audit_log(self) -> dict[str, Any]:
+        from cfi_governance.audit_attestation import sign_audit_export
+
+        return sign_audit_export(
+            {
+                "events": self.export_audit_log(),
+                "watermark": self._watermark.value,
+                "exported_at": datetime.now(timezone.utc).isoformat(),
+                "assumptions": [
+                    "Signed export binds event list at export time; not a WORM store.",
+                    "Verification requires the embedded public key in certificate_chain.",
+                ],
+            }
+        )
 
     def get_lifecycle(self, invariant_id: str) -> ArtifactRecord:
         with self._session() as session:

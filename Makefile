@@ -1,6 +1,6 @@
 # CFI-Fed developer commands
 
-.PHONY: install test sim dod golden tau stack stack-postgres stack-tls stack-mtls health live-replay replay-profiles eval-harnesses compose-smoke mypy figures field-study ingest-corpus eval-all certs observability hardening auth release verify-release mtls
+.PHONY: install test sim dod golden tau stack stack-postgres stack-tls stack-mtls health live-replay replay-profiles eval-harnesses compose-smoke postgres-smoke helm-chart audit-attest mypy figures field-study ingest-corpus eval-all certs observability hardening auth release verify-release mtls
 
 install:
 	pip install -e ".[dev]"
@@ -38,6 +38,15 @@ eval-harnesses:
 
 compose-smoke:
 	python scripts/verify_compose_stack.py
+
+postgres-smoke:
+	python scripts/verify_postgres_compose.py
+
+helm-chart:
+	python scripts/verify_helm_chart.py
+
+audit-attest:
+	python scripts/verify_audit_attestation.py
 
 figures:
 	python scripts/verify_figures.py

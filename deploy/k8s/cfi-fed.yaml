@@ -1,0 +1,154 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: cfi-fed
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cfi-fed-config
+  namespace: cfi-fed
+data:
+  CFI_MINIMUM_COHORT_K: "10"
+  CFI_TOTAL_EPSILON: "10.0"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cfi-registry
+  namespace: cfi-fed
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cfi-registry
+  template:
+    metadata:
+      labels:
+        app: cfi-registry
+    spec:
+      containers:
+        - name: registry
+          image: cfi-fed:latest
+          imagePullPolicy: IfNotPresent
+          command: ["python", "services/registry/main.py"]
+          ports:
+            - containerPort: 8000
+          env:
+            - name: CFI_HOST
+              value: "0.0.0.0"
+            - name: CFI_PORT
+              value: "8000"
+            - name: CFI_DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: cfi-fed-secrets
+                  key: database_url
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cfi-registry
+  namespace: cfi-fed
+spec:
+  selector:
+    app: cfi-registry
+  ports:
+    - port: 8000
+      targetPort: 8000
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cfi-coordinator
+  namespace: cfi-fed
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cfi-coordinator
+  template:
+    metadata:
+      labels:
+        app: cfi-coordinator
+    spec:
+      containers:
+        - name: coordinator
+          image: cfi-fed:latest
+          imagePullPolicy: IfNotPresent
+          command: ["uvicorn", "services.coordinator.main:app", "--host", "0.0.0.0", "--port", "8001"]
+          ports:
+            - containerPort: 8001
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 8001
+            initialDelaySeconds: 5
+            periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cfi-coordinator
+  namespace: cfi-fed
+spec:
+  selector:
+    app: cfi-coordinator
+  ports:
+    - port: 8001
+      targetPort: 8001
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cfi-aggregator
+  namespace: cfi-fed
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cfi-aggregator
+  template:
+    metadata:
+      labels:
+        app: cfi-aggregator
+    spec:
+      containers:
+        - name: aggregator
+          image: cfi-fed:latest
+          imagePullPolicy: IfNotPresent
+          command: ["python", "services/aggregator/main.py"]
+          ports:
+            - containerPort: 8002
+          envFrom:
+            - configMapRef:
+                name: cfi-fed-config
+          env:
+            - name: CFI_HOST
+              value: "0.0.0.0"
+            - name: CFI_PORT
+              value: "8002"
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 8002
+            initialDelaySeconds: 5
+            periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cfi-aggregator
+  namespace: cfi-fed
+spec:
+  selector:
+    app: cfi-aggregator
+  ports:
+    - port: 8002
+      targetPort: 8002

@@ -1,0 +1,12 @@
+CFI-Fed Helm chart (research prototype)
+
+1. Build the image:
+   docker build -t {{ .Values.image.repository }}:{{ .Values.image.tag }} .
+
+2. Registry:
+   kubectl -n {{ .Values.namespace }} port-forward svc/cfi-registry {{ .Values.registry.port }}:{{ .Values.registry.port }}
+
+3. Signed audit export:
+   curl http://127.0.0.1:{{ .Values.registry.port }}/audit/export/signed
+
+Honesty: manifests demonstrate deployability only; not a hardened production deployment.

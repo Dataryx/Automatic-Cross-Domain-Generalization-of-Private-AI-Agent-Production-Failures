@@ -170,6 +170,46 @@ def serve_registry(
     uvicorn.run(create_app(store), host=host, port=port)
 
 
+@registry_app.command("audit-export")
+def audit_export(
+    registry_url: str = typer.Option("http://127.0.0.1:8000", help="Registry base URL"),
+    output: str | None = typer.Option(None, help="Optional output JSON path"),
+    signed: bool = typer.Option(False, help="Fetch signed export from /audit/export/signed"),
+) -> None:
+    """Export governance audit log from a running registry."""
+    import json
+    from pathlib import Path
+
+    import httpx
+
+    path = "/audit/export/signed" if signed else "/audit/export"
+    response = httpx.get(f"{registry_url.rstrip('/')}{path}", timeout=30.0)
+    response.raise_for_status()
+    payload = response.json()
+    text = json.dumps(payload, indent=2)
+    if output:
+        Path(output).write_text(text, encoding="utf-8")
+        typer.echo(f"Audit export written to {output}")
+    else:
+        typer.echo(text)
+
+
+@registry_app.command("audit-verify")
+def audit_verify(input_path: str = typer.Argument(..., help="Signed audit export JSON")) -> None:
+    """Verify Ed25519 signature on a signed audit export file."""
+    import json
+    from pathlib import Path
+
+    from cfi_governance.audit_attestation import verify_audit_export
+
+    payload = json.loads(Path(input_path).read_text(encoding="utf-8"))
+    if not verify_audit_export(payload):
+        typer.echo("Signature verification failed", err=True)
+        raise typer.Exit(1)
+    event_count = len(payload.get("events", []))
+    typer.echo(f"Signed audit export valid ({event_count} events)")
+
+
 @recipient_app.command("compile")
 def compile_local(
     invariant_path: str = typer.Option(...),

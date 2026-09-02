@@ -137,6 +137,15 @@ def verify() -> DodReport:
     report.checks.append(DodCheck("audit_watermark_module", (ROOT / "packages" / "cfi_governance" / "src" / "cfi_governance" / "audit_watermark.py").exists()))
     report.checks.append(DodCheck("verify_eval_harnesses_script", (ROOT / "scripts" / "verify_eval_harnesses.py").exists()))
     report.checks.append(DodCheck("verify_compose_stack_script", (ROOT / "scripts" / "verify_compose_stack.py").exists()))
+    report.checks.append(DodCheck("audit_attestation_module", (ROOT / "packages" / "cfi_governance" / "src" / "cfi_governance" / "audit_attestation.py").exists()))
+    report.checks.append(DodCheck("verify_audit_attestation_script", (ROOT / "scripts" / "verify_audit_attestation.py").exists()))
+    report.checks.append(DodCheck("k8s_manifests", (ROOT / "deploy" / "k8s" / "cfi-fed.yaml").exists()))
+    report.checks.append(DodCheck("audit_flush_module", (ROOT / "packages" / "cfi_governance" / "src" / "cfi_governance" / "audit_flush.py").exists()))
+    report.checks.append(DodCheck("audit_idempotency_module", (ROOT / "packages" / "cfi_governance" / "src" / "cfi_governance" / "audit_idempotency.py").exists()))
+    report.checks.append(DodCheck("audit_worm_module", (ROOT / "packages" / "cfi_governance" / "src" / "cfi_governance" / "audit_worm.py").exists()))
+    report.checks.append(DodCheck("helm_chart", (ROOT / "deploy" / "helm" / "cfi-fed" / "Chart.yaml").exists()))
+    report.checks.append(DodCheck("verify_helm_chart_script", (ROOT / "scripts" / "verify_helm_chart.py").exists()))
+    report.checks.append(DodCheck("verify_postgres_compose_script", (ROOT / "scripts" / "verify_postgres_compose.py").exists()))
     report.checks.append(DodCheck("mypy_ci_job", "mypy:" in (ROOT / ".github" / "workflows" / "ci.yml").read_text()))
     report.checks.append(
         DodCheck(
@@ -150,6 +159,13 @@ def verify() -> DodReport:
             "ci_compose_job",
             "compose:" in (ROOT / ".github" / "workflows" / "ci.yml").read_text()
             and "verify_compose_stack.py" in (ROOT / ".github" / "workflows" / "ci.yml").read_text(),
+        )
+    )
+    report.checks.append(
+        DodCheck(
+            "ci_eval_all_job",
+            "eval-all:" in (ROOT / ".github" / "workflows" / "ci.yml").read_text()
+            and "eval/run_all.py" in (ROOT / ".github" / "workflows" / "ci.yml").read_text(),
         )
     )
 
@@ -424,6 +440,103 @@ def verify() -> DodReport:
         report.checks.append(DodCheck("eval_harnesses_smoke", result.returncode == 0, result.stderr or result.stdout))
     except Exception as exc:
         report.checks.append(DodCheck("eval_harnesses_smoke", False, str(exc)))
+
+    try:
+        import subprocess
+
+        result = subprocess.run(
+            [sys.executable, "scripts/verify_audit_attestation.py"],
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+        )
+        report.checks.append(DodCheck("audit_attestation_smoke", result.returncode == 0, result.stderr or result.stdout))
+    except Exception as exc:
+        report.checks.append(DodCheck("audit_attestation_smoke", False, str(exc)))
+
+    try:
+        import os
+
+        from fastapi.testclient import TestClient
+
+        from cfi_contributor.packager import Packager
+        from cfi_contributor.release_gate import GateOutcome, ReleaseGate, ReleaseGateVerdict
+        from cfi_core.examples import build_exception_precedence_cfi
+        from cfi_core.signing import KeyPair
+        from cfi_governance.audit_attestation import verify_audit_export
+        from cfi_governance.audit_sink import AuditSink
+        from cfi_registry import RegistryStore, create_app
+
+        os.environ["CFI_AUDIT_SINK_SIGNED"] = "1"
+        cfi = build_exception_precedence_cfi()
+        gate = ReleaseGate()
+        verdict = gate.run(cfi, {i: True for i in range(1, 13)})
+        if verdict.outcome != GateOutcome.APPROVE:
+            verdict = ReleaseGateVerdict(outcome=GateOutcome.APPROVE, residual_risk_score=0.1)
+        pkg = Packager(KeyPair.generate("dod-signed-sink")).package(cfi, verdict)
+        import tempfile
+        from pathlib import Path as PathLib
+
+        with tempfile.TemporaryDirectory() as tmp:
+            sink_path = PathLib(tmp) / "audit.ndjson"
+            store = RegistryStore(audit_sink=AuditSink(file_path=sink_path))
+            client = TestClient(create_app(store))
+            client.post("/cfi/register", json={"package": pkg.cfi.model_dump(mode="json")})
+            sink_result = client.post("/audit/sink").json()
+            line = json.loads(sink_path.read_text(encoding="utf-8").strip())
+            payload = line["payload"] if "payload" in line else line
+            report.checks.append(
+                DodCheck(
+                    "signed_audit_sink_smoke",
+                    sink_result.get("signed_batch") is True
+                    and verify_audit_export(payload)
+                    and bool(payload.get("batch_id")),
+                )
+            )
+    except Exception as exc:
+        report.checks.append(DodCheck("signed_audit_sink_smoke", False, str(exc)))
+
+    try:
+        result = subprocess.run(
+            [sys.executable, "scripts/verify_helm_chart.py"],
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+        )
+        report.checks.append(DodCheck("helm_chart_smoke", result.returncode == 0, result.stderr or result.stdout))
+    except Exception as exc:
+        report.checks.append(DodCheck("helm_chart_smoke", False, str(exc)))
+
+    try:
+        from cfi_governance.audit_idempotency import AuditIdempotencyLedger
+        from cfi_governance.audit_sink import AuditSink
+        from cfi_governance.audit_worm import read_worm_chain_head
+
+        import tempfile
+        from pathlib import Path as PathLib
+
+        with tempfile.TemporaryDirectory() as tmp:
+            sink_path = PathLib(tmp) / "audit.ndjson"
+            ledger_path = PathLib(tmp) / "ledger.txt"
+            sink = AuditSink(
+                file_path=sink_path,
+                worm_chain=True,
+                idempotency=AuditIdempotencyLedger(persist_path=ledger_path),
+            )
+            batch = {"batch_id": "a" * 64, "events": [{"x": 1}]}
+            sink.emit([{"x": 1}], signed_batch=batch)
+            duplicate = sink.emit([{"x": 1}], signed_batch=batch)
+            record = json.loads(sink_path.read_text(encoding="utf-8").strip())
+            report.checks.append(
+                DodCheck(
+                    "audit_worm_idempotency_smoke",
+                    duplicate.idempotent_skip is True
+                    and "chain_hash" in record
+                    and read_worm_chain_head(sink_path) == record["chain_hash"],
+                )
+            )
+    except Exception as exc:
+        report.checks.append(DodCheck("audit_worm_idempotency_smoke", False, str(exc)))
 
     return report
 
