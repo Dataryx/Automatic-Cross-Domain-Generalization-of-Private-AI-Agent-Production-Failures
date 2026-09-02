@@ -10,6 +10,7 @@ import httpx
 
 from cfi_core.http_tls import httpx_client_options
 from cfi_federation import ClippedContribution
+from cfi_federation.zk_attestation import attestation_to_json
 
 
 class _TestClientHttp:
@@ -94,14 +95,24 @@ class AggregatorClient:
         minimum_k: int,
         measurement_spec_id: str,
         cohort_id: str = "default",
+        attestation: object | None = None,
     ) -> dict[str, Any]:
-        payload = {
+        payload: dict[str, Any] = {
             "contributions": [c.__dict__ for c in contributions],
             "epsilon": epsilon,
             "minimum_k": minimum_k,
             "measurement_spec_id": measurement_spec_id,
             "cohort_id": cohort_id,
         }
+        if attestation is not None:
+            from cfi_federation.zk_attestation import CircuitAttestation
+
+            if isinstance(attestation, CircuitAttestation):
+                payload["attestation"] = attestation_to_json(attestation)
+            elif isinstance(attestation, dict):
+                payload["attestation"] = attestation
+            else:
+                raise TypeError("attestation must be CircuitAttestation or dict")
         response = self._http().post("/aggregate", json=payload)
         response.raise_for_status()
         return response.json()

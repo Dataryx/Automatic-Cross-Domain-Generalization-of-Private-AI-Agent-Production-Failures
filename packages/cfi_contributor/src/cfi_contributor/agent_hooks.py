@@ -9,7 +9,32 @@ from urllib.parse import urlparse
 
 from cfi_contributor.graph import IncidentGraph
 from cfi_contributor.replay import HttpAgentReplayProvider
-from cfi_contributor.replay_profiles import REPLAY_PROFILES, list_profiles
+from cfi_contributor.replay_profiles import LIVE_HOOK_ENV, REPLAY_PROFILES, list_profiles
+
+LIVE_HOOK_PROFILES = ("agentrx", "causalflow")
+
+
+def is_live_hook_mode() -> bool:
+    """True when CFI_HOOK_MODE=live (production endpoints, not local stubs)."""
+    return os.getenv("CFI_HOOK_MODE", "").strip().lower() == "live"
+
+
+def hook_mode_assumption() -> str:
+    if is_live_hook_mode():
+        return (
+            "Live production hook endpoints configured via env; "
+            "causal identification and sandbox isolation are not guaranteed."
+        )
+    return "AgentRx/CausalFlow hooks are sandbox stubs, not production agent runtimes."
+
+
+def require_live_hook_env() -> None:
+    """Fail closed when live mode is enabled but production URLs are unset."""
+    if not is_live_hook_mode():
+        return
+    missing = [env for env in LIVE_HOOK_ENV.values() if not os.getenv(env)]
+    if missing:
+        raise RuntimeError(f"CFI_HOOK_MODE=live requires env vars: {', '.join(sorted(missing))}")
 
 
 class _HttpGetClient(Protocol):
@@ -99,6 +124,7 @@ class _HttpxReplayClient:
 
 def probe_profile_http(profile: str) -> HookProbeResult:
     """Probe one replay profile against env-configured HTTP endpoints."""
+    require_live_hook_env()
     import httpx
 
     from cfi_core.http_tls import httpx_client_options
@@ -115,6 +141,7 @@ def probe_profile_http(profile: str) -> HookProbeResult:
 
 def probe_all_profiles_http() -> list[HookProbeResult]:
     """Probe all replay profiles against env-configured HTTP endpoints."""
+    require_live_hook_env()
     import httpx
 
     from cfi_core.http_tls import httpx_client_options

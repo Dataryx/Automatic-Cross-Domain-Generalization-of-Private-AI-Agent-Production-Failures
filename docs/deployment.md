@@ -40,6 +40,9 @@ CFI_REQUIRE_DOCKER=1 python scripts/verify_tls_full_pipeline.py
 # mTLS-terminated stack (optional client certs):
 docker compose -f docker-compose.mtls.yml up --build
 CFI_REQUIRE_DOCKER=1 python scripts/verify_mtls_full_pipeline.py
+CFI_REQUIRE_DOCKER=1 python scripts/verify_postgres_tls_full_pipeline.py
+CFI_REQUIRE_DOCKER=1 python scripts/verify_mtls_required_full_pipeline.py
+CFI_REQUIRE_DOCKER=1 python scripts/verify_pipeline_matrix_ci.py
 # or individually:
 cfi-registry serve
 python services/coordinator/main.py
@@ -60,6 +63,7 @@ python services/causalflow_stub/main.py
 | `CFI_REPLAY_MOCK_URL` | `http://127.0.0.1:8010/replay` | Mock replay profile |
 | `CFI_AGENTRX_URL` | `http://127.0.0.1:8020/v1/replay` | AgentRx sandbox endpoint |
 | `CFI_CAUSALFLOW_URL` | `http://127.0.0.1:8021/v1/counterfactual` | CausalFlow sandbox endpoint |
+| `CFI_HOOK_MODE` | unset | Set to `live` for production AgentRx/CausalFlow URLs (fail-closed if unset) |
 | `CFI_REGISTRY_URL` | `http://127.0.0.1:8000` | Registry base URL for remote CLI workflows |
 | `CFI_COORDINATOR_URL` | `http://127.0.0.1:8001` | Coordinator base URL |
 | `CFI_AGGREGATOR_URL` | `http://127.0.0.1:8002` | Aggregator base URL |
@@ -120,6 +124,7 @@ cfi-contribute ingest-publish --input-dir ./bundles --output-dir ./out --registr
 10. Build signed release checkpoint: `make verify-release` (writes `eval/output/release_manifest.json`).
 11. For reproducible release signatures: `python scripts/generate_release_signing_key.py` then set `CFI_RELEASE_SIGNING_KEY_PATH`.
 12. Kubernetes (prototype): flat manifests `deploy/k8s/cfi-fed.yaml` or Helm chart `deploy/helm/cfi-fed/`.
+13. Operator runbook: `docs/production-runbook.md` (ingress paths, live hooks, corpus ingest at scale).
 
 ## Observability
 

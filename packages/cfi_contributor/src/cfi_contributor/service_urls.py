@@ -87,3 +87,18 @@ def apply_tls_hook_env(gateway: str | None = None) -> None:
     for key, value in tls_hook_env(gateway).items():
         os.environ[key] = value
 
+
+def helm_federation_endpoints(
+    host: str = "cfi-fed.local",
+    *,
+    tls: bool = True,
+) -> dict[str, str]:
+    """Federation URLs matching Helm ingress path prefixes (/registry, /coordinator, /aggregator)."""
+    scheme = "https" if tls else "http"
+    base = f"{scheme}://{host}"
+    return {
+        "registry": f"{base}/registry",
+        "coordinator": f"{base}/coordinator",
+        "aggregator": f"{base}/aggregator",
+    }
+

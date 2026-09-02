@@ -15,7 +15,6 @@ class ReplayProfileSpec:
     default_url: str
     notes: str
 
-
 REPLAY_PROFILES: dict[str, ReplayProfileSpec] = {
     "mock": ReplayProfileSpec(
         name="mock",
@@ -35,6 +34,12 @@ REPLAY_PROFILES: dict[str, ReplayProfileSpec] = {
         default_url="http://127.0.0.1:8021/v1/counterfactual",
         notes="Sandboxed CausalFlow counterfactual endpoint; causal identification not guaranteed.",
     ),
+}
+
+
+LIVE_HOOK_ENV: dict[str, str] = {
+    "agentrx": "CFI_AGENTRX_URL",
+    "causalflow": "CFI_CAUSALFLOW_URL",
 }
 
 

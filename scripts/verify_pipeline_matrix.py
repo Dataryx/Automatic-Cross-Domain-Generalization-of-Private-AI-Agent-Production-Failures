@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -14,7 +15,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from cfi_contributor.pipeline_runner import run_inprocess_full_pipeline
-from eval.pipeline_matrix import validate_matrix, write_pipeline_matrix
+from eval.pipeline_matrix import PIPELINE_VARIANTS, validate_matrix, write_pipeline_matrix
 
 
 def main() -> int:
@@ -25,15 +26,19 @@ def main() -> int:
         inprocess_path.write_text(json.dumps(summary, indent=2), encoding="utf-8")
 
     matrix = write_pipeline_matrix(OUT)
-    errors = validate_matrix(matrix, require_inprocess=True)
+    require_all = os.getenv("CFI_PIPELINE_REQUIRE_ALL", "0") == "1"
+    errors = validate_matrix(matrix, require_inprocess=True, require_all=require_all)
     if errors:
         print("; ".join(errors), file=sys.stderr)
         return 1
 
+    label = "all variants" if require_all else "inprocess required"
     print(
-        f"Pipeline matrix OK: {matrix['ok_count']}/{matrix['total_variants']} variants present "
-        f"(inprocess required)"
+        f"Pipeline matrix OK: {matrix['ok_count']}/{matrix['total_variants']} variants present ({label})"
     )
+    if require_all and matrix["ok_count"] < len(PIPELINE_VARIANTS):
+        print("Not all pipeline variants present", file=sys.stderr)
+        return 1
     return 0
 
 

@@ -88,7 +88,10 @@ def bundle_raw_trace(bundle: dict[str, Any]) -> dict[str, Any]:
     return {"events": events}
 
 
-def discover_bundles(input_dir: Path) -> list[Path]:
+def discover_bundles(input_dir: Path, *, recursive: bool = True) -> list[Path]:
+    """Discover incident-bundle JSON files; recursive by default for tenant subdirs."""
+    if recursive:
+        return sorted(p for p in input_dir.rglob("*.json") if p.is_file())
     return sorted(input_dir.glob("*.json"))
 
 
@@ -100,6 +103,8 @@ def ingest_directory(
     seed: int = 421337,
     key_pair: KeyPair | None = None,
     packages_dir: Path | None = None,
+    recursive: bool = True,
+    max_bundles: int | None = None,
 ) -> IngestReport:
     """Validate local incident bundles; optionally run contributor extraction."""
     report = IngestReport()
@@ -112,7 +117,16 @@ def ingest_directory(
     if packages_dir is not None:
         packages_dir.mkdir(parents=True, exist_ok=True)
 
-    for path in discover_bundles(input_dir):
+    bundle_paths = discover_bundles(input_dir, recursive=recursive)
+    if max_bundles is not None:
+        bundle_paths = bundle_paths[:max_bundles]
+    if max_bundles is not None or recursive:
+        report.assumptions.append(
+            f"Discovered {len(bundle_paths)} bundle(s) "
+            f"(recursive={recursive}, max_bundles={max_bundles or 'none'})."
+        )
+
+    for path in bundle_paths:
         record = IngestRecord(bundle_path=str(path), incident_id=path.stem, validated=False)
         try:
             bundle = load_bundle(path)
@@ -147,6 +161,7 @@ def write_manifest(report: IngestReport, output_dir: Path) -> Path:
     manifest = {
         "validated": report.validated_count,
         "extracted": report.extracted_count,
+        "total_records": len(report.records),
         "assumptions": report.assumptions,
         "records": [r.__dict__ for r in report.records],
     }

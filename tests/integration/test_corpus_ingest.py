@@ -44,3 +44,17 @@ def test_write_manifest() -> None:
         path = write_manifest(report, Path(tmp))
         assert path.exists()
         assert path.name == "ingest_manifest.json"
+
+
+def test_discover_recursive_nested(tmp_path: Path) -> None:
+    nested = tmp_path / "tenant-a" / "2026"
+    nested.mkdir(parents=True)
+    sample = BUNDLES / "bench-001.json"
+    (nested / "incident.json").write_text(sample.read_text(encoding="utf-8"), encoding="utf-8")
+    paths = discover_bundles(tmp_path, recursive=True)
+    assert len(paths) == 1
+
+
+def test_ingest_max_bundles() -> None:
+    report = ingest_directory(BUNDLES, max_bundles=2, recursive=False)
+    assert len(report.records) == 2

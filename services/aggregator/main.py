@@ -13,7 +13,11 @@ from cfi_core.observability import format_prometheus, service_health
 from cfi_core.tracing import configure_tracing, tracing_status
 from cfi_federation import ClippedContribution, secure_aggregate
 from cfi_federation.accountant import PrivacyAccountant
-from cfi_federation.zk_attestation import CircuitAttestation, verify_circuit_attestation
+from cfi_federation.zk_attestation import (
+    CircuitAttestation,
+    attestation_from_json,
+    verify_circuit_attestation,
+)
 
 configure_tracing("aggregator")
 
@@ -22,13 +26,21 @@ configure_service_app(app, "aggregator")
 _accountant = PrivacyAccountant(total_epsilon=float(os.getenv("CFI_TOTAL_EPSILON", "10.0")))
 
 
+class AttestationWire(BaseModel):
+    circuit_digest: str
+    input_digest: str
+    output_digest: str
+    proof: str
+    assumptions: list[str] = []
+
+
 class AggregateRequest(BaseModel):
     contributions: list[ClippedContribution]
     epsilon: float
     minimum_k: int
     measurement_spec_id: str
     cohort_id: str = "default"
-    attestation: CircuitAttestation | None = None
+    attestation: AttestationWire | None = None
 
 
 @app.get("/health")
@@ -70,8 +82,11 @@ def tracing() -> dict[str, str | bool]:
 
 @app.post("/aggregate")
 def aggregate(req: AggregateRequest) -> dict[str, Any]:
-    if req.attestation and not verify_circuit_attestation(req.attestation):
-        raise HTTPException(status_code=400, detail="Invalid ZK attestation")
+    attestation: CircuitAttestation | None = None
+    if req.attestation:
+        attestation = attestation_from_json(req.attestation.model_dump())
+        if not verify_circuit_attestation(attestation):
+            raise HTTPException(status_code=400, detail="Invalid ZK attestation")
 
     verdict = _accountant.request_release(
         req.epsilon, len(req.contributions), req.cohort_id, req.measurement_spec_id
@@ -89,13 +104,16 @@ def aggregate(req: AggregateRequest) -> dict[str, Any]:
     )
     if release is None:
         return {"released": False, "reason": "below_threshold", "remaining_epsilon": verdict.remaining_epsilon}
-    return {
+    result: dict[str, Any] = {
         "released": True,
         "noisy_prevalence": release.noisy_prevalence,
         "assumptions": release.assumptions,
         "measurement_spec_id": release.measurement_spec_id,
         "remaining_epsilon": verdict.remaining_epsilon,
     }
+    if attestation is not None:
+        result["zk_attestation_verified"] = True
+    return result
 
 
 if __name__ == "__main__":

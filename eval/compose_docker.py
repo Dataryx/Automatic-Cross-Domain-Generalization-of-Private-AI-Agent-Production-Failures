@@ -46,12 +46,15 @@ def wait_for_url(
     timeout_s: float = 180.0,
     interval_s: float = 2.0,
     verify: bool | str | None = None,
+    use_client_cert: bool = True,
 ) -> tuple[bool, str]:
     import httpx
 
     from cfi_core.http_tls import httpx_client_options
 
-    if verify is None:
+    if not use_client_cert:
+        request_opts = {"verify": False if verify is None else verify}
+    elif verify is None:
         request_opts = httpx_client_options()
     else:
         request_opts = {**httpx_client_options(), "verify": verify}

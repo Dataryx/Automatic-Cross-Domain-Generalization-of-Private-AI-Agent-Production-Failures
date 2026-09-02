@@ -111,3 +111,8 @@ class RegistryClient:
         response = self._http().get("/audit/status")
         response.raise_for_status()
         return response.json()
+
+    def audit_export(self) -> dict[str, Any]:
+        response = self._http().get("/audit/export")
+        response.raise_for_status()
+        return response.json()

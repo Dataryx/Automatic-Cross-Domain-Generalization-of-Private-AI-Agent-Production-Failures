@@ -31,3 +31,16 @@ def test_write_and_validate_matrix(tmp_path: Path) -> None:
     matrix = write_pipeline_matrix(tmp_path)
     assert (tmp_path / "pipeline_matrix.json").exists()
     assert validate_matrix(matrix) == []
+
+
+def test_validate_matrix_require_all_fails_when_incomplete(tmp_path: Path) -> None:
+    summary = {
+        "invariant_id": "CFI-TEST-0001",
+        "assessed": True,
+        "aggregate_prevalence": 1.0,
+        "consortium_prevalence": 1.0,
+    }
+    (tmp_path / "full_pipeline_summary.json").write_text(json.dumps(summary), encoding="utf-8")
+    matrix = collect_pipeline_matrix(tmp_path)
+    errors = validate_matrix(matrix, require_all=True)
+    assert errors

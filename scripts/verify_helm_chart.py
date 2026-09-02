@@ -46,6 +46,10 @@ def main() -> int:
                 str(CHART),
                 "--set",
                 "registry.databaseUrl=postgresql://user:pass@postgres:5432/cfi",
+                "--set",
+                "ingress.enabled=true",
+                "--set",
+                "ingress.tls=true",
             ],
             cwd=ROOT,
             capture_output=True,
@@ -54,7 +58,19 @@ def main() -> int:
         if result.returncode != 0:
             print(result.stderr or result.stdout, file=sys.stderr)
             return result.returncode
-        for needle in ("cfi-registry", "cfi-coordinator", "cfi-aggregator", "CFI_DATABASE_URL", "CFI_REGISTRY_URL"):
+        for needle in (
+            "cfi-registry",
+            "cfi-coordinator",
+            "cfi-aggregator",
+            "CFI_DATABASE_URL",
+            "CFI_REGISTRY_URL",
+            "kind: Ingress",
+            "cfi-fed-tls",
+            "/registry",
+            "/coordinator",
+            "/aggregator",
+            "rewrite-target",
+        ):
             if needle not in result.stdout:
                 print(f"helm template output missing {needle}", file=sys.stderr)
                 return 1

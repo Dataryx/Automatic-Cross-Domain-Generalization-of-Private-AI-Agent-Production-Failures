@@ -3,10 +3,17 @@ CFI-Fed Helm chart (research prototype)
 1. Build the image:
    docker build -t {{ .Values.image.repository }}:{{ .Values.image.tag }} .
 
-2. Registry:
+2. With ingress enabled, federation URLs:
+{{- if .Values.ingress.enabled }}
+   Registry:     {{ include "cfi-fed.registryUrl" . }}
+   Coordinator:  {{ include "cfi-fed.coordinatorUrl" . }}
+   Aggregator:   {{ include "cfi-fed.aggregatorUrl" . }}
+{{- else }}
    kubectl -n {{ .Values.namespace }} port-forward svc/cfi-registry {{ .Values.registry.port }}:{{ .Values.registry.port }}
+{{- end }}
 
 3. Signed audit export:
-   curl http://127.0.0.1:{{ .Values.registry.port }}/audit/export/signed
+   curl {{ include "cfi-fed.registryUrl" . }}/audit/export/signed
 
 Honesty: manifests demonstrate deployability only; not a hardened production deployment.
+See docs/production-runbook.md for operator guidance.

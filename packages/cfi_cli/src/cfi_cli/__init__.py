@@ -128,6 +128,8 @@ def ingest_corpus_local(
     extract: bool = typer.Option(False, help="Run contributor extraction per bundle"),
     replay_profile: str | None = typer.Option(None, help="Optional replay profile"),
     seed: int = typer.Option(421337),
+    recursive: bool = typer.Option(True, help="Search subdirectories for bundles"),
+    max_bundles: int | None = typer.Option(None, help="Cap bundles processed (batch smoke)"),
 ) -> None:
     """Validate local private incident bundles; optional extraction (no egress)."""
     from pathlib import Path
@@ -139,6 +141,8 @@ def ingest_corpus_local(
         extract=extract,
         replay_profile=replay_profile,
         seed=seed,
+        recursive=recursive,
+        max_bundles=max_bundles,
     )
     manifest = write_manifest(report, Path(output_dir))
     typer.echo(
@@ -175,6 +179,7 @@ def ingest_publish_corpus(
         replay_profile=replay_profile,
         seed=seed,
         packages_dir=packages_dir,
+        recursive=True,
     )
     ingest_manifest = write_manifest(report, out)
     for note in report.assumptions:
@@ -240,10 +245,17 @@ def run_pipeline_remote(
 @contribute_app.command("probe-hooks")
 def probe_hooks(
     profile: str | None = typer.Option(None, help="Probe one profile; default probes all"),
+    live: bool = typer.Option(False, help="Require production hook URLs (CFI_HOOK_MODE=live)"),
 ) -> None:
     """Probe replay hook /health and replay endpoints from env-configured URLs."""
-    from cfi_contributor.agent_hooks import probe_all_profiles_http, probe_profile_http
+    import os
+
+    from cfi_contributor.agent_hooks import hook_mode_assumption, probe_all_profiles_http, probe_profile_http
     from cfi_contributor.replay_profiles import list_profiles
+
+    if live:
+        os.environ["CFI_HOOK_MODE"] = "live"
+    typer.echo(f"Assumption: {hook_mode_assumption()}")
 
     if profile:
         key = profile.lower()

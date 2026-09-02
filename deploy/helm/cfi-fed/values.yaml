@@ -45,5 +45,7 @@ ingress:
   className: nginx
   host: cfi-fed.local
   tls: false
+  # Strip /registry, /coordinator, /aggregator prefixes before forwarding (matches compose nginx).
+  rewrite: true
 
 resources: {}

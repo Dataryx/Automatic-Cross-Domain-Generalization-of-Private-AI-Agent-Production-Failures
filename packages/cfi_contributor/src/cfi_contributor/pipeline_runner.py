@@ -9,14 +9,27 @@ from pathlib import Path
 from typer.testing import CliRunner
 
 from cfi_cli import contribute_app, recipient_app
-from cfi_contributor.agent_hooks import probe_all_profiles_http
+from cfi_contributor.agent_hooks import hook_mode_assumption, is_live_hook_mode, probe_all_profiles_http
 from cfi_core.examples import build_exception_precedence_cfi
 from cfi_core.wire import CohortManifest, MeasurementSpec
 from cfi_federation.aggregator_client import AggregatorClient
 from cfi_federation.coordinator_client import CoordinatorClient
+from cfi_federation.zk_attestation import build_aggregate_attestation
 from cfi_recipient.federation_contrib import contribute_from_package
 from cfi_registry import RegistryStore, create_app
 from cfi_registry.client import RegistryClient
+
+
+def _attach_audit_summary(registry_url: str, summary: dict[str, object]) -> None:
+    with RegistryClient(registry_url) as registry:
+        export = registry.audit_export()
+        events = export.get("events", [])
+        summary["audit_event_count"] = len(events)
+        summary["audit_export_ok"] = any(
+            e.get("action") == "cfi.registered" and e.get("resource_id") == summary.get("invariant_id")
+            for e in events
+            if isinstance(e, dict)
+        )
 
 
 def cohort_manifest(invariant_id: str, *, epoch: str) -> CohortManifest:
@@ -105,6 +118,11 @@ def run_remote_full_pipeline(
         )
         contributions.append(fed.contribution)
 
+    attestation = build_aggregate_attestation(
+        contributions,
+        clip_f=manifest.clipping_f,
+        clip_n=manifest.clipping_n,
+    )
     with AggregatorClient(aggregator_url) as aggregator:
         aggregate = aggregator.aggregate(
             contributions,
@@ -112,6 +130,7 @@ def run_remote_full_pipeline(
             minimum_k=5,
             measurement_spec_id=manifest.measurement_spec.spec_id,
             cohort_id=manifest.aggregation_epoch,
+            attestation=attestation,
         )
     if not aggregate.get("released"):
         raise RuntimeError(f"Aggregate not released: {aggregate}")
@@ -134,7 +153,7 @@ def run_remote_full_pipeline(
         "Raw incident evidence never crosses contributor boundary in this workflow.",
     ]
     if probe_hooks:
-        assumptions.append("AgentRx/CausalFlow hooks are sandbox stubs, not production agent runtimes.")
+        assumptions.append(hook_mode_assumption())
     if extra_assumptions:
         assumptions.extend(extra_assumptions)
 
@@ -146,9 +165,12 @@ def run_remote_full_pipeline(
         "consortium_participants": consortium.get("participants"),
         "consortium_prevalence": consortium.get("noisy_prevalence"),
         "assumptions": assumptions,
+        "zk_attestation_verified": bool(aggregate.get("zk_attestation_verified")),
+        "live_hook_mode": is_live_hook_mode(),
     }
     if hook_profiles:
         summary["hook_profiles"] = hook_profiles
+    _attach_audit_summary(registry_url, summary)
     return summary
 
 
@@ -219,6 +241,11 @@ def run_inprocess_full_pipeline(
         )
         contributions.append(fed.contribution)
 
+    attestation = build_aggregate_attestation(
+        contributions,
+        clip_f=manifest.clipping_f,
+        clip_n=manifest.clipping_n,
+    )
     aggregator = AggregatorClient.for_app(aggregator_app)
     aggregate = aggregator.aggregate(
         contributions,
@@ -226,6 +253,7 @@ def run_inprocess_full_pipeline(
         minimum_k=5,
         measurement_spec_id=manifest.measurement_spec.spec_id,
         cohort_id=manifest.aggregation_epoch,
+        attestation=attestation,
     )
     if not aggregate.get("released"):
         raise RuntimeError(f"Aggregate not released: {aggregate}")
@@ -242,11 +270,22 @@ def run_inprocess_full_pipeline(
     if extra_assumptions:
         assumptions.extend(extra_assumptions)
 
-    return {
+    summary = {
         "invariant_id": invariant_id,
         "assessed": True,
         "aggregate_prevalence": aggregate.get("noisy_prevalence"),
         "consortium_participants": consortium.get("participants"),
         "consortium_prevalence": consortium.get("noisy_prevalence"),
         "assumptions": assumptions,
+        "zk_attestation_verified": bool(aggregate.get("zk_attestation_verified")),
     }
+    with RegistryClient.for_app(registry_app) as registry:
+        export = registry.audit_export()
+        events = export.get("events", [])
+        summary["audit_event_count"] = len(events)
+        summary["audit_export_ok"] = any(
+            e.get("action") == "cfi.registered" and e.get("resource_id") == invariant_id
+            for e in events
+            if isinstance(e, dict)
+        )
+    return summary

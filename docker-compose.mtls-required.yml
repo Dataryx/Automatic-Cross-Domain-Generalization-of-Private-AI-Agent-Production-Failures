@@ -1,0 +1,71 @@
+name: cfi-fed-mtls-required
+
+services:
+  registry:
+    build: .
+    command: python services/registry/main.py
+    environment:
+      CFI_DATABASE_URL: sqlite:////data/cfi_registry.db
+      CFI_HOST: 0.0.0.0
+      CFI_PORT: 8000
+    volumes:
+      - registry_data:/data
+
+  coordinator:
+    build: .
+    command: uvicorn services.coordinator.main:app --host 0.0.0.0 --port 8001
+
+  aggregator:
+    build: .
+    command: python services/aggregator/main.py
+    environment:
+      CFI_TOTAL_EPSILON: "10.0"
+      CFI_HOST: 0.0.0.0
+      CFI_PORT: 8002
+
+  replay_mock:
+    build: .
+    command: python services/replay_mock/main.py
+    environment:
+      CFI_HOST: 0.0.0.0
+      CFI_PORT: 8010
+
+  agentrx_stub:
+    build: .
+    command: python services/agentrx_stub/main.py
+    environment:
+      CFI_HOST: 0.0.0.0
+      CFI_PORT: 8020
+
+  causalflow_stub:
+    build: .
+    command: python services/causalflow_stub/main.py
+    environment:
+      CFI_HOST: 0.0.0.0
+      CFI_PORT: 8021
+
+  tau_stub:
+    build: .
+    command: python services/tau_stub/main.py
+    environment:
+      CFI_HOST: 0.0.0.0
+      CFI_PORT: 8022
+
+  nginx:
+    image: nginx:1.27-alpine
+    ports:
+      - "8443:443"
+    volumes:
+      - ./deploy/nginx/nginx-mtls-required.conf:/etc/nginx/nginx.conf:ro
+      - ./deploy/tls/certs:/etc/nginx/certs:ro
+    depends_on:
+      - registry
+      - coordinator
+      - aggregator
+      - replay_mock
+      - agentrx_stub
+      - causalflow_stub
+      - tau_stub
+
+volumes:
+  registry_data:

@@ -114,6 +114,12 @@ Re-running `sim/run_cfi_sim.py` recreates all CSVs and figures from fixed seed 4
 - Phase 39: mTLS nginx full pipeline (`verify_mtls_full_pipeline.py`), client cert env (`CFI_MTLS_CLIENT_CERT`, `CFI_MTLS_CLIENT_KEY`)
 - Phase 40: CLI defaults from env (`CFI_REGISTRY_URL`, etc.), `cfi-contribute endpoints`, `run_inprocess_full_pipeline` refactor
 - Phase 41: `cfi-contribute run-pipeline`, `pipeline_runner` module, pipeline matrix report (`eval/output/pipeline_matrix.json`)
+- Phase 42: CI pipeline matrix job (7/7 variants), `verify_pipeline_matrix_ci.py`
+- Phase 43: Postgres+TLS compose (`docker-compose.postgres.tls.yml`) + full pipeline smoke
+- Phase 44: mTLS required mode (`nginx-mtls-required.conf`, `docker-compose.mtls-required.yml`)
+- Phase 45: Helm ingress TLS validation, audit export in pipeline summaries
+- Phase 46: `RegistryClient.audit_export`, extended pipeline matrix (7 variants)
+- Phase 47: Helm ingress path alignment (`/registry`, `/coordinator`, `/aggregator`), ZK attestation in full pipeline, live hook mode (`CFI_HOOK_MODE=live`), corpus ingest at scale (`--recursive`, `--max-bundles`), production runbook (`docs/production-runbook.md`), consolidated CI (full pipelines in `pipeline-matrix` job only)
 - Release-gate adversaries auto-scored in `ReleaseGate.run()`
 - CI workflow (`.github/workflows/ci.yml`) + `docker-compose.yml` for services
 - `eval/run_all.py` — runs pytest, DoD checks, and all pilots

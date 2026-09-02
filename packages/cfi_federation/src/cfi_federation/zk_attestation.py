@@ -50,3 +50,47 @@ def verify_circuit_attestation(attestation: CircuitAttestation) -> bool:
         (attestation.circuit_digest + attestation.input_digest + attestation.output_digest).encode()
     ).digest()
     return attestation.proof == expected
+
+
+def attestation_to_json(attestation: CircuitAttestation) -> dict[str, object]:
+    """Serialize attestation for JSON HTTP payloads (proof as hex)."""
+    return {
+        "circuit_digest": attestation.circuit_digest,
+        "input_digest": attestation.input_digest,
+        "output_digest": attestation.output_digest,
+        "proof": attestation.proof.hex(),
+        "assumptions": list(attestation.assumptions),
+    }
+
+
+def attestation_from_json(data: dict[str, object]) -> CircuitAttestation:
+    """Deserialize attestation from JSON HTTP payloads."""
+    proof = data["proof"]
+    if isinstance(proof, str):
+        proof_bytes = bytes.fromhex(proof)
+    elif isinstance(proof, (bytes, bytearray)):
+        proof_bytes = bytes(proof)
+    else:
+        raise TypeError("attestation proof must be hex string or bytes")
+    assumptions = data.get("assumptions", [])
+    return CircuitAttestation(
+        circuit_digest=str(data["circuit_digest"]),
+        input_digest=str(data["input_digest"]),
+        output_digest=str(data["output_digest"]),
+        proof=proof_bytes,
+        assumptions=list(assumptions) if isinstance(assumptions, list) else [],
+    )
+
+
+def build_aggregate_attestation(
+    contributions: list[object],
+    *,
+    clip_f: int,
+    clip_n: int,
+) -> CircuitAttestation:
+    """Build ZK attestation over clipped aggregate counts (deterministic circuit only)."""
+    failures = sum(getattr(c, "failures", 0) for c in contributions)
+    trials = sum(getattr(c, "trials", 0) for c in contributions)
+    return prove_circuit_execution(
+        {"failures": failures, "trials": trials, "clip_f": clip_f, "clip_n": clip_n}
+    )

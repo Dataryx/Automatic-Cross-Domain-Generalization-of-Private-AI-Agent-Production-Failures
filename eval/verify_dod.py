@@ -106,6 +106,7 @@ def verify() -> DodReport:
     report.checks.append(DodCheck("golden_path_script", (ROOT / "scripts" / "golden_path.py").exists()))
     report.checks.append(DodCheck("tau_adapter", (ROOT / "eval" / "benchmarks" / "tau_adapter.py").exists()))
     report.checks.append(DodCheck("deployment_docs", (ROOT / "docs" / "deployment.md").exists()))
+    report.checks.append(DodCheck("production_runbook_docs", (ROOT / "docs" / "production-runbook.md").exists()))
     report.checks.append(DodCheck("health_check_script", (ROOT / "scripts" / "health_check.py").exists()))
     report.checks.append(DodCheck("postgres_compose", (ROOT / "docker-compose.postgres.yml").exists()))
     report.checks.append(DodCheck("sandbox_egress_tests", (ROOT / "tests" / "adversarial" / "test_sandbox_egress.py").exists()))
@@ -171,6 +172,12 @@ def verify() -> DodReport:
     report.checks.append(DodCheck("pipeline_runner_module", (ROOT / "packages" / "cfi_contributor" / "src" / "cfi_contributor" / "pipeline_runner.py").exists()))
     report.checks.append(DodCheck("pipeline_matrix_module", (ROOT / "eval" / "pipeline_matrix.py").exists()))
     report.checks.append(DodCheck("verify_pipeline_matrix_script", (ROOT / "scripts" / "verify_pipeline_matrix.py").exists()))
+    report.checks.append(DodCheck("verify_pipeline_matrix_ci_script", (ROOT / "scripts" / "verify_pipeline_matrix_ci.py").exists()))
+    report.checks.append(DodCheck("postgres_tls_compose", (ROOT / "docker-compose.postgres.tls.yml").exists()))
+    report.checks.append(DodCheck("mtls_required_compose", (ROOT / "docker-compose.mtls-required.yml").exists()))
+    report.checks.append(DodCheck("nginx_mtls_required_config", (ROOT / "deploy" / "nginx" / "nginx-mtls-required.conf").exists()))
+    report.checks.append(DodCheck("verify_postgres_tls_full_pipeline_script", (ROOT / "scripts" / "verify_postgres_tls_full_pipeline.py").exists()))
+    report.checks.append(DodCheck("verify_mtls_required_full_pipeline_script", (ROOT / "scripts" / "verify_mtls_required_full_pipeline.py").exists()))
     report.checks.append(DodCheck("http_tls_module", (ROOT / "packages" / "cfi_core" / "src" / "cfi_core" / "http_tls.py").exists()))
     report.checks.append(DodCheck("pipeline_smoke_module", (ROOT / "eval" / "pipeline_smoke.py").exists()))
     report.checks.append(DodCheck("service_urls_module", (ROOT / "packages" / "cfi_contributor" / "src" / "cfi_contributor" / "service_urls.py").exists()))
@@ -187,17 +194,14 @@ def verify() -> DodReport:
         DodCheck(
             "ci_compose_job",
             "compose:" in (ROOT / ".github" / "workflows" / "ci.yml").read_text()
-            and "verify_compose_stack.py" in (ROOT / ".github" / "workflows" / "ci.yml").read_text()
-            and "verify_compose_full_pipeline.py" in (ROOT / ".github" / "workflows" / "ci.yml").read_text()
-            and "verify_tls_full_pipeline.py" in (ROOT / ".github" / "workflows" / "ci.yml").read_text()
-            and "verify_mtls_full_pipeline.py" in (ROOT / ".github" / "workflows" / "ci.yml").read_text(),
+            and "verify_compose_stack.py" in (ROOT / ".github" / "workflows" / "ci.yml").read_text(),
         )
     )
     report.checks.append(
         DodCheck(
             "ci_postgres_compose_job",
             "postgres-compose:" in (ROOT / ".github" / "workflows" / "ci.yml").read_text()
-            and "verify_postgres_compose_full_pipeline.py" in (ROOT / ".github" / "workflows" / "ci.yml").read_text(),
+            and "verify_postgres_compose.py" in (ROOT / ".github" / "workflows" / "ci.yml").read_text(),
         )
     )
     report.checks.append(
@@ -205,6 +209,13 @@ def verify() -> DodReport:
             "ci_eval_all_job",
             "eval-all:" in (ROOT / ".github" / "workflows" / "ci.yml").read_text()
             and "eval/run_all.py" in (ROOT / ".github" / "workflows" / "ci.yml").read_text(),
+        )
+    )
+    report.checks.append(
+        DodCheck(
+            "ci_pipeline_matrix_job",
+            "pipeline-matrix:" in (ROOT / ".github" / "workflows" / "ci.yml").read_text()
+            and "verify_pipeline_matrix_ci.py" in (ROOT / ".github" / "workflows" / "ci.yml").read_text(),
         )
     )
 

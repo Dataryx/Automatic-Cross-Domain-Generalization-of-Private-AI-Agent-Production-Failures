@@ -12,6 +12,8 @@ PIPELINE_VARIANTS: dict[str, str] = {
     "postgres_compose": "postgres_compose_full_pipeline_summary.json",
     "tls": "tls_full_pipeline_summary.json",
     "mtls": "mtls_full_pipeline_summary.json",
+    "postgres_tls": "postgres_tls_full_pipeline_summary.json",
+    "mtls_required": "mtls_required_full_pipeline_summary.json",
 }
 
 REQUIRED_SUMMARY_KEYS = ("invariant_id", "assessed", "aggregate_prevalence", "consortium_prevalence")
@@ -60,13 +62,26 @@ def write_pipeline_matrix(output_dir: Path, *, matrix_path: Path | None = None) 
     return matrix
 
 
-def validate_matrix(matrix: dict[str, Any], *, require_inprocess: bool = True) -> list[str]:
+def validate_matrix(
+    matrix: dict[str, Any],
+    *,
+    require_inprocess: bool = True,
+    require_all: bool = False,
+    required_variants: set[str] | None = None,
+) -> list[str]:
     errors: list[str] = []
     variants = matrix.get("variants", {})
     if require_inprocess:
         inprocess = variants.get("inprocess", {})
         if inprocess.get("status") != "ok":
             errors.append("inprocess pipeline summary missing or invalid")
+    targets = set(required_variants or [])
+    if require_all:
+        targets = set(PIPELINE_VARIANTS.keys())
+    for name in sorted(targets):
+        item = variants.get(name, {})
+        if item.get("status") != "ok":
+            errors.append(f"{name} pipeline summary missing or invalid")
     for name, item in variants.items():
         if item.get("status") == "invalid":
             errors.append(f"{name} pipeline summary invalid")

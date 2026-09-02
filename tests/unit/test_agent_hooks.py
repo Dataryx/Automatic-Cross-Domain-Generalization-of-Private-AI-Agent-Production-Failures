@@ -41,3 +41,17 @@ def test_probe_hooks_cli(monkeypatch) -> None:
     result = runner.invoke(contribute_app, ["probe-hooks", "--profile", "agentrx"])
     assert result.exit_code == 0
     assert "agentrx" in result.stdout
+
+
+def test_live_hook_mode_requires_env(monkeypatch) -> None:
+    monkeypatch.setenv("CFI_HOOK_MODE", "live")
+    monkeypatch.delenv("CFI_AGENTRX_URL", raising=False)
+    monkeypatch.delenv("CFI_CAUSALFLOW_URL", raising=False)
+    from cfi_contributor.agent_hooks import require_live_hook_env
+
+    try:
+        require_live_hook_env()
+        raised = False
+    except RuntimeError:
+        raised = True
+    assert raised

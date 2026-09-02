@@ -42,6 +42,14 @@ def main() -> int:
         if route not in text:
             print(f"nginx-mtls.conf missing replay route: {route}", file=sys.stderr)
             return 1
+    required_conf = ROOT / "deploy" / "nginx" / "nginx-mtls-required.conf"
+    if not required_conf.exists():
+        print("Missing nginx-mtls-required.conf", file=sys.stderr)
+        return 1
+    required_text = required_conf.read_text(encoding="utf-8")
+    if "ssl_verify_client on" not in required_text:
+        print("nginx-mtls-required.conf missing ssl_verify_client on", file=sys.stderr)
+        return 1
     print("mTLS verification OK")
     return 0
 

@@ -90,6 +90,15 @@ tls-full-pipeline:
 mtls-full-pipeline:
 	python scripts/verify_mtls_full_pipeline.py
 
+postgres-tls-full-pipeline:
+	python scripts/verify_postgres_tls_full_pipeline.py
+
+mtls-required-full-pipeline:
+	python scripts/verify_mtls_required_full_pipeline.py
+
+pipeline-matrix-ci:
+	CFI_REQUIRE_DOCKER=1 python scripts/verify_pipeline_matrix_ci.py
+
 audit-attest:
 	python scripts/verify_audit_attestation.py
 
