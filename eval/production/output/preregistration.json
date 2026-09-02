@@ -1,0 +1,22 @@
+{
+  "study_id": "cfi-fed-prod-001",
+  "signed_commitment": "PsWgVQzRWXAjC2AQJjeETGJh3/eAZaWL542PL4nNcTF0xhr+Mt8QnFJ3lF4NXZQuRrynZfpknhR2Bf1y/s7cDg==",
+  "baselines": [
+    "raw_incident_replay",
+    "pii_redacted_narrative",
+    "taxonomy_label_guidance",
+    "local_incident_regression",
+    "policy_only_generation",
+    "llm_paraphrase",
+    "embedding_retrieval",
+    "manual_metamorphic",
+    "cfi_no_minimization",
+    "cfi_no_canonicalization",
+    "cfi_no_negative_controls",
+    "centralized_pooled_upper_bound"
+  ],
+  "privacy_thresholds": {
+    "source_attribution": 0.3,
+    "reconstruction": 0.3
+  }
+}

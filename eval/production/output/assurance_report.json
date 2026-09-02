@@ -1,0 +1,53 @@
+{
+  "invariant_coverage": {
+    "dimension": "transfer",
+    "metric": "embedding_success",
+    "value": 1.0,
+    "measurement_spec_id": "prod-spec-1",
+    "cohort_id": "cohort-1",
+    "assumptions": [
+      "Structural compilation only; semantic equivalence requires expert sign-off."
+    ],
+    "metadata": {}
+  },
+  "test_validity": {
+    "dimension": "compilation",
+    "metric": "structural_precision",
+    "value": 1.0,
+    "measurement_spec_id": "prod-spec-1",
+    "cohort_id": "cohort-1",
+    "assumptions": [],
+    "metadata": {}
+  },
+  "agent_susceptibility": {
+    "dimension": "reliability",
+    "metric": "susceptibility_rate",
+    "value": 0.5,
+    "measurement_spec_id": "prod-spec-1",
+    "cohort_id": "cohort-1",
+    "assumptions": [
+      "Rate meaningful only with signed spec and cohort."
+    ],
+    "metadata": {}
+  },
+  "mitigation_effectiveness": {
+    "dimension": "mitigation",
+    "metric": "susceptibility_reduction",
+    "value": 1.0,
+    "measurement_spec_id": "prod-spec-1",
+    "cohort_id": "cohort-1",
+    "assumptions": [],
+    "metadata": {}
+  },
+  "privacy_risk": {
+    "dimension": "privacy",
+    "metric": "residual_disclosure_risk",
+    "value": 0.1,
+    "measurement_spec_id": "prod-spec-1",
+    "cohort_id": "cohort-1",
+    "assumptions": [
+      "Canonicalization is not a confidentiality proof."
+    ],
+    "metadata": {}
+  }
+}

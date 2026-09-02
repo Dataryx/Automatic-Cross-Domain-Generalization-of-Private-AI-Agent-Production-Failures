@@ -25,6 +25,7 @@ STEPS = [
     ("verify_mtls", [sys.executable, "scripts/verify_mtls.py"]),
     ("package_release", [sys.executable, "scripts/package_release.py"]),
     ("verify_release", [sys.executable, "scripts/verify_release.py"]),
+    ("verify_eval_harnesses", [sys.executable, "scripts/verify_eval_harnesses.py"]),
     ("consortium_pilot", [sys.executable, "eval/consortium/run_consortium_pilot.py"]),
     ("field_pilot", [sys.executable, "eval/field/run_prospective_pilot.py"]),
     ("redteam", [sys.executable, "eval/redteam/run_redteam.py"]),

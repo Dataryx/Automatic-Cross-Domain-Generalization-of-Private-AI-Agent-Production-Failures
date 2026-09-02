@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+from typing import Any
 
 import uvicorn
 from fastapi import FastAPI, HTTPException
@@ -46,7 +47,7 @@ class ConsortiumRoundRequest(BaseModel):
     )
 
 
-def _signed_cfi_package() -> dict:
+def _signed_cfi_package() -> dict[str, Any]:
     cfi = build_exception_precedence_cfi()
     gate = ReleaseGate()
     verdict = gate.run(cfi, {i: True for i in range(1, 13)})
@@ -85,7 +86,7 @@ def open_epoch(req: PublishRequest) -> dict[str, str]:
 
 
 @app.post("/consortium/round")
-def run_consortium_round(req: ConsortiumRoundRequest) -> dict:
+def run_consortium_round(req: ConsortiumRoundRequest) -> dict[str, Any]:
     pkg = _signed_cfi_package()
     invariant_id = pkg["id"]
     spec = MeasurementSpec(

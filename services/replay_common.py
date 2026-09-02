@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+from typing import Any
 
 import uvicorn
 from fastapi import FastAPI
@@ -14,8 +15,8 @@ from cfi_core.tracing import configure_tracing, tracing_status
 
 
 class ReplayRequest(BaseModel):
-    nodes: dict
-    edges: list
+    nodes: dict[str, Any]
+    edges: list[dict[str, Any]]
     seed: int = 0
 
 

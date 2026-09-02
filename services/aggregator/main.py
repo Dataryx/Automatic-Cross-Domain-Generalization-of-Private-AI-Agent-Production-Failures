@@ -1,6 +1,7 @@
 """Deployable aggregation service with privacy accountant."""
 
 import os
+from typing import Any
 
 import uvicorn
 from fastapi import FastAPI, HTTPException
@@ -68,7 +69,7 @@ def tracing() -> dict[str, str | bool]:
 
 
 @app.post("/aggregate")
-def aggregate(req: AggregateRequest) -> dict:
+def aggregate(req: AggregateRequest) -> dict[str, Any]:
     if req.attestation and not verify_circuit_attestation(req.attestation):
         raise HTTPException(status_code=400, detail="Invalid ZK attestation")
 

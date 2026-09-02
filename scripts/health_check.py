@@ -22,7 +22,7 @@ from services.replay_mock.main import app as replay_app
 
 def main() -> int:
     checks = [
-        ("registry", TestClient(create_app(RegistryStore())), ["/health", "/ready", "/metrics"]),
+        ("registry", TestClient(create_app(RegistryStore())), ["/health", "/ready", "/metrics", "/audit/status"]),
         ("coordinator", TestClient(coordinator_app), ["/health", "/ready", "/metrics"]),
         ("aggregator", TestClient(aggregator_app), ["/health", "/ready", "/metrics", "/accountant"]),
         ("replay_mock", TestClient(replay_app), ["/health"]),

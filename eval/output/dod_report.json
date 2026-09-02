@@ -1,7 +1,7 @@
 {
   "all_passed": true,
-  "passed": 62,
-  "total": 62,
+  "passed": 68,
+  "total": 68,
   "checks": [
     {
       "name": "cfi_schema_exists",
@@ -259,12 +259,27 @@
       "detail": ""
     },
     {
+      "name": "verify_eval_harnesses_script",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "verify_compose_stack_script",
+      "passed": true,
+      "detail": ""
+    },
+    {
       "name": "mypy_ci_job",
       "passed": true,
       "detail": ""
     },
     {
       "name": "ci_release_job",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "ci_compose_job",
       "passed": true,
       "detail": ""
     },
@@ -312,6 +327,21 @@
       "name": "replay_profiles_smoke",
       "passed": true,
       "detail": "C:\\Users\\sumit\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\pydantic\\_internal\\_fields.py:192: UserWarning: Field name \"schema\" in \"CausalFailureInvariant\" shadows an attribute in parent \"BaseModel\"\n  warnings.warn(\n"
+    },
+    {
+      "name": "audit_status_smoke",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "postgres_governance_persistence_smoke",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "eval_harnesses_smoke",
+      "passed": true,
+      "detail": "C:\\Users\\sumit\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\pydantic\\_internal\\_fields.py:192: UserWarning: Field name \"schema\" in \"CausalFailureInvariant\" shadows an attribute in parent \"BaseModel\"\n  warnings.warn(\nC:\\Users\\sumit\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\pydantic\\_internal\\_fields.py:192: UserWarning: Field name \"schema\" in \"CausalFailureInvariant\" shadows an attribute in parent \"BaseModel\"\n  warnings.warn(\nC:\\Users\\sumit\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\pydantic\\_internal\\_fields.py:192: UserWarning: Field name \"schema\" in \"CausalFailureInvariant\" shadows an attribute in parent \"BaseModel\"\n  warnings.warn(\nC:\\Users\\sumit\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\pydantic\\_internal\\_fields.py:192: UserWarning: Field name \"schema\" in \"CausalFailureInvariant\" shadows an attribute in parent \"BaseModel\"\n  warnings.warn(\n"
     }
   ]
 }

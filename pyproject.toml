@@ -60,6 +60,7 @@ packages = [
 [tool.mypy]
 python_version = "3.12"
 strict = true
+explicit_package_bases = true
 packages = ["cfi_core", "cfi_contributor", "cfi_registry", "cfi_recipient", "cfi_federation", "cfi_governance", "cfi_cli"]
 mypy_path = [
     "packages/cfi_core/src",
@@ -69,6 +70,7 @@ mypy_path = [
     "packages/cfi_federation/src",
     "packages/cfi_governance/src",
     "packages/cfi_cli/src",
+    ".",
 ]
 
 [[tool.mypy.overrides]]

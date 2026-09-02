@@ -1,0 +1,171 @@
+[
+  {
+    "dimension": "privacy",
+    "metric": "trace_disclosure_risk",
+    "value": 1.0,
+    "ci_low": 0.9,
+    "ci_high": 1.0,
+    "measurement_spec_id": "prod-spec-1",
+    "cohort_id": "cohort-1",
+    "assumptions": [
+      "Raw trace replay baseline; high disclosure by design."
+    ]
+  },
+  {
+    "dimension": "privacy",
+    "metric": "redaction_residual_risk",
+    "value": 0.95,
+    "ci_low": 0.85,
+    "ci_high": 1.0,
+    "measurement_spec_id": "prod-spec-1",
+    "cohort_id": "cohort-1",
+    "assumptions": [
+      "PII redaction reduces but does not remove risk; delta vs CFI=0.70"
+    ]
+  },
+  {
+    "dimension": "compilation",
+    "metric": "partial_role_coverage",
+    "value": 0.0,
+    "ci_low": 0.0,
+    "ci_high": 0.1,
+    "measurement_spec_id": "prod-spec-1",
+    "cohort_id": "cohort-1",
+    "assumptions": [
+      "Taxonomy labels without full ontology mapping."
+    ]
+  },
+  {
+    "dimension": "reliability",
+    "metric": "susceptibility_rate",
+    "value": 1.0,
+    "ci_low": 0.9,
+    "ci_high": 1.0,
+    "measurement_spec_id": "prod-spec-1",
+    "cohort_id": "cohort-1",
+    "assumptions": [
+      "Local regression on compiled positive cases only."
+    ]
+  },
+  {
+    "dimension": "compilation",
+    "metric": "policy_structure_coverage",
+    "value": 0.7,
+    "ci_low": 0.6,
+    "ci_high": 0.7999999999999999,
+    "measurement_spec_id": "prod-spec-1",
+    "cohort_id": "cohort-1",
+    "assumptions": [
+      "Policy-only generation compiles structure without oracle validation."
+    ]
+  },
+  {
+    "dimension": "privacy",
+    "metric": "paraphrase_literal_leak_rate",
+    "value": 0.6,
+    "ci_low": 0.5,
+    "ci_high": 0.7,
+    "measurement_spec_id": "prod-spec-1",
+    "cohort_id": "cohort-1",
+    "assumptions": [
+      "LLM paraphrase may reintroduce literals; no live model called."
+    ]
+  },
+  {
+    "dimension": "transfer",
+    "metric": "retrieval_hit_rate",
+    "value": 0.5,
+    "ci_low": 0.4,
+    "ci_high": 0.6,
+    "measurement_spec_id": "prod-spec-1",
+    "cohort_id": "cohort-1",
+    "assumptions": [
+      "TF-IDF retrieval over paraphrase candidates; not production embedding store."
+    ]
+  },
+  {
+    "dimension": "compilation",
+    "metric": "metamorphic_coverage",
+    "value": 0.75,
+    "ci_low": 0.65,
+    "ci_high": 0.85,
+    "measurement_spec_id": "prod-spec-1",
+    "cohort_id": "cohort-1",
+    "assumptions": [
+      "Manual metamorphic suite approximated by packaged negative controls."
+    ]
+  },
+  {
+    "dimension": "compilation",
+    "metric": "coverage",
+    "value": 0.6,
+    "ci_low": 0.5,
+    "ci_high": 0.7,
+    "measurement_spec_id": "prod-spec-1",
+    "cohort_id": "cohort-1",
+    "assumptions": [
+      "Ablation: unminimized graph raises linkability risk."
+    ]
+  },
+  {
+    "dimension": "compilation",
+    "metric": "coverage",
+    "value": 0.0,
+    "ci_low": 0.0,
+    "ci_high": 0.0,
+    "measurement_spec_id": "prod-spec-1",
+    "cohort_id": "cohort-1",
+    "assumptions": [
+      "Ablation: non-canonical literals should fail lint/packager."
+    ]
+  },
+  {
+    "dimension": "compilation",
+    "metric": "coverage_without_negative_controls",
+    "value": 1.0,
+    "ci_low": 1.0,
+    "ci_high": 1.0,
+    "measurement_spec_id": "prod-spec-1",
+    "cohort_id": "cohort-1",
+    "assumptions": [
+      "Ablation: compiled cases omit negative controls."
+    ]
+  },
+  {
+    "dimension": "oracle",
+    "metric": "pooled_upper_bound",
+    "value": 1.0,
+    "ci_low": 0.9,
+    "ci_high": 1.0,
+    "measurement_spec_id": "prod-spec-1",
+    "cohort_id": "cohort-1",
+    "assumptions": [
+      "Centralized pooled upper bound; not privacy-preserving."
+    ]
+  },
+  {
+    "dimension": "mitigation",
+    "metric": "susceptibility_reduction",
+    "value": 1.0,
+    "ci_low": 0.9,
+    "ci_high": 1.0,
+    "measurement_spec_id": "prod-spec-1",
+    "cohort_id": "cohort-1",
+    "assumptions": [
+      "Mitigation accepted only under pre-declared statistical test.",
+      "Blocking entire capability without intent is flagged."
+    ]
+  },
+  {
+    "dimension": "privacy",
+    "metric": "residual_disclosure_risk",
+    "value": 0.4666666666666667,
+    "ci_low": 0.4166666666666667,
+    "ci_high": 0.5166666666666667,
+    "measurement_spec_id": "prod-spec-1",
+    "cohort_id": "cohort-1",
+    "assumptions": [
+      "Heuristic adversary scores; not a privacy proof."
+    ]
+  }
+]

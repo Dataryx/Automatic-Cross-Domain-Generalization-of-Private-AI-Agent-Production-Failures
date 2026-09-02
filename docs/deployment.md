@@ -23,11 +23,14 @@ make golden                     # end-to-end smoke (in-process)
 
 ```bash
 docker compose up --build
+# End-to-end stack smoke (requires running Docker daemon):
+CFI_REQUIRE_DOCKER=1 python scripts/verify_compose_stack.py
 # Postgres-backed registry:
 docker compose -f docker-compose.postgres.yml up --build
 # TLS-terminated stack (dev self-signed certs on :8443):
 python scripts/generate_dev_certs.py
 docker compose -f docker-compose.tls.yml up --build
+# TLS paths: /registry/, /coordinator/, /aggregator/, /replay/, /agentrx/, /causalflow/
 # mTLS-terminated stack (optional client certs):
 docker compose -f docker-compose.mtls.yml up --build
 # or individually:
@@ -70,6 +73,7 @@ cfi-contribute extract --output cfi.json --replay-url http://127.0.0.1:8010/repl
 ## Production checklist
 
 1. Run registry with PostgreSQL (`CFI_DATABASE_URL=postgresql://...`).
+2. Lifecycle state and review tickets persist in `artifact_lifecycle` and `review_tickets` tables.
 2. Restrict registry/coordinator network access; no raw incident ingress.
 3. Configure TLS termination at load balancer.
 4. Wire `HttpAgentReplayProvider` to sandboxed agent runtime (`--replay-url`).
@@ -90,6 +94,7 @@ cfi-contribute extract --output cfi.json --replay-url http://127.0.0.1:8010/repl
 | `GET /metrics` | all | Prometheus text gauges |
 | `GET /accountant` | aggregator | Privacy budget JSON snapshot |
 | `GET /audit/export` | registry | In-memory governance audit trail |
+| `GET /audit/status` | registry | Audit cursor, pending export count |
 | `POST /audit/sink` | registry | Flush audit events to external sink |
 
 ```bash

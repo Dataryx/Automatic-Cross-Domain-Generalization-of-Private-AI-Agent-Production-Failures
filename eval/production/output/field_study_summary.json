@@ -1,0 +1,12 @@
+{
+  "cfi_releases": 4,
+  "failed_extractions": 1,
+  "non_shareable": 1,
+  "prevention_rate": 1.0,
+  "assumptions": [
+    "Compressed simulation; not a live six-month field deployment.",
+    "Susceptibility uses sandbox stub agents, not production systems.",
+    "Anti-survivorship requires reporting failed extractions and non-shareable incidents.",
+    "Prevention attribution is correlational, not causal proof."
+  ]
+}

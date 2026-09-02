@@ -13,7 +13,7 @@ from cfi_core.wire import CohortManifest
 from cfi_governance import ArtifactRecord, LifecycleManager, LifecycleState
 from cfi_governance.audit_sink import AuditSink, flush_audit_events
 from cfi_governance.audit_watermark import AuditWatermark
-from cfi_governance.review import ReviewQueue, ReviewTicket
+from cfi_governance.review import ReviewStatus, ReviewTicket
 
 
 class Base(DeclarativeBase):
@@ -28,6 +28,29 @@ class CFIRecord(Base):
     schema_version: Mapped[str] = mapped_column(String, default="cfi/1.0")
     signature: Mapped[str] = mapped_column(String)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+
+class ArtifactLifecycleRecord(Base):
+    __tablename__ = "artifact_lifecycle"
+
+    invariant_id: Mapped[str] = mapped_column(String, primary_key=True)
+    state: Mapped[str] = mapped_column(String, nullable=False, index=True)
+    version: Mapped[str] = mapped_column(String, nullable=False)
+    record_json: Mapped[str] = mapped_column(Text, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+
+class ReviewTicketRecord(Base):
+    __tablename__ = "review_tickets"
+
+    invariant_id: Mapped[str] = mapped_column(String, primary_key=True)
+    status: Mapped[str] = mapped_column(String, nullable=False, index=True)
+    adversary_scores_json: Mapped[str] = mapped_column(Text, default="{}")
+    checklist_complete: Mapped[bool] = mapped_column(default=False)
+    reviewer: Mapped[str | None] = mapped_column(String, nullable=True)
+    notes: Mapped[str] = mapped_column(Text, default="")
+    created_at: Mapped[str] = mapped_column(String, nullable=False)
+    updated_at: Mapped[str] = mapped_column(String, nullable=False)
 
 
 class LifecycleHistory(Base):
@@ -80,10 +103,76 @@ class PostgresRegistryStore:
         Base.metadata.create_all(self._engine)
         self._session_factory = sessionmaker(bind=self._engine, expire_on_commit=False)
         self._lifecycle = LifecycleManager()
-        self._records: dict[str, ArtifactRecord] = {}
-        self._review = ReviewQueue()
         self._audit_sink = audit_sink if audit_sink is not None else AuditSink.from_env()
         self._watermark = watermark if watermark is not None else AuditWatermark.from_env()
+
+    def _session(self) -> Session:
+        return self._session_factory()
+
+    def close(self) -> None:
+        self._engine.dispose()
+
+    def _save_artifact_record(self, record: ArtifactRecord) -> None:
+        with self._session() as session:
+            row = session.get(ArtifactLifecycleRecord, record.invariant_id)
+            payload = record.model_dump_json()
+            if row is None:
+                session.add(
+                    ArtifactLifecycleRecord(
+                        invariant_id=record.invariant_id,
+                        state=record.state.value,
+                        version=record.version,
+                        record_json=payload,
+                    )
+                )
+            else:
+                row.state = record.state.value
+                row.version = record.version
+                row.record_json = payload
+                row.updated_at = datetime.now(timezone.utc)
+            session.commit()
+
+    def _ticket_from_row(self, row: ReviewTicketRecord) -> ReviewTicket:
+        return ReviewTicket(
+            invariant_id=row.invariant_id,
+            status=ReviewStatus(row.status),
+            adversary_scores=cast(dict[str, float], json.loads(row.adversary_scores_json)),
+            checklist_complete=row.checklist_complete,
+            reviewer=row.reviewer,
+            notes=row.notes,
+            created_at=row.created_at,
+            updated_at=row.updated_at,
+        )
+
+    def _save_review_ticket(self, ticket: ReviewTicket) -> None:
+        with self._session() as session:
+            row = session.get(ReviewTicketRecord, ticket.invariant_id)
+            if row is None:
+                session.add(
+                    ReviewTicketRecord(
+                        invariant_id=ticket.invariant_id,
+                        status=ticket.status.value,
+                        adversary_scores_json=json.dumps(ticket.adversary_scores),
+                        checklist_complete=ticket.checklist_complete,
+                        reviewer=ticket.reviewer,
+                        notes=ticket.notes,
+                        created_at=ticket.created_at,
+                        updated_at=ticket.updated_at,
+                    )
+                )
+            else:
+                row.status = ticket.status.value
+                row.adversary_scores_json = json.dumps(ticket.adversary_scores)
+                row.checklist_complete = ticket.checklist_complete
+                row.reviewer = ticket.reviewer
+                row.notes = ticket.notes
+                row.updated_at = ticket.updated_at
+            session.commit()
+
+    def _enqueue_review(self, invariant_id: str, adversary_scores: dict[str, float]) -> ReviewTicket:
+        ticket = ReviewTicket(invariant_id=invariant_id, adversary_scores=adversary_scores)
+        self._save_review_ticket(ticket)
+        return ticket
 
     def _log_audit(self, actor: str, action: str, resource_id: str, detail: dict[str, Any] | None = None) -> None:
         detail = detail or {}
@@ -145,16 +234,33 @@ class PostgresRegistryStore:
         result["exported_count"] = len(events)
         return result
 
-    def _session(self) -> Session:
-        return self._session_factory()
+    def audit_status(self) -> dict[str, Any]:
+        from sqlalchemy import func, select
 
-    def close(self) -> None:
-        self._engine.dispose()
+        watermark = self._watermark.value
+        with self._session() as session:
+            total = int(session.scalar(select(func.count()).select_from(AuditEventRecord)) or 0)
+            pending = int(
+                session.scalar(
+                    select(func.count())
+                    .select_from(AuditEventRecord)
+                    .where(AuditEventRecord.id > watermark)
+                )
+                or 0
+            )
+        return {
+            "event_count": total,
+            "watermark": watermark,
+            "pending_export": pending,
+            "sink_configured": self._audit_sink is not None,
+        }
 
     def get_lifecycle(self, invariant_id: str) -> ArtifactRecord:
-        if invariant_id not in self._records:
-            raise KeyError(invariant_id)
-        return self._records[invariant_id]
+        with self._session() as session:
+            row = session.get(ArtifactLifecycleRecord, invariant_id)
+            if row is None:
+                raise KeyError(invariant_id)
+            return ArtifactRecord.model_validate_json(row.record_json)
 
     def transition_lifecycle(
         self, invariant_id: str, to_state: LifecycleState, actor: str, reason: str
@@ -162,7 +268,7 @@ class PostgresRegistryStore:
         record = self.get_lifecycle(invariant_id)
         ts = datetime.now(timezone.utc).isoformat()
         updated = self._lifecycle.transition(record, to_state, actor, reason, ts)
-        self._records[invariant_id] = updated
+        self._save_artifact_record(updated)
         self.append_lifecycle_event(
             invariant_id, record.state.value, to_state.value, actor, reason
         )
@@ -185,11 +291,12 @@ class PostgresRegistryStore:
                 )
             )
             session.commit()
-        self._records[cfi.id] = ArtifactRecord(
+        record = ArtifactRecord(
             invariant_id=cfi.id, state=LifecycleState.REVIEWED, version="1.0.0"
         )
+        self._save_artifact_record(record)
         scores = ReleaseGateAdversaries().score_cfi(cfi)
-        self._review.enqueue(
+        self._enqueue_review(
             cfi.id,
             {
                 "source_attribution": scores.source_attribution,
@@ -258,22 +365,36 @@ class PostgresRegistryStore:
             session.commit()
 
     def list_review_queue(self) -> list[ReviewTicket]:
-        return self._review.list_pending()
+        from sqlalchemy import select
+
+        with self._session() as session:
+            rows = session.scalars(
+                select(ReviewTicketRecord)
+                .where(ReviewTicketRecord.status == ReviewStatus.PENDING.value)
+                .order_by(ReviewTicketRecord.created_at)
+            ).all()
+            return [self._ticket_from_row(row) for row in rows]
 
     def get_review_ticket(self, invariant_id: str) -> ReviewTicket:
-        return self._review.get(invariant_id)
+        with self._session() as session:
+            row = session.get(ReviewTicketRecord, invariant_id)
+            if row is None:
+                raise KeyError(invariant_id)
+            return self._ticket_from_row(row)
 
     def review_decision(self, invariant_id: str, req: Any) -> ReviewTicket:
-        ticket = self._review.decide(
-            invariant_id,
-            req.status,
-            req.reviewer,
-            req.notes,
-            req.checklist_complete,
-        )
-        if req.status.value == "approved":
+        ticket = self.get_review_ticket(invariant_id)
+        if req.status == ReviewStatus.PENDING:
+            raise ValueError("Decision must move ticket out of pending")
+        ticket.status = req.status
+        ticket.reviewer = req.reviewer
+        ticket.notes = req.notes
+        ticket.checklist_complete = req.checklist_complete
+        ticket.updated_at = datetime.now(timezone.utc).isoformat()
+        self._save_review_ticket(ticket)
+        if req.status == ReviewStatus.APPROVED:
             self.transition_lifecycle(invariant_id, LifecycleState.ACTIVE, req.reviewer, req.notes)
-        elif req.status.value == "rejected":
+        elif req.status == ReviewStatus.REJECTED:
             self.transition_lifecycle(invariant_id, LifecycleState.REVOKED, req.reviewer, req.notes)
         self._log_audit(
             req.reviewer,
@@ -291,7 +412,7 @@ class PostgresRegistryStore:
         record = self.get_lifecycle(invariant_id)
         ts = datetime.now(timezone.utc).isoformat()
         updated = self._lifecycle.supersede(record, req.successor_id, req.actor, ts)
-        self._records[invariant_id] = updated
+        self._save_artifact_record(updated)
         self.append_lifecycle_event(
             invariant_id,
             record.state.value,
@@ -309,9 +430,19 @@ class PostgresRegistryStore:
         with self._session() as session:
             registered = session.scalar(select(func.count()).select_from(CFIRecord)) or 0
             manifests = session.scalar(select(func.count()).select_from(CohortManifestRecord)) or 0
+            pending = session.scalar(
+                select(func.count())
+                .select_from(ReviewTicketRecord)
+                .where(ReviewTicketRecord.status == ReviewStatus.PENDING.value)
+            ) or 0
+            active = session.scalar(
+                select(func.count())
+                .select_from(ArtifactLifecycleRecord)
+                .where(ArtifactLifecycleRecord.state == LifecycleState.ACTIVE.value)
+            ) or 0
         return {
             "registered_cfis": int(registered),
-            "pending_reviews": len(self.list_review_queue()),
-            "active_cfis": sum(1 for r in self._records.values() if r.state == LifecycleState.ACTIVE),
+            "pending_reviews": int(pending),
+            "active_cfis": int(active),
             "cohort_manifests": int(manifests),
         }

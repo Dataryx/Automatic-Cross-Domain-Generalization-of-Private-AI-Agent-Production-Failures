@@ -25,6 +25,10 @@ def main() -> int:
     if "ssl_certificate" not in text or "TLSv1.2" not in text:
         print("nginx.conf missing TLS directives", file=sys.stderr)
         return 1
+    for route in ("/agentrx/", "/causalflow/"):
+        if route not in text:
+            print(f"nginx.conf missing replay route: {route}", file=sys.stderr)
+            return 1
 
     if not (CERT_DIR / "server.cert.pem").exists():
         result = subprocess.run([sys.executable, str(GEN)], cwd=ROOT)

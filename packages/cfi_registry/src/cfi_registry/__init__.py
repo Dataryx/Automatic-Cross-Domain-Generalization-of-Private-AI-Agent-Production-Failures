@@ -64,6 +64,7 @@ class RegistryStoreProtocol(Protocol):
     def stats(self) -> dict[str, int]: ...
     def export_audit_log(self) -> list[dict[str, Any]]: ...
     def flush_audit_sink(self) -> dict[str, Any]: ...
+    def audit_status(self) -> dict[str, Any]: ...
 
 
 class RegistryStore:
@@ -96,6 +97,16 @@ class RegistryStore:
         result["watermark"] = self._watermark.value
         result["exported_count"] = len(events)
         return result
+
+    def audit_status(self) -> dict[str, Any]:
+        total = len(self.export_audit_log())
+        watermark = self._watermark.value
+        return {
+            "event_count": total,
+            "watermark": watermark,
+            "pending_export": max(0, total - watermark),
+            "sink_configured": self._audit_sink is not None,
+        }
 
     def register(self, package: dict[str, Any]) -> str:
         from cfi_contributor.adversaries import ReleaseGateAdversaries
@@ -278,6 +289,15 @@ def create_app(store: RegistryStoreProtocol | None = None) -> FastAPI:
                 "Not a substitute for tamper-evident external logging.",
             ],
         }
+
+    @app.get("/audit/status")
+    def audit_status() -> dict[str, Any]:
+        status = registry.audit_status()
+        status["assumptions"] = [
+            "Watermark tracks last successfully exported audit cursor.",
+            "pending_export is approximate when using external SIEM deduplication.",
+        ]
+        return status
 
     @app.post("/audit/sink")
     def flush_audit_sink() -> dict[str, Any]:

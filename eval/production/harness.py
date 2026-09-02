@@ -3,10 +3,15 @@
 from __future__ import annotations
 
 import json
+import sys
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
 from typing import Any, Callable
+
+ROOT = Path(__file__).resolve().parents[2]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
 from cfi_contributor.packager import Packager
 from cfi_contributor.release_gate import GateOutcome, ReleaseGateVerdict

@@ -38,6 +38,10 @@ def main() -> int:
     if "ssl_client_certificate" not in text or "ssl_verify_client" not in text:
         print("nginx-mtls.conf missing client verification directives", file=sys.stderr)
         return 1
+    for route in ("/agentrx/", "/causalflow/"):
+        if route not in text:
+            print(f"nginx-mtls.conf missing replay route: {route}", file=sys.stderr)
+            return 1
     print("mTLS verification OK")
     return 0
 

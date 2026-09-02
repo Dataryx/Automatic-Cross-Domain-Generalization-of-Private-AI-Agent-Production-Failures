@@ -135,12 +135,21 @@ def verify() -> DodReport:
     report.checks.append(DodCheck("agentrx_stub_service", (ROOT / "services" / "agentrx_stub" / "main.py").exists()))
     report.checks.append(DodCheck("causalflow_stub_service", (ROOT / "services" / "causalflow_stub" / "main.py").exists()))
     report.checks.append(DodCheck("audit_watermark_module", (ROOT / "packages" / "cfi_governance" / "src" / "cfi_governance" / "audit_watermark.py").exists()))
+    report.checks.append(DodCheck("verify_eval_harnesses_script", (ROOT / "scripts" / "verify_eval_harnesses.py").exists()))
+    report.checks.append(DodCheck("verify_compose_stack_script", (ROOT / "scripts" / "verify_compose_stack.py").exists()))
     report.checks.append(DodCheck("mypy_ci_job", "mypy:" in (ROOT / ".github" / "workflows" / "ci.yml").read_text()))
     report.checks.append(
         DodCheck(
             "ci_release_job",
             "release:" in (ROOT / ".github" / "workflows" / "ci.yml").read_text()
             and "package_release.py" in (ROOT / ".github" / "workflows" / "ci.yml").read_text(),
+        )
+    )
+    report.checks.append(
+        DodCheck(
+            "ci_compose_job",
+            "compose:" in (ROOT / ".github" / "workflows" / "ci.yml").read_text()
+            and "verify_compose_stack.py" in (ROOT / ".github" / "workflows" / "ci.yml").read_text(),
         )
     )
 
@@ -335,6 +344,86 @@ def verify() -> DodReport:
         report.checks.append(DodCheck("replay_profiles_smoke", result.returncode == 0, result.stderr or result.stdout))
     except Exception as exc:
         report.checks.append(DodCheck("replay_profiles_smoke", False, str(exc)))
+
+    try:
+        from fastapi.testclient import TestClient
+
+        from cfi_registry import RegistryStore, create_app
+
+        client = TestClient(create_app(RegistryStore()))
+        status = client.get("/audit/status")
+        report.checks.append(
+            DodCheck(
+                "audit_status_smoke",
+                status.status_code == 200 and "pending_export" in status.json(),
+            )
+        )
+    except Exception as exc:
+        report.checks.append(DodCheck("audit_status_smoke", False, str(exc)))
+
+    try:
+        import tempfile
+        from pathlib import Path as PathLib
+
+        from fastapi.testclient import TestClient
+
+        from cfi_contributor.packager import Packager
+        from cfi_contributor.release_gate import GateOutcome, ReleaseGate, ReleaseGateVerdict
+        from cfi_core.examples import build_exception_precedence_cfi
+        from cfi_core.signing import KeyPair
+        from cfi_governance import LifecycleState
+        from cfi_governance.review import ReviewStatus
+        from cfi_registry import create_app
+        from cfi_registry.db import PostgresRegistryStore
+
+        with tempfile.TemporaryDirectory() as tmp:
+            db_path = PathLib(tmp) / "dod_governance.db"
+            url = f"sqlite:///{db_path.as_posix()}"
+            store = PostgresRegistryStore(url)
+            client = TestClient(create_app(store))
+            cfi = build_exception_precedence_cfi()
+            gate = ReleaseGate()
+            verdict = gate.run(cfi, {i: True for i in range(1, 13)})
+            if verdict.outcome != GateOutcome.APPROVE:
+                verdict = ReleaseGateVerdict(outcome=GateOutcome.APPROVE, residual_risk_score=0.1)
+            pkg = Packager(KeyPair.generate("dod-postgres-governance")).package(cfi, verdict)
+            iid = client.post("/cfi/register", json={"package": pkg.cfi.model_dump(mode="json")}).json()[
+                "invariant_id"
+            ]
+            client.post(
+                f"/review/{iid}/decision",
+                json={
+                    "status": ReviewStatus.APPROVED.value,
+                    "reviewer": "dod@org",
+                    "checklist_complete": True,
+                },
+            )
+            store.close()
+            store2 = PostgresRegistryStore(url)
+            lifecycle = store2.get_lifecycle(iid)
+            ticket = store2.get_review_ticket(iid)
+            store2.close()
+            report.checks.append(
+                DodCheck(
+                    "postgres_governance_persistence_smoke",
+                    lifecycle.state == LifecycleState.ACTIVE and ticket.status == ReviewStatus.APPROVED,
+                )
+            )
+    except Exception as exc:
+        report.checks.append(DodCheck("postgres_governance_persistence_smoke", False, str(exc)))
+
+    try:
+        import subprocess
+
+        result = subprocess.run(
+            [sys.executable, "scripts/verify_eval_harnesses.py"],
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+        )
+        report.checks.append(DodCheck("eval_harnesses_smoke", result.returncode == 0, result.stderr or result.stdout))
+    except Exception as exc:
+        report.checks.append(DodCheck("eval_harnesses_smoke", False, str(exc)))
 
     return report
 

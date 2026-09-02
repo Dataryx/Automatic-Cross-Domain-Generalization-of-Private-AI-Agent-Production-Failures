@@ -1,6 +1,6 @@
 # CFI-Fed developer commands
 
-.PHONY: install test sim dod golden tau stack stack-postgres stack-tls stack-mtls health live-replay replay-profiles mypy figures field-study ingest-corpus eval-all certs observability hardening auth release verify-release mtls
+.PHONY: install test sim dod golden tau stack stack-postgres stack-tls stack-mtls health live-replay replay-profiles eval-harnesses compose-smoke mypy figures field-study ingest-corpus eval-all certs observability hardening auth release verify-release mtls
 
 install:
 	pip install -e ".[dev]"
@@ -32,6 +32,12 @@ live-replay:
 
 replay-profiles:
 	python scripts/verify_replay_profiles.py
+
+eval-harnesses:
+	python scripts/verify_eval_harnesses.py
+
+compose-smoke:
+	python scripts/verify_compose_stack.py
 
 figures:
 	python scripts/verify_figures.py
@@ -72,7 +78,7 @@ stack-mtls:
 	docker compose -f docker-compose.mtls.yml up --build
 
 mypy:
-	mypy packages/cfi_core/src packages/cfi_contributor/src packages/cfi_registry/src packages/cfi_recipient/src packages/cfi_federation/src packages/cfi_governance/src packages/cfi_cli/src
+	mypy packages/cfi_core/src packages/cfi_contributor/src packages/cfi_registry/src packages/cfi_recipient/src packages/cfi_federation/src packages/cfi_governance/src packages/cfi_cli/src services/replay_common.py services/registry services/coordinator services/aggregator services/replay_mock services/agentrx_stub services/causalflow_stub
 
 stack:
 	docker compose up --build
