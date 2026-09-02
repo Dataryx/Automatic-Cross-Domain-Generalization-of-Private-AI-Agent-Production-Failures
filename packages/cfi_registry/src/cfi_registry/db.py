@@ -11,7 +11,6 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, sess
 
 from cfi_core.wire import CohortManifest
 from cfi_governance import ArtifactRecord, LifecycleManager, LifecycleState
-from cfi_governance.audit_log import AuditLog
 from cfi_governance.audit_sink import AuditSink, flush_audit_events
 from cfi_governance.review import ReviewQueue, ReviewTicket
 
@@ -60,6 +59,18 @@ class CohortManifestRecord(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
 
 
+class AuditEventRecord(Base):
+    __tablename__ = "audit_events"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    timestamp: Mapped[str] = mapped_column(String, nullable=False)
+    actor: Mapped[str] = mapped_column(String, nullable=False)
+    action: Mapped[str] = mapped_column(String, nullable=False, index=True)
+    resource_id: Mapped[str] = mapped_column(String, nullable=False, index=True)
+    detail_json: Mapped[str] = mapped_column(Text, default="{}")
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+
 class PostgresRegistryStore:
     """Append-only registry backing store."""
 
@@ -70,14 +81,38 @@ class PostgresRegistryStore:
         self._lifecycle = LifecycleManager()
         self._records: dict[str, ArtifactRecord] = {}
         self._review = ReviewQueue()
-        self._audit = AuditLog()
         self._audit_sink = audit_sink if audit_sink is not None else AuditSink.from_env()
 
     def _log_audit(self, actor: str, action: str, resource_id: str, detail: dict[str, Any] | None = None) -> None:
-        self._audit.append(actor, action, resource_id, detail)
+        detail = detail or {}
+        timestamp = datetime.now(timezone.utc).isoformat()
+        with self._session() as session:
+            session.add(
+                AuditEventRecord(
+                    timestamp=timestamp,
+                    actor=actor,
+                    action=action,
+                    resource_id=resource_id,
+                    detail_json=json.dumps(detail),
+                )
+            )
+            session.commit()
 
     def export_audit_log(self) -> list[dict[str, Any]]:
-        return self._audit.export()
+        from sqlalchemy import select
+
+        with self._session() as session:
+            rows = session.scalars(select(AuditEventRecord).order_by(AuditEventRecord.id)).all()
+            return [
+                {
+                    "timestamp": row.timestamp,
+                    "actor": row.actor,
+                    "action": row.action,
+                    "resource_id": row.resource_id,
+                    "detail": cast(dict[str, Any], json.loads(row.detail_json)),
+                }
+                for row in rows
+            ]
 
     def flush_audit_sink(self) -> dict[str, Any]:
         return flush_audit_events(self._audit_sink, self.export_audit_log())

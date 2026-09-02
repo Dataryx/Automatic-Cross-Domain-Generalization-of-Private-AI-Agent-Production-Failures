@@ -31,6 +31,13 @@ class KeyPair:
         private_key = Ed25519PrivateKey.generate()
         return cls(private_key=private_key, public_key=private_key.public_key(), org_id=org_id)
 
+    @classmethod
+    def from_private_pem(cls, pem: str, org_id: str) -> KeyPair:
+        private_key = serialization.load_pem_private_key(pem.encode(), password=None)
+        if not isinstance(private_key, Ed25519PrivateKey):
+            raise ValueError("PEM must be an Ed25519 private key")
+        return cls(private_key=private_key, public_key=private_key.public_key(), org_id=org_id)
+
     def public_pem(self) -> str:
         return self.public_key.public_bytes(
             encoding=Encoding.PEM,

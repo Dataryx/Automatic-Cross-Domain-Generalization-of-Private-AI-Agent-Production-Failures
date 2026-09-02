@@ -18,8 +18,11 @@ def main() -> int:
         sys.path.insert(0, str(ROOT))
     OUT.mkdir(parents=True, exist_ok=True)
 
-    from cfi_core.signing import KeyPair
-    from cfi_governance.release_attestation import sign_release_manifest, verify_release_manifest
+    from cfi_governance.release_attestation import (
+        load_release_key_pair,
+        sign_release_manifest,
+        verify_release_manifest,
+    )
     from eval.verify_dod import verify
 
     dod = verify()
@@ -42,8 +45,7 @@ def main() -> int:
             "Signature binds manifest content only; it is not a supply-chain SBOM.",
         ],
     }
-    org_id = os.getenv("CFI_RELEASE_SIGNING_ORG", "cfi-fed-release")
-    signed = sign_release_manifest(manifest, KeyPair.generate(org_id))
+    signed = sign_release_manifest(manifest, load_release_key_pair())
     if not verify_release_manifest(signed):
         print("Release signing self-check failed", file=sys.stderr)
         return 1

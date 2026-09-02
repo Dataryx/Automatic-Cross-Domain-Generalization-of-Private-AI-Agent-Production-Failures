@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import os
+import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -15,6 +16,7 @@ class AuditSinkResult:
     file_appended: int = 0
     webhook_url: str | None = None
     webhook_status: int | None = None
+    webhook_attempts: int = 0
     webhook_error: str | None = None
 
     def to_dict(self) -> dict[str, Any]:
@@ -23,6 +25,7 @@ class AuditSinkResult:
             "file_appended": self.file_appended,
             "webhook_url": self.webhook_url,
             "webhook_status": self.webhook_status,
+            "webhook_attempts": self.webhook_attempts,
             "webhook_error": self.webhook_error,
         }
 
@@ -30,9 +33,15 @@ class AuditSinkResult:
 class AuditSink:
     """Append audit events to a local file and/or POST to an external webhook."""
 
-    def __init__(self, file_path: Path | None = None, webhook_url: str | None = None) -> None:
+    def __init__(
+        self,
+        file_path: Path | None = None,
+        webhook_url: str | None = None,
+        max_retries: int | None = None,
+    ) -> None:
         self._file_path = file_path
         self._webhook_url = webhook_url
+        self._max_retries = max_retries if max_retries is not None else int(os.getenv("CFI_AUDIT_SINK_RETRIES", "3"))
 
     @classmethod
     def from_env(cls) -> AuditSink | None:
@@ -44,6 +53,26 @@ class AuditSink:
             file_path=Path(file_path) if file_path else None,
             webhook_url=webhook_url,
         )
+
+    def _post_webhook(self, events: list[dict[str, Any]]) -> tuple[int | None, int, str | None]:
+        import httpx
+
+        last_error: str | None = None
+        for attempt in range(1, self._max_retries + 1):
+            try:
+                response = httpx.post(
+                    self._webhook_url or "",
+                    json={"events": events, "source": "cfi-fed-registry"},
+                    timeout=10.0,
+                )
+                if response.status_code < 500:
+                    return response.status_code, attempt, None
+                last_error = f"HTTP {response.status_code}"
+            except Exception as exc:
+                last_error = str(exc)
+            if attempt < self._max_retries:
+                time.sleep(0.25 * (2 ** (attempt - 1)))
+        return None, self._max_retries, last_error
 
     def emit(self, events: list[dict[str, Any]]) -> AuditSinkResult:
         result = AuditSinkResult(
@@ -57,17 +86,10 @@ class AuditSink:
                     handle.write(json.dumps(event, sort_keys=True) + "\n")
             result.file_appended = len(events)
         if self._webhook_url and events:
-            try:
-                import httpx
-
-                response = httpx.post(
-                    self._webhook_url,
-                    json={"events": events, "source": "cfi-fed-registry"},
-                    timeout=10.0,
-                )
-                result.webhook_status = response.status_code
-            except Exception as exc:
-                result.webhook_error = str(exc)
+            status, attempts, error = self._post_webhook(events)
+            result.webhook_status = status
+            result.webhook_attempts = attempts
+            result.webhook_error = error
         return result
 
 

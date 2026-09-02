@@ -1,7 +1,7 @@
 {
   "all_passed": true,
-  "passed": 54,
-  "total": 54,
+  "passed": 57,
+  "total": 57,
   "checks": [
     {
       "name": "cfi_schema_exists",
@@ -234,7 +234,17 @@
       "detail": ""
     },
     {
+      "name": "generate_release_signing_key",
+      "passed": true,
+      "detail": ""
+    },
+    {
       "name": "mypy_ci_job",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "ci_release_job",
       "passed": true,
       "detail": ""
     },
@@ -270,6 +280,11 @@
     },
     {
       "name": "audit_sink_smoke",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "postgres_audit_persistence_smoke",
       "passed": true,
       "detail": ""
     }

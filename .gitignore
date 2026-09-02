@@ -9,6 +9,7 @@ deploy/tls/certs/ca.key.pem
 eval/benchmarks/output/
 eval/field/output/
 eval/output/
+eval/keys/
 *.egg-info/
 dist/
 build/

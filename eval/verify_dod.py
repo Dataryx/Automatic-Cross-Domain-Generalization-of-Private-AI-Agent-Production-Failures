@@ -130,7 +130,15 @@ def verify() -> DodReport:
     report.checks.append(DodCheck("audit_sink_module", (ROOT / "packages" / "cfi_governance" / "src" / "cfi_governance" / "audit_sink.py").exists()))
     report.checks.append(DodCheck("release_attestation_module", (ROOT / "packages" / "cfi_governance" / "src" / "cfi_governance" / "release_attestation.py").exists()))
     report.checks.append(DodCheck("verify_release_script", (ROOT / "scripts" / "verify_release.py").exists()))
+    report.checks.append(DodCheck("generate_release_signing_key", (ROOT / "scripts" / "generate_release_signing_key.py").exists()))
     report.checks.append(DodCheck("mypy_ci_job", "mypy:" in (ROOT / ".github" / "workflows" / "ci.yml").read_text()))
+    report.checks.append(
+        DodCheck(
+            "ci_release_job",
+            "release:" in (ROOT / ".github" / "workflows" / "ci.yml").read_text()
+            and "package_release.py" in (ROOT / ".github" / "workflows" / "ci.yml").read_text(),
+        )
+    )
 
     try:
         from fastapi.testclient import TestClient
@@ -270,6 +278,46 @@ def verify() -> DodReport:
     except Exception as exc:
         report.checks.append(DodCheck("release_attestation_smoke", False, str(exc)))
         report.checks.append(DodCheck("audit_sink_smoke", False, str(exc)))
+
+    try:
+        import tempfile
+        from pathlib import Path as PathLib
+
+        from fastapi.testclient import TestClient
+
+        from cfi_contributor.packager import Packager
+        from cfi_contributor.release_gate import GateOutcome, ReleaseGate, ReleaseGateVerdict
+        from cfi_core.examples import build_exception_precedence_cfi
+        from cfi_core.signing import KeyPair
+        from cfi_registry import create_app
+        from cfi_registry.db import PostgresRegistryStore
+
+        with tempfile.TemporaryDirectory() as tmp:
+            db_path = PathLib(tmp) / "audit.db"
+            url = f"sqlite:///{db_path.as_posix()}"
+            store = PostgresRegistryStore(url)
+            client = TestClient(create_app(store))
+            cfi = build_exception_precedence_cfi()
+            gate = ReleaseGate()
+            verdict = gate.run(cfi, {i: True for i in range(1, 13)})
+            if verdict.outcome != GateOutcome.APPROVE:
+                verdict = ReleaseGateVerdict(outcome=GateOutcome.APPROVE, residual_risk_score=0.1)
+            pkg = Packager(KeyPair.generate("dod-postgres-audit")).package(cfi, verdict)
+            iid = client.post("/cfi/register", json={"package": pkg.cfi.model_dump(mode="json")}).json()[
+                "invariant_id"
+            ]
+            store.close()
+            store2 = PostgresRegistryStore(url)
+            export = store2.export_audit_log()
+            store2.close()
+            report.checks.append(
+                DodCheck(
+                    "postgres_audit_persistence_smoke",
+                    any(e["action"] == "cfi.registered" and e["resource_id"] == iid for e in export),
+                )
+            )
+    except Exception as exc:
+        report.checks.append(DodCheck("postgres_audit_persistence_smoke", False, str(exc)))
 
     return report
 

@@ -51,7 +51,10 @@ python services/replay_mock/main.py
 | `CFI_OTEL_ENDPOINT` | unset | OTLP HTTP trace exporter URL (requires `pip install -e ".[otel]"`) |
 | `CFI_AUDIT_SINK_PATH` | unset | Append-only NDJSON file for governance audit export |
 | `CFI_AUDIT_SINK_URL` | unset | Webhook URL for `POST /audit/sink` batch delivery |
+| `CFI_AUDIT_SINK_RETRIES` | `3` | Webhook retry count with exponential backoff |
 | `CFI_RELEASE_SIGNING_ORG` | `cfi-fed-release` | Org id embedded in signed release manifest |
+| `CFI_RELEASE_SIGNING_KEY_PEM` | unset | Ed25519 private key PEM for stable release signatures |
+| `CFI_RELEASE_SIGNING_KEY_PATH` | unset | Path to Ed25519 private key PEM (alternative to inline PEM) |
 
 ```bash
 cfi-contribute replay-profiles
@@ -71,6 +74,7 @@ cfi-contribute extract --output cfi.json --replay-url http://127.0.0.1:8010/repl
 8. Ingest private incident bundles locally: `cfi-contribute ingest-corpus --input-dir ./bundles --output-dir ./out --extract`.
 9. Configure external audit sink (`CFI_AUDIT_SINK_PATH` or `CFI_AUDIT_SINK_URL`) and flush via `POST /audit/sink`.
 10. Build signed release checkpoint: `make verify-release` (writes `eval/output/release_manifest.json`).
+11. For reproducible release signatures: `python scripts/generate_release_signing_key.py` then set `CFI_RELEASE_SIGNING_KEY_PATH`.
 
 ## Observability
 
