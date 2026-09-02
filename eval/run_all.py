@@ -34,6 +34,9 @@ STEPS = [
     ("corpus_benchmark", [sys.executable, "eval/benchmarks/run_corpus.py"]),
     ("tau_adapter", [sys.executable, "eval/benchmarks/tau_adapter.py"]),
     ("golden_path", [sys.executable, "scripts/golden_path.py"]),
+    ("verify_full_pipeline", [sys.executable, "scripts/verify_full_pipeline.py"]),
+    ("compose_full_pipeline", [sys.executable, "scripts/verify_compose_full_pipeline.py"]),
+    ("postgres_compose_full_pipeline", [sys.executable, "scripts/verify_postgres_compose_full_pipeline.py"]),
 ]
 
 

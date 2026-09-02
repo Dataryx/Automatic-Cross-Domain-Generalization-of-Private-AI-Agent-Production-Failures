@@ -161,6 +161,12 @@ def verify() -> DodReport:
     report.checks.append(DodCheck("aggregator_client_module", (ROOT / "packages" / "cfi_federation" / "src" / "cfi_federation" / "aggregator_client.py").exists()))
     report.checks.append(DodCheck("federation_contrib_module", (ROOT / "packages" / "cfi_recipient" / "src" / "cfi_recipient" / "federation_contrib.py").exists()))
     report.checks.append(DodCheck("verify_federation_workflow_script", (ROOT / "scripts" / "verify_federation_workflow.py").exists()))
+    report.checks.append(DodCheck("coordinator_client_module", (ROOT / "packages" / "cfi_federation" / "src" / "cfi_federation" / "coordinator_client.py").exists()))
+    report.checks.append(DodCheck("verify_full_pipeline_script", (ROOT / "scripts" / "verify_full_pipeline.py").exists()))
+    report.checks.append(DodCheck("verify_compose_full_pipeline_script", (ROOT / "scripts" / "verify_compose_full_pipeline.py").exists()))
+    report.checks.append(DodCheck("verify_postgres_compose_full_pipeline_script", (ROOT / "scripts" / "verify_postgres_compose_full_pipeline.py").exists()))
+    report.checks.append(DodCheck("pipeline_smoke_module", (ROOT / "eval" / "pipeline_smoke.py").exists()))
+    report.checks.append(DodCheck("service_urls_module", (ROOT / "packages" / "cfi_contributor" / "src" / "cfi_contributor" / "service_urls.py").exists()))
     report.checks.append(DodCheck("verify_postgres_compose_script", (ROOT / "scripts" / "verify_postgres_compose.py").exists()))
     report.checks.append(DodCheck("mypy_ci_job", "mypy:" in (ROOT / ".github" / "workflows" / "ci.yml").read_text()))
     report.checks.append(
@@ -174,7 +180,15 @@ def verify() -> DodReport:
         DodCheck(
             "ci_compose_job",
             "compose:" in (ROOT / ".github" / "workflows" / "ci.yml").read_text()
-            and "verify_compose_stack.py" in (ROOT / ".github" / "workflows" / "ci.yml").read_text(),
+            and "verify_compose_stack.py" in (ROOT / ".github" / "workflows" / "ci.yml").read_text()
+            and "verify_compose_full_pipeline.py" in (ROOT / ".github" / "workflows" / "ci.yml").read_text(),
+        )
+    )
+    report.checks.append(
+        DodCheck(
+            "ci_postgres_compose_job",
+            "postgres-compose:" in (ROOT / ".github" / "workflows" / "ci.yml").read_text()
+            and "verify_postgres_compose_full_pipeline.py" in (ROOT / ".github" / "workflows" / "ci.yml").read_text(),
         )
     )
     report.checks.append(
@@ -651,6 +665,19 @@ def verify() -> DodReport:
         )
     except Exception as exc:
         report.checks.append(DodCheck("federation_workflow_smoke", False, str(exc)))
+
+    try:
+        result = subprocess.run(
+            [sys.executable, "scripts/verify_full_pipeline.py"],
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+        )
+        report.checks.append(
+            DodCheck("full_pipeline_smoke", result.returncode == 0, result.stderr or result.stdout)
+        )
+    except Exception as exc:
+        report.checks.append(DodCheck("full_pipeline_smoke", False, str(exc)))
 
     return report
 

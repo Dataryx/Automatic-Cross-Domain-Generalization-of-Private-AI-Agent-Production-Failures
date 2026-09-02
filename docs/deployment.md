@@ -26,8 +26,12 @@ make golden                     # end-to-end smoke (in-process)
 docker compose up --build
 # End-to-end stack smoke (requires running Docker daemon):
 CFI_REQUIRE_DOCKER=1 python scripts/verify_compose_stack.py
+# Full pipeline against live compose services (publish -> assess -> federate -> consortium):
+CFI_REQUIRE_DOCKER=1 python scripts/verify_compose_full_pipeline.py
 # Postgres-backed registry:
 docker compose -f docker-compose.postgres.yml up --build
+CFI_REQUIRE_DOCKER=1 python scripts/verify_postgres_compose.py
+CFI_REQUIRE_DOCKER=1 python scripts/verify_postgres_compose_full_pipeline.py
 # TLS-terminated stack (dev self-signed certs on :8443):
 python scripts/generate_dev_certs.py
 docker compose -f docker-compose.tls.yml up --build
@@ -54,6 +58,9 @@ python services/causalflow_stub/main.py
 | `CFI_REPLAY_MOCK_URL` | `http://127.0.0.1:8010/replay` | Mock replay profile |
 | `CFI_AGENTRX_URL` | `http://127.0.0.1:8020/v1/replay` | AgentRx sandbox endpoint |
 | `CFI_CAUSALFLOW_URL` | `http://127.0.0.1:8021/v1/counterfactual` | CausalFlow sandbox endpoint |
+| `CFI_REGISTRY_URL` | `http://127.0.0.1:8000` | Registry base URL for remote CLI workflows |
+| `CFI_COORDINATOR_URL` | `http://127.0.0.1:8001` | Coordinator base URL |
+| `CFI_AGGREGATOR_URL` | `http://127.0.0.1:8002` | Aggregator base URL |
 | `CFI_TAU_BENCH_URL` | unset | Optional τ-bench task JSON endpoint (format adapter only) |
 | `CFI_RATE_LIMIT_RPM` | `0` (disabled) | Per-client requests/minute; set e.g. `120` in production |
 | `CFI_API_TOKEN` | unset | Bearer token for mutating API calls; health/metrics bypass |
@@ -74,6 +81,8 @@ python services/causalflow_stub/main.py
 
 ```bash
 cfi-contribute replay-profiles
+cfi-contribute probe-hooks
+cfi-contribute probe-hooks --profile agentrx
 cfi-contribute extract --output cfi.json --replay-profile mock
 cfi-contribute extract --output cfi.json --replay-url http://127.0.0.1:8010/replay
 cfi-contribute register --package-path cfi.json --registry-url http://127.0.0.1:8000
@@ -83,6 +92,7 @@ cfi-recipient fetch --invariant-id CFI-EXCEPTION-PRECEDENCE-0001 --output fetche
 cfi-recipient pull --invariant-id CFI-EXCEPTION-PRECEDENCE-0001 --domain procurement
 cfi-recipient assess --invariant-id CFI-EXCEPTION-PRECEDENCE-0001 --domain procurement --output assess.json
 cfi-recipient contribute --invariant-id CFI-EXCEPTION-PRECEDENCE-0001 --tenant-id tenant-a --envelope-output envelope.json
+cfi-aggregate round --coordinator-url http://127.0.0.1:8001 --tenants 12 --minimum-k 10
 ```
 
 ## Production checklist

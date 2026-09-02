@@ -198,6 +198,35 @@ def list_replay_profiles() -> None:
         typer.echo(f"  {spec.notes}")
 
 
+@contribute_app.command("probe-hooks")
+def probe_hooks(
+    profile: str | None = typer.Option(None, help="Probe one profile; default probes all"),
+) -> None:
+    """Probe replay hook /health and replay endpoints from env-configured URLs."""
+    from cfi_contributor.agent_hooks import probe_all_profiles_http, probe_profile_http
+    from cfi_contributor.replay_profiles import list_profiles
+
+    if profile:
+        key = profile.lower()
+        if key not in list_profiles():
+            typer.echo(f"Unknown profile: {profile}. Choose from {list_profiles()}", err=True)
+            raise typer.Exit(1)
+        results = [probe_profile_http(key)]
+    else:
+        results = probe_all_profiles_http()
+
+    failed = False
+    for result in results:
+        ok = result.healthy and result.replay_ok
+        typer.echo(
+            f"{result.profile}: healthy={result.healthy} replay_ok={result.replay_ok} "
+            f"failure_rate={result.failure_rate}"
+        )
+        failed = failed or not ok
+    if failed:
+        raise typer.Exit(1)
+
+
 @contribute_app.command("register")
 def register_remote(
     package_path: str = typer.Option(..., help="Signed CFI package JSON"),
@@ -614,6 +643,26 @@ def evaluate_local(
         residual_privacy_risk=0.0,
     )
     typer.echo(json.dumps(report.to_dict(), indent=2))
+
+
+@aggregate_app.command("round")
+def remote_consortium_round(
+    coordinator_url: str = typer.Option("http://127.0.0.1:8001", help="Coordinator base URL"),
+    tenants: int = typer.Option(12, help="Number of consortium tenants"),
+    seed: int = typer.Option(421337),
+    minimum_k: int = typer.Option(10),
+    api_token: str | None = typer.Option(None, help="Bearer token (or CFI_API_TOKEN)"),
+) -> None:
+    """Run consortium round via remote coordinator service."""
+    import json
+
+    from cfi_federation.coordinator_client import CoordinatorClient
+
+    with CoordinatorClient(coordinator_url, token=api_token) as client:
+        result = client.consortium_round(tenants=tenants, seed=seed, minimum_k=minimum_k)
+    typer.echo(json.dumps(result, indent=2))
+    if not result.get("released"):
+        raise typer.Exit(1)
 
 
 @aggregate_app.command("consortium")

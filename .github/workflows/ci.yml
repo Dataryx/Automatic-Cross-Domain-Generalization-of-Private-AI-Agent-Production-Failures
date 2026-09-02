@@ -59,6 +59,8 @@ jobs:
         run: python scripts/verify_end_to_end.py
       - name: Federation workflow
         run: python scripts/verify_federation_workflow.py
+      - name: Full pipeline
+        run: python scripts/verify_full_pipeline.py
   compose:
     runs-on: ubuntu-latest
     steps:
@@ -67,6 +69,10 @@ jobs:
         env:
           CFI_REQUIRE_DOCKER: "1"
         run: python scripts/verify_compose_stack.py
+      - name: Compose full pipeline
+        env:
+          CFI_REQUIRE_DOCKER: "1"
+        run: python scripts/verify_compose_full_pipeline.py
   postgres-compose:
     runs-on: ubuntu-latest
     steps:
@@ -75,6 +81,10 @@ jobs:
         env:
           CFI_REQUIRE_DOCKER: "1"
         run: python scripts/verify_postgres_compose.py
+      - name: Postgres compose full pipeline
+        env:
+          CFI_REQUIRE_DOCKER: "1"
+        run: python scripts/verify_postgres_compose_full_pipeline.py
   sim:
     runs-on: ubuntu-latest
     steps:

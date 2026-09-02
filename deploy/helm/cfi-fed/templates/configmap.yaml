@@ -17,3 +17,18 @@ data:
   {{- if .Values.audit.sinkUrl }}
   CFI_AUDIT_SINK_URL: {{ .Values.audit.sinkUrl | quote }}
   {{- end }}
+  CFI_REGISTRY_URL: {{ .Values.client.registryUrl | quote }}
+  CFI_COORDINATOR_URL: {{ .Values.client.coordinatorUrl | quote }}
+  CFI_AGGREGATOR_URL: {{ .Values.client.aggregatorUrl | quote }}
+  {{- if .Values.client.replayMockUrl }}
+  CFI_REPLAY_MOCK_URL: {{ .Values.client.replayMockUrl | quote }}
+  {{- end }}
+  {{- if .Values.client.agentrxUrl }}
+  CFI_AGENTRX_URL: {{ .Values.client.agentrxUrl | quote }}
+  {{- end }}
+  {{- if .Values.client.causalflowUrl }}
+  CFI_CAUSALFLOW_URL: {{ .Values.client.causalflowUrl | quote }}
+  {{- end }}
+  {{- if .Values.client.tauBenchUrl }}
+  CFI_TAU_BENCH_URL: {{ .Values.client.tauBenchUrl | quote }}
+  {{- end }}

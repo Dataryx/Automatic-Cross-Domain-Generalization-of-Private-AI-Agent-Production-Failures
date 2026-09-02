@@ -31,6 +31,15 @@ audit:
   sinkUrl: ""
   signingKeyPem: ""
 
+client:
+  registryUrl: "http://cfi-registry:8000"
+  coordinatorUrl: "http://cfi-coordinator:8001"
+  aggregatorUrl: "http://cfi-aggregator:8002"
+  replayMockUrl: ""
+  agentrxUrl: ""
+  causalflowUrl: ""
+  tauBenchUrl: ""
+
 ingress:
   enabled: false
   className: nginx

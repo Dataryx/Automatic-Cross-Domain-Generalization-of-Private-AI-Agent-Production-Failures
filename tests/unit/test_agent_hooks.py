@@ -25,3 +25,19 @@ def test_probe_agentrx_hook() -> None:
     assert result.healthy
     assert result.replay_ok
     assert result.failure_rate is not None
+
+
+def test_probe_hooks_cli(monkeypatch) -> None:
+    from typer.testing import CliRunner
+
+    from cfi_cli import contribute_app
+    from cfi_contributor.agent_hooks import HookProbeResult
+
+    def fake_probe(profile: str) -> HookProbeResult:
+        return HookProbeResult(profile=profile, healthy=True, replay_ok=True, failure_rate=0.5)
+
+    monkeypatch.setattr("cfi_contributor.agent_hooks.probe_profile_http", fake_probe)
+    runner = CliRunner()
+    result = runner.invoke(contribute_app, ["probe-hooks", "--profile", "agentrx"])
+    assert result.exit_code == 0
+    assert "agentrx" in result.stdout

@@ -54,7 +54,7 @@ def main() -> int:
         if result.returncode != 0:
             print(result.stderr or result.stdout, file=sys.stderr)
             return result.returncode
-        for needle in ("cfi-registry", "cfi-coordinator", "cfi-aggregator", "CFI_DATABASE_URL"):
+        for needle in ("cfi-registry", "cfi-coordinator", "cfi-aggregator", "CFI_DATABASE_URL", "CFI_REGISTRY_URL"):
             if needle not in result.stdout:
                 print(f"helm template output missing {needle}", file=sys.stderr)
                 return 1

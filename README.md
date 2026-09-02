@@ -107,6 +107,9 @@ Re-running `sim/run_cfi_sim.py` recreates all CSVs and figures from fixed seed 4
 - Phase 32: corpus ingest-publish (`cfi-contribute ingest-publish`), `corpus_publish` module, `tau_stub` in TLS/mTLS stacks
 - Phase 33: `cfi-recipient assess` (remote fetch + local metrics), `verify_end_to_end.py` publish→assess workflow
 - Phase 34: `cfi-recipient contribute` (clipped federation shares), `AggregatorClient`, `verify_federation_workflow.py`
+- Phase 35: `CoordinatorClient`, `cfi-aggregate round`, unified `verify_full_pipeline.py` (publish→assess→federate→consortium)
+- Phase 36: compose live full pipeline (`verify_compose_full_pipeline.py`), `service_urls` env wiring (`CFI_REGISTRY_URL`, `CFI_COORDINATOR_URL`, `CFI_AGGREGATOR_URL`), `probe_all_profiles_http`
+- Phase 37: Postgres compose full pipeline, shared `eval/pipeline_smoke.py`, `cfi-contribute probe-hooks`, Helm client URL config
 - Release-gate adversaries auto-scored in `ReleaseGate.run()`
 - CI workflow (`.github/workflows/ci.yml`) + `docker-compose.yml` for services
 - `eval/run_all.py` — runs pytest, DoD checks, and all pilots
