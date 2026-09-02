@@ -1,6 +1,6 @@
 # CFI-Fed developer commands
 
-.PHONY: install test sim dod golden tau tau-live agent-hooks cross-boundary corpus-publish end-to-end federation full-pipeline compose-full-pipeline postgres-compose-full-pipeline stack stack-postgres stack-tls stack-mtls health live-replay replay-profiles eval-harnesses compose-smoke postgres-smoke helm-chart remote-registry contribute-publish audit-attest mypy figures field-study ingest-corpus eval-all certs observability hardening auth release verify-release mtls
+.PHONY: install test sim dod golden tau tau-live agent-hooks cross-boundary corpus-publish end-to-end federation full-pipeline compose-full-pipeline postgres-compose-full-pipeline tls-full-pipeline mtls-full-pipeline stack stack-postgres stack-tls stack-mtls health live-replay replay-profiles eval-harnesses compose-smoke postgres-smoke helm-chart remote-registry contribute-publish audit-attest mypy figures field-study ingest-corpus eval-all certs observability hardening auth release verify-release mtls
 
 install:
 	pip install -e ".[dev]"
@@ -72,11 +72,23 @@ federation:
 full-pipeline:
 	python scripts/verify_full_pipeline.py
 
+cli-endpoints:
+	python scripts/verify_cli_endpoints.py
+
+pipeline-matrix:
+	python scripts/verify_pipeline_matrix.py
+
 compose-full-pipeline:
 	python scripts/verify_compose_full_pipeline.py
 
 postgres-compose-full-pipeline:
 	python scripts/verify_postgres_compose_full_pipeline.py
+
+tls-full-pipeline:
+	python scripts/verify_tls_full_pipeline.py
+
+mtls-full-pipeline:
+	python scripts/verify_mtls_full_pipeline.py
 
 audit-attest:
 	python scripts/verify_audit_attestation.py

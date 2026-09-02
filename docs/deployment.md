@@ -35,9 +35,11 @@ CFI_REQUIRE_DOCKER=1 python scripts/verify_postgres_compose_full_pipeline.py
 # TLS-terminated stack (dev self-signed certs on :8443):
 python scripts/generate_dev_certs.py
 docker compose -f docker-compose.tls.yml up --build
+CFI_REQUIRE_DOCKER=1 python scripts/verify_tls_full_pipeline.py
 # TLS paths: /registry/, /coordinator/, /aggregator/, /replay/, /agentrx/, /causalflow/, /tau/
 # mTLS-terminated stack (optional client certs):
 docker compose -f docker-compose.mtls.yml up --build
+CFI_REQUIRE_DOCKER=1 python scripts/verify_mtls_full_pipeline.py
 # or individually:
 cfi-registry serve
 python services/coordinator/main.py
@@ -61,6 +63,11 @@ python services/causalflow_stub/main.py
 | `CFI_REGISTRY_URL` | `http://127.0.0.1:8000` | Registry base URL for remote CLI workflows |
 | `CFI_COORDINATOR_URL` | `http://127.0.0.1:8001` | Coordinator base URL |
 | `CFI_AGGREGATOR_URL` | `http://127.0.0.1:8002` | Aggregator base URL |
+| `CFI_TLS_GATEWAY_URL` | `https://127.0.0.1:8443` | nginx TLS gateway for path-prefixed services |
+| `CFI_TLS_VERIFY` | `1` | Set `0` to disable TLS cert verification (dev self-signed only) |
+| `CFI_TLS_CA_BUNDLE` | unset | Custom CA bundle path for federation HTTP clients |
+| `CFI_MTLS_CLIENT_CERT` | unset | Client certificate PEM for mTLS federation clients |
+| `CFI_MTLS_CLIENT_KEY` | unset | Client private key PEM for mTLS federation clients |
 | `CFI_TAU_BENCH_URL` | unset | Optional τ-bench task JSON endpoint (format adapter only) |
 | `CFI_RATE_LIMIT_RPM` | `0` (disabled) | Per-client requests/minute; set e.g. `120` in production |
 | `CFI_API_TOKEN` | unset | Bearer token for mutating API calls; health/metrics bypass |
@@ -81,6 +88,8 @@ python services/causalflow_stub/main.py
 
 ```bash
 cfi-contribute replay-profiles
+cfi-contribute endpoints
+cfi-contribute run-pipeline --output pipeline_summary.json
 cfi-contribute probe-hooks
 cfi-contribute probe-hooks --profile agentrx
 cfi-contribute extract --output cfi.json --replay-profile mock

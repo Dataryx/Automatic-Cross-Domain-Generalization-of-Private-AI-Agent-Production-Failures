@@ -165,6 +165,13 @@ def verify() -> DodReport:
     report.checks.append(DodCheck("verify_full_pipeline_script", (ROOT / "scripts" / "verify_full_pipeline.py").exists()))
     report.checks.append(DodCheck("verify_compose_full_pipeline_script", (ROOT / "scripts" / "verify_compose_full_pipeline.py").exists()))
     report.checks.append(DodCheck("verify_postgres_compose_full_pipeline_script", (ROOT / "scripts" / "verify_postgres_compose_full_pipeline.py").exists()))
+    report.checks.append(DodCheck("verify_tls_full_pipeline_script", (ROOT / "scripts" / "verify_tls_full_pipeline.py").exists()))
+    report.checks.append(DodCheck("verify_mtls_full_pipeline_script", (ROOT / "scripts" / "verify_mtls_full_pipeline.py").exists()))
+    report.checks.append(DodCheck("verify_cli_endpoints_script", (ROOT / "scripts" / "verify_cli_endpoints.py").exists()))
+    report.checks.append(DodCheck("pipeline_runner_module", (ROOT / "packages" / "cfi_contributor" / "src" / "cfi_contributor" / "pipeline_runner.py").exists()))
+    report.checks.append(DodCheck("pipeline_matrix_module", (ROOT / "eval" / "pipeline_matrix.py").exists()))
+    report.checks.append(DodCheck("verify_pipeline_matrix_script", (ROOT / "scripts" / "verify_pipeline_matrix.py").exists()))
+    report.checks.append(DodCheck("http_tls_module", (ROOT / "packages" / "cfi_core" / "src" / "cfi_core" / "http_tls.py").exists()))
     report.checks.append(DodCheck("pipeline_smoke_module", (ROOT / "eval" / "pipeline_smoke.py").exists()))
     report.checks.append(DodCheck("service_urls_module", (ROOT / "packages" / "cfi_contributor" / "src" / "cfi_contributor" / "service_urls.py").exists()))
     report.checks.append(DodCheck("verify_postgres_compose_script", (ROOT / "scripts" / "verify_postgres_compose.py").exists()))
@@ -181,7 +188,9 @@ def verify() -> DodReport:
             "ci_compose_job",
             "compose:" in (ROOT / ".github" / "workflows" / "ci.yml").read_text()
             and "verify_compose_stack.py" in (ROOT / ".github" / "workflows" / "ci.yml").read_text()
-            and "verify_compose_full_pipeline.py" in (ROOT / ".github" / "workflows" / "ci.yml").read_text(),
+            and "verify_compose_full_pipeline.py" in (ROOT / ".github" / "workflows" / "ci.yml").read_text()
+            and "verify_tls_full_pipeline.py" in (ROOT / ".github" / "workflows" / "ci.yml").read_text()
+            and "verify_mtls_full_pipeline.py" in (ROOT / ".github" / "workflows" / "ci.yml").read_text(),
         )
     )
     report.checks.append(
@@ -678,6 +687,32 @@ def verify() -> DodReport:
         )
     except Exception as exc:
         report.checks.append(DodCheck("full_pipeline_smoke", False, str(exc)))
+
+    try:
+        result = subprocess.run(
+            [sys.executable, "scripts/verify_cli_endpoints.py"],
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+        )
+        report.checks.append(
+            DodCheck("cli_endpoints_smoke", result.returncode == 0, result.stderr or result.stdout)
+        )
+    except Exception as exc:
+        report.checks.append(DodCheck("cli_endpoints_smoke", False, str(exc)))
+
+    try:
+        result = subprocess.run(
+            [sys.executable, "scripts/verify_pipeline_matrix.py"],
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+        )
+        report.checks.append(
+            DodCheck("pipeline_matrix_smoke", result.returncode == 0, result.stderr or result.stdout)
+        )
+    except Exception as exc:
+        report.checks.append(DodCheck("pipeline_matrix_smoke", False, str(exc)))
 
     return report
 

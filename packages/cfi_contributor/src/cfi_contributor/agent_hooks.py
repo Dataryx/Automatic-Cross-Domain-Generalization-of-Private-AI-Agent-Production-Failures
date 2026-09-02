@@ -101,8 +101,10 @@ def probe_profile_http(profile: str) -> HookProbeResult:
     """Probe one replay profile against env-configured HTTP endpoints."""
     import httpx
 
+    from cfi_core.http_tls import httpx_client_options
+
     key = profile.lower()
-    with httpx.Client(timeout=30.0) as client:
+    with httpx.Client(timeout=30.0, **httpx_client_options()) as client:
         return probe_replay_profile(
             key,
             health_client=_HttpxHealthClient(resolve_profile_health_base(key), client),
@@ -115,8 +117,10 @@ def probe_all_profiles_http() -> list[HookProbeResult]:
     """Probe all replay profiles against env-configured HTTP endpoints."""
     import httpx
 
+    from cfi_core.http_tls import httpx_client_options
+
     results: list[HookProbeResult] = []
-    with httpx.Client(timeout=30.0) as client:
+    with httpx.Client(timeout=30.0, **httpx_client_options()) as client:
         for profile in list_profiles():
             base = resolve_profile_health_base(profile)
             replay_url = resolve_profile_replay_url(profile)

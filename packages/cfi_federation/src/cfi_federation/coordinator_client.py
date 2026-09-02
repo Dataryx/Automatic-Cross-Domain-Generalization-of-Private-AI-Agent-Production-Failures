@@ -8,6 +8,8 @@ from typing import Any
 
 import httpx
 
+from cfi_core.http_tls import httpx_client_options
+
 
 class _TestClientHttp:
     def __init__(self, test_client: object) -> None:
@@ -62,6 +64,7 @@ class CoordinatorClient:
                 base_url=self.base_url,
                 timeout=self.timeout,
                 headers=self._headers(),
+                **httpx_client_options(),
             )
             self._owns_client = True
         return self._client

@@ -9,6 +9,8 @@ from typing import Any
 
 import httpx
 
+from cfi_core.http_tls import httpx_client_options
+
 DEFAULT_TASKS = Path(__file__).resolve().parent / "tau_tasks.json"
 
 LIVE_ASSUMPTIONS = [
@@ -25,7 +27,7 @@ def load_tasks(path: Path | None = None, *, url: str | None = None) -> list[dict
     """Load tasks from remote URL, explicit path, or bundled JSON."""
     remote = url or resolve_tasks_url()
     if remote:
-        response = httpx.get(remote, timeout=10.0)
+        response = httpx.get(remote, timeout=10.0, **httpx_client_options())
         response.raise_for_status()
         data = response.json()
         if isinstance(data, dict) and isinstance(data.get("tasks"), list):

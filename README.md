@@ -110,6 +110,10 @@ Re-running `sim/run_cfi_sim.py` recreates all CSVs and figures from fixed seed 4
 - Phase 35: `CoordinatorClient`, `cfi-aggregate round`, unified `verify_full_pipeline.py` (publish→assess→federate→consortium)
 - Phase 36: compose live full pipeline (`verify_compose_full_pipeline.py`), `service_urls` env wiring (`CFI_REGISTRY_URL`, `CFI_COORDINATOR_URL`, `CFI_AGGREGATOR_URL`), `probe_all_profiles_http`
 - Phase 37: Postgres compose full pipeline, shared `eval/pipeline_smoke.py`, `cfi-contribute probe-hooks`, Helm client URL config
+- Phase 38: TLS nginx full pipeline (`verify_tls_full_pipeline.py`), `cfi_core.http_tls` (`CFI_TLS_VERIFY`, `CFI_TLS_CA_BUNDLE`), TLS gateway URL helpers
+- Phase 39: mTLS nginx full pipeline (`verify_mtls_full_pipeline.py`), client cert env (`CFI_MTLS_CLIENT_CERT`, `CFI_MTLS_CLIENT_KEY`)
+- Phase 40: CLI defaults from env (`CFI_REGISTRY_URL`, etc.), `cfi-contribute endpoints`, `run_inprocess_full_pipeline` refactor
+- Phase 41: `cfi-contribute run-pipeline`, `pipeline_runner` module, pipeline matrix report (`eval/output/pipeline_matrix.json`)
 - Release-gate adversaries auto-scored in `ReleaseGate.run()`
 - CI workflow (`.github/workflows/ci.yml`) + `docker-compose.yml` for services
 - `eval/run_all.py` — runs pytest, DoD checks, and all pilots

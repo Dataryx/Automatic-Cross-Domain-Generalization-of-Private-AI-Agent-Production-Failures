@@ -35,8 +35,12 @@ STEPS = [
     ("tau_adapter", [sys.executable, "eval/benchmarks/tau_adapter.py"]),
     ("golden_path", [sys.executable, "scripts/golden_path.py"]),
     ("verify_full_pipeline", [sys.executable, "scripts/verify_full_pipeline.py"]),
+    ("cli_endpoints", [sys.executable, "scripts/verify_cli_endpoints.py"]),
+    ("pipeline_matrix", [sys.executable, "scripts/verify_pipeline_matrix.py"]),
     ("compose_full_pipeline", [sys.executable, "scripts/verify_compose_full_pipeline.py"]),
     ("postgres_compose_full_pipeline", [sys.executable, "scripts/verify_postgres_compose_full_pipeline.py"]),
+    ("tls_full_pipeline", [sys.executable, "scripts/verify_tls_full_pipeline.py"]),
+    ("mtls_full_pipeline", [sys.executable, "scripts/verify_mtls_full_pipeline.py"]),
 ]
 
 

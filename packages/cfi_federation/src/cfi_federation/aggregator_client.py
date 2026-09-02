@@ -8,6 +8,7 @@ from typing import Any
 
 import httpx
 
+from cfi_core.http_tls import httpx_client_options
 from cfi_federation import ClippedContribution
 
 
@@ -64,6 +65,7 @@ class AggregatorClient:
                 base_url=self.base_url,
                 timeout=self.timeout,
                 headers=self._headers(),
+                **httpx_client_options(),
             )
             self._owns_client = True
         return self._client

@@ -2,6 +2,12 @@
 
 import typer
 
+from cfi_contributor.service_urls import (
+    default_aggregator_url,
+    default_coordinator_url,
+    default_registry_url,
+)
+
 contribute_app = typer.Typer(help="Contributor-side CFI extraction and packaging")
 registry_app = typer.Typer(help="Registry service")
 recipient_app = typer.Typer(help="Recipient-side compilation and evaluation")
@@ -149,7 +155,7 @@ def ingest_corpus_local(
 def ingest_publish_corpus(
     input_dir: str = typer.Option(..., help="Directory of incident-bundle JSON files"),
     output_dir: str = typer.Option(..., help="Output directory for manifests and extracted CFIs"),
-    registry_url: str = typer.Option("http://127.0.0.1:8000", help="Registry base URL"),
+    registry_url: str = typer.Option(default_registry_url(), help="Registry base URL (CFI_REGISTRY_URL)"),
     replay_profile: str | None = typer.Option(None, help="Optional replay profile"),
     seed: int = typer.Option(421337),
     api_token: str | None = typer.Option(None, help="Bearer token (or CFI_API_TOKEN)"),
@@ -198,6 +204,39 @@ def list_replay_profiles() -> None:
         typer.echo(f"  {spec.notes}")
 
 
+@contribute_app.command("endpoints")
+def show_endpoints() -> None:
+    """Print federation and replay hook URLs resolved from environment."""
+    import json
+
+    from cfi_contributor.service_urls import all_endpoint_env
+
+    typer.echo(json.dumps(all_endpoint_env(), indent=2))
+
+
+@contribute_app.command("run-pipeline")
+def run_pipeline_remote(
+    output: str | None = typer.Option(None, help="Optional summary JSON output path"),
+    probe_hooks: bool = typer.Option(True, help="Probe replay hooks after federation"),
+) -> None:
+    """Run full remote pipeline (publish->assess->federate->consortium) using env URLs."""
+    import json
+    from pathlib import Path
+
+    from cfi_contributor.pipeline_runner import run_remote_full_pipeline
+    from cfi_contributor.service_urls import federation_endpoints
+
+    summary = run_remote_full_pipeline(
+        federation_endpoints(),
+        epoch="cli-run-pipeline",
+        probe_hooks=probe_hooks,
+    )
+    text = json.dumps(summary, indent=2)
+    if output:
+        Path(output).write_text(text, encoding="utf-8")
+    typer.echo(text)
+
+
 @contribute_app.command("probe-hooks")
 def probe_hooks(
     profile: str | None = typer.Option(None, help="Probe one profile; default probes all"),
@@ -230,7 +269,7 @@ def probe_hooks(
 @contribute_app.command("register")
 def register_remote(
     package_path: str = typer.Option(..., help="Signed CFI package JSON"),
-    registry_url: str = typer.Option("http://127.0.0.1:8000", help="Registry base URL"),
+    registry_url: str = typer.Option(default_registry_url(), help="Registry base URL (CFI_REGISTRY_URL)"),
     api_token: str | None = typer.Option(None, help="Bearer token (or CFI_API_TOKEN)"),
 ) -> None:
     """Register a signed CFI with a remote registry (package egress only)."""
@@ -248,7 +287,7 @@ def register_remote(
 @contribute_app.command("status")
 def remote_cfi_status(
     invariant_id: str = typer.Option(..., help="CFI invariant id"),
-    registry_url: str = typer.Option("http://127.0.0.1:8000", help="Registry base URL"),
+    registry_url: str = typer.Option(default_registry_url(), help="Registry base URL (CFI_REGISTRY_URL)"),
     api_token: str | None = typer.Option(None, help="Bearer token (or CFI_API_TOKEN)"),
 ) -> None:
     """Fetch lifecycle state for a CFI from a remote registry."""
@@ -264,7 +303,7 @@ def remote_cfi_status(
 @contribute_app.command("publish")
 def publish_remote(
     output: str = typer.Option(..., help="Local path for signed CFI JSON"),
-    registry_url: str = typer.Option("http://127.0.0.1:8000", help="Registry base URL"),
+    registry_url: str = typer.Option(default_registry_url(), help="Registry base URL (CFI_REGISTRY_URL)"),
     seed: int = typer.Option(421337),
     replay_url: str | None = typer.Option(None, help="HTTP replay endpoint for live agent"),
     replay_profile: str | None = typer.Option(None, help="Named replay profile: mock, agentrx, causalflow"),
@@ -334,7 +373,7 @@ def serve_registry(
 
 @registry_app.command("audit-export")
 def audit_export(
-    registry_url: str = typer.Option("http://127.0.0.1:8000", help="Registry base URL"),
+    registry_url: str = typer.Option(default_registry_url(), help="Registry base URL (CFI_REGISTRY_URL)"),
     output: str | None = typer.Option(None, help="Optional output JSON path"),
     signed: bool = typer.Option(False, help="Fetch signed export from /audit/export/signed"),
 ) -> None:
@@ -344,8 +383,10 @@ def audit_export(
 
     import httpx
 
+    from cfi_core.http_tls import httpx_client_options
+
     path = "/audit/export/signed" if signed else "/audit/export"
-    response = httpx.get(f"{registry_url.rstrip('/')}{path}", timeout=30.0)
+    response = httpx.get(f"{registry_url.rstrip('/')}{path}", timeout=30.0, **httpx_client_options())
     response.raise_for_status()
     payload = response.json()
     text = json.dumps(payload, indent=2)
@@ -376,7 +417,7 @@ def audit_verify(input_path: str = typer.Argument(..., help="Signed audit export
 def fetch_remote(
     invariant_id: str = typer.Option(..., help="CFI invariant id"),
     output: str = typer.Option(..., help="Output path for signed CFI JSON"),
-    registry_url: str = typer.Option("http://127.0.0.1:8000", help="Registry base URL"),
+    registry_url: str = typer.Option(default_registry_url(), help="Registry base URL (CFI_REGISTRY_URL)"),
     api_token: str | None = typer.Option(None, help="Bearer token (or CFI_API_TOKEN)"),
 ) -> None:
     """Download a signed CFI from a remote registry for local compilation."""
@@ -395,7 +436,7 @@ def fetch_remote(
 def pull_and_compile(
     invariant_id: str = typer.Option(..., help="CFI invariant id"),
     domain: str = typer.Option("procurement", help="Recipient domain for local compilation"),
-    registry_url: str = typer.Option("http://127.0.0.1:8000", help="Registry base URL"),
+    registry_url: str = typer.Option(default_registry_url(), help="Registry base URL (CFI_REGISTRY_URL)"),
     output: str | None = typer.Option(None, help="Optional path to save fetched CFI JSON"),
     api_token: str | None = typer.Option(None, help="Bearer token (or CFI_API_TOKEN)"),
 ) -> None:
@@ -428,7 +469,7 @@ def pull_and_compile(
 def assess_remote(
     invariant_id: str = typer.Option(..., help="CFI invariant id"),
     domain: str = typer.Option("procurement", help="Recipient domain"),
-    registry_url: str = typer.Option("http://127.0.0.1:8000", help="Registry base URL"),
+    registry_url: str = typer.Option(default_registry_url(), help="Registry base URL (CFI_REGISTRY_URL)"),
     output: str | None = typer.Option(None, help="Optional JSON report output path"),
     api_token: str | None = typer.Option(None, help="Bearer token (or CFI_API_TOKEN)"),
 ) -> None:
@@ -462,8 +503,8 @@ def contribute_federation(
     invariant_id: str = typer.Option(..., help="CFI invariant id"),
     domain: str = typer.Option("procurement", help="Recipient domain"),
     tenant_id: str = typer.Option("tenant-local", help="Pseudonymous tenant id"),
-    registry_url: str = typer.Option("http://127.0.0.1:8000", help="Registry base URL"),
-    aggregator_url: str = typer.Option("http://127.0.0.1:8002", help="Aggregator base URL"),
+    registry_url: str = typer.Option(default_registry_url(), help="Registry base URL (CFI_REGISTRY_URL)"),
+    aggregator_url: str = typer.Option(default_aggregator_url(), help="Aggregator base URL (CFI_AGGREGATOR_URL)"),
     minimum_k: int = typer.Option(1, help="Minimum cohort k for aggregate request"),
     epsilon: float = typer.Option(1.0, help="Privacy budget epsilon for this release"),
     envelope_output: str | None = typer.Option(None, help="Optional local share-envelope JSON path"),
@@ -647,7 +688,7 @@ def evaluate_local(
 
 @aggregate_app.command("round")
 def remote_consortium_round(
-    coordinator_url: str = typer.Option("http://127.0.0.1:8001", help="Coordinator base URL"),
+    coordinator_url: str = typer.Option(default_coordinator_url(), help="Coordinator base URL (CFI_COORDINATOR_URL)"),
     tenants: int = typer.Option(12, help="Number of consortium tenants"),
     seed: int = typer.Option(421337),
     minimum_k: int = typer.Option(10),

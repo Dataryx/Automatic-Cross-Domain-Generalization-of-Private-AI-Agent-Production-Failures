@@ -40,14 +40,26 @@ def run_compose(cmd: list[str], *, compose_file: Path) -> subprocess.CompletedPr
     return subprocess.run(cmd, cwd=ROOT, check=False, text=True, capture_output=True)
 
 
-def wait_for_url(url: str, *, timeout_s: float = 180.0, interval_s: float = 2.0) -> tuple[bool, str]:
+def wait_for_url(
+    url: str,
+    *,
+    timeout_s: float = 180.0,
+    interval_s: float = 2.0,
+    verify: bool | str | None = None,
+) -> tuple[bool, str]:
     import httpx
 
+    from cfi_core.http_tls import httpx_client_options
+
+    if verify is None:
+        request_opts = httpx_client_options()
+    else:
+        request_opts = {**httpx_client_options(), "verify": verify}
     deadline = time.time() + timeout_s
     last_error = ""
     while time.time() < deadline:
         try:
-            response = httpx.get(url, timeout=5.0)
+            response = httpx.get(url, timeout=5.0, **request_opts)
             if response.status_code == 200:
                 return True, f"{url} OK"
             last_error = f"HTTP {response.status_code}"

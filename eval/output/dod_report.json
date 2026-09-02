@@ -1,7 +1,7 @@
 {
   "all_passed": true,
-  "passed": 114,
-  "total": 114,
+  "passed": 123,
+  "total": 123,
   "checks": [
     {
       "name": "cfi_schema_exists",
@@ -409,6 +409,41 @@
       "detail": ""
     },
     {
+      "name": "verify_tls_full_pipeline_script",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "verify_mtls_full_pipeline_script",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "verify_cli_endpoints_script",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "pipeline_runner_module",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "pipeline_matrix_module",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "verify_pipeline_matrix_script",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "http_tls_module",
+      "passed": true,
+      "detail": ""
+    },
+    {
       "name": "pipeline_smoke_module",
       "passed": true,
       "detail": ""
@@ -570,6 +605,16 @@
     },
     {
       "name": "full_pipeline_smoke",
+      "passed": true,
+      "detail": "C:\\Users\\sumit\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\pydantic\\_internal\\_fields.py:192: UserWarning: Field name \"schema\" in \"CausalFailureInvariant\" shadows an attribute in parent \"BaseModel\"\n  warnings.warn(\n"
+    },
+    {
+      "name": "cli_endpoints_smoke",
+      "passed": true,
+      "detail": "CLI endpoints OK: registry=http://registry.example:9000\n"
+    },
+    {
+      "name": "pipeline_matrix_smoke",
       "passed": true,
       "detail": "C:\\Users\\sumit\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\pydantic\\_internal\\_fields.py:192: UserWarning: Field name \"schema\" in \"CausalFailureInvariant\" shadows an attribute in parent \"BaseModel\"\n  warnings.warn(\n"
     }
