@@ -44,3 +44,51 @@ helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version }}
 {{- .Values.client.aggregatorUrl -}}
 {{- end -}}
 {{- end }}
+
+{{- define "cfi-fed.agentrxUrl" -}}
+{{- if and .Values.ingress.enabled .Values.replayHooks.enabled -}}
+{{- printf "%s/agentrx/v1/replay" (include "cfi-fed.ingressBase" .) -}}
+{{- else if .Values.client.agentrxUrl -}}
+{{- .Values.client.agentrxUrl -}}
+{{- else if .Values.replayHooks.enabled -}}
+{{- printf "http://cfi-agentrx:%d/v1/replay" (int .Values.replayHooks.agentrx.port) -}}
+{{- else -}}
+{{- "" -}}
+{{- end -}}
+{{- end }}
+
+{{- define "cfi-fed.causalflowUrl" -}}
+{{- if and .Values.ingress.enabled .Values.replayHooks.enabled -}}
+{{- printf "%s/causalflow/v1/counterfactual" (include "cfi-fed.ingressBase" .) -}}
+{{- else if .Values.client.causalflowUrl -}}
+{{- .Values.client.causalflowUrl -}}
+{{- else if .Values.replayHooks.enabled -}}
+{{- printf "http://cfi-causalflow:%d/v1/counterfactual" (int .Values.replayHooks.causalflow.port) -}}
+{{- else -}}
+{{- "" -}}
+{{- end -}}
+{{- end }}
+
+{{- define "cfi-fed.replayMockUrl" -}}
+{{- if and .Values.ingress.enabled .Values.replayHooks.enabled -}}
+{{- printf "%s/replay/replay" (include "cfi-fed.ingressBase" .) -}}
+{{- else if .Values.client.replayMockUrl -}}
+{{- .Values.client.replayMockUrl -}}
+{{- else if .Values.replayHooks.enabled -}}
+{{- printf "http://cfi-replay-mock:%d/replay" (int .Values.replayHooks.mock.port) -}}
+{{- else -}}
+{{- "" -}}
+{{- end -}}
+{{- end }}
+
+{{- define "cfi-fed.tauBenchUrl" -}}
+{{- if and .Values.ingress.enabled .Values.replayHooks.enabled -}}
+{{- printf "%s/tau/v1/tasks" (include "cfi-fed.ingressBase" .) -}}
+{{- else if .Values.client.tauBenchUrl -}}
+{{- .Values.client.tauBenchUrl -}}
+{{- else if .Values.replayHooks.enabled -}}
+{{- printf "http://cfi-tau:%d/v1/tasks" (int .Values.replayHooks.tau.port) -}}
+{{- else -}}
+{{- "" -}}
+{{- end -}}
+{{- end }}

@@ -111,6 +111,15 @@ field-study:
 ingest-corpus:
 	python scripts/verify_corpus_ingest.py
 
+corpus-batch:
+	python scripts/verify_corpus_batch.py
+
+live-hooks:
+	python scripts/verify_live_hooks.py
+
+helm-deploy:
+	python scripts/verify_helm_deploy.py
+
 certs:
 	python scripts/generate_dev_certs.py
 

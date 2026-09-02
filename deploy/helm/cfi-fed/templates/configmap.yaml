@@ -22,13 +22,21 @@ data:
   CFI_AGGREGATOR_URL: {{ include "cfi-fed.aggregatorUrl" . | quote }}
   {{- if .Values.client.replayMockUrl }}
   CFI_REPLAY_MOCK_URL: {{ .Values.client.replayMockUrl | quote }}
+  {{- else if .Values.replayHooks.enabled }}
+  CFI_REPLAY_MOCK_URL: {{ include "cfi-fed.replayMockUrl" . | quote }}
   {{- end }}
   {{- if .Values.client.agentrxUrl }}
   CFI_AGENTRX_URL: {{ .Values.client.agentrxUrl | quote }}
+  {{- else if .Values.replayHooks.enabled }}
+  CFI_AGENTRX_URL: {{ include "cfi-fed.agentrxUrl" . | quote }}
   {{- end }}
   {{- if .Values.client.causalflowUrl }}
   CFI_CAUSALFLOW_URL: {{ .Values.client.causalflowUrl | quote }}
+  {{- else if .Values.replayHooks.enabled }}
+  CFI_CAUSALFLOW_URL: {{ include "cfi-fed.causalflowUrl" . | quote }}
   {{- end }}
   {{- if .Values.client.tauBenchUrl }}
   CFI_TAU_BENCH_URL: {{ .Values.client.tauBenchUrl | quote }}
+  {{- else if .Values.replayHooks.enabled }}
+  CFI_TAU_BENCH_URL: {{ include "cfi-fed.tauBenchUrl" . | quote }}
   {{- end }}

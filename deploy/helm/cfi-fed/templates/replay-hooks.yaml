@@ -1,0 +1,55 @@
+{{- if .Values.replayHooks.enabled }}
+{{- range $name, $cfg := dict "replay-mock" .Values.replayHooks.mock "agentrx" .Values.replayHooks.agentrx "causalflow" .Values.replayHooks.causalflow "tau" .Values.replayHooks.tau }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cfi-{{ $name }}
+  namespace: {{ $.Values.namespace }}
+  labels:
+    app: cfi-{{ $name }}
+    {{- include "cfi-fed.labels" $ | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cfi-{{ $name }}
+  template:
+    metadata:
+      labels:
+        app: cfi-{{ $name }}
+    spec:
+      containers:
+        - name: {{ $name }}
+          image: "{{ $.Values.image.repository }}:{{ $.Values.image.tag }}"
+          imagePullPolicy: {{ $.Values.image.pullPolicy }}
+          command: ["python", "{{ $cfg.command }}"]
+          ports:
+            - containerPort: {{ $cfg.port }}
+          env:
+            - name: CFI_HOST
+              value: "0.0.0.0"
+            - name: CFI_PORT
+              value: {{ $cfg.port | quote }}
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: {{ $cfg.port }}
+            initialDelaySeconds: 3
+            periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cfi-{{ $name }}
+  namespace: {{ $.Values.namespace }}
+  labels:
+    app: cfi-{{ $name }}
+spec:
+  selector:
+    app: cfi-{{ $name }}
+  ports:
+    - port: {{ $cfg.port }}
+      targetPort: {{ $cfg.port }}
+{{- end }}
+{{- end }}

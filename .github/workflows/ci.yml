@@ -37,8 +37,14 @@ jobs:
         run: python scripts/verify_auth.py
       - name: Eval harnesses
         run: python scripts/verify_eval_harnesses.py
-      - name: Corpus ingest
-        run: python scripts/verify_corpus_ingest.py
+      - name: Corpus batch ingest
+        run: python scripts/verify_corpus_batch.py
+      - name: Live hooks
+        env:
+          CFI_REQUIRE_DOCKER: "1"
+        run: python scripts/verify_live_hooks.py
+      - name: Helm deploy validation
+        run: python scripts/verify_helm_deploy.py
       - name: Audit attestation
         run: python scripts/verify_audit_attestation.py
       - name: Helm chart

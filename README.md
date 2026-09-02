@@ -120,6 +120,7 @@ Re-running `sim/run_cfi_sim.py` recreates all CSVs and figures from fixed seed 4
 - Phase 45: Helm ingress TLS validation, audit export in pipeline summaries
 - Phase 46: `RegistryClient.audit_export`, extended pipeline matrix (7 variants)
 - Phase 47: Helm ingress path alignment (`/registry`, `/coordinator`, `/aggregator`), ZK attestation in full pipeline, live hook mode (`CFI_HOOK_MODE=live`), corpus ingest at scale (`--recursive`, `--max-bundles`), production runbook (`docs/production-runbook.md`), consolidated CI (full pipelines in `pipeline-matrix` job only)
+- Phase 48: Helm replay hook services, tenant corpus batch ingest/publish, live hook verification, Helm deploy dry-run (`kubectl apply --dry-run=client`)
 - Release-gate adversaries auto-scored in `ReleaseGate.run()`
 - CI workflow (`.github/workflows/ci.yml`) + `docker-compose.yml` for services
 - `eval/run_all.py` — runs pytest, DoD checks, and all pilots

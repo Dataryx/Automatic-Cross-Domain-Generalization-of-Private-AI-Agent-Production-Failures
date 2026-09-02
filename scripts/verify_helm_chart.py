@@ -22,6 +22,7 @@ REQUIRED = [
     CHART / "templates" / "coordinator.yaml",
     CHART / "templates" / "aggregator.yaml",
     CHART / "templates" / "ingress.yaml",
+    CHART / "templates" / "replay-hooks.yaml",
 ]
 
 
@@ -50,6 +51,8 @@ def main() -> int:
                 "ingress.enabled=true",
                 "--set",
                 "ingress.tls=true",
+                "--set",
+                "replayHooks.enabled=true",
             ],
             cwd=ROOT,
             capture_output=True,
@@ -70,6 +73,9 @@ def main() -> int:
             "/coordinator",
             "/aggregator",
             "rewrite-target",
+            "cfi-replay-mock",
+            "cfi-agentrx",
+            "/agentrx",
         ):
             if needle not in result.stdout:
                 print(f"helm template output missing {needle}", file=sys.stderr)

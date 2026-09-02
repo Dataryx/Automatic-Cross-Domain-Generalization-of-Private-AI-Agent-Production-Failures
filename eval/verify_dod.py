@@ -146,6 +146,11 @@ def verify() -> DodReport:
     report.checks.append(DodCheck("audit_worm_module", (ROOT / "packages" / "cfi_governance" / "src" / "cfi_governance" / "audit_worm.py").exists()))
     report.checks.append(DodCheck("helm_chart", (ROOT / "deploy" / "helm" / "cfi-fed" / "Chart.yaml").exists()))
     report.checks.append(DodCheck("verify_helm_chart_script", (ROOT / "scripts" / "verify_helm_chart.py").exists()))
+    report.checks.append(DodCheck("verify_helm_deploy_script", (ROOT / "scripts" / "verify_helm_deploy.py").exists()))
+    report.checks.append(DodCheck("verify_live_hooks_script", (ROOT / "scripts" / "verify_live_hooks.py").exists()))
+    report.checks.append(DodCheck("verify_corpus_batch_script", (ROOT / "scripts" / "verify_corpus_batch.py").exists()))
+    report.checks.append(DodCheck("corpus_tenants_module", (ROOT / "eval" / "corpus_tenants.py").exists()))
+    report.checks.append(DodCheck("helm_replay_hooks_template", (ROOT / "deploy" / "helm" / "cfi-fed" / "templates" / "replay-hooks.yaml").exists()))
     report.checks.append(DodCheck("registry_client_module", (ROOT / "packages" / "cfi_registry" / "src" / "cfi_registry" / "client.py").exists()))
     report.checks.append(DodCheck("verify_remote_registry_cli_script", (ROOT / "scripts" / "verify_remote_registry_cli.py").exists()))
     report.checks.append(DodCheck("tau_live_module", (ROOT / "eval" / "benchmarks" / "tau_live.py").exists()))
@@ -558,7 +563,49 @@ def verify() -> DodReport:
         report.checks.append(DodCheck("helm_chart_smoke", False, str(exc)))
 
     try:
-        from cfi_governance.audit_idempotency import AuditIdempotencyLedger
+        import subprocess
+
+        result = subprocess.run(
+            [sys.executable, "scripts/verify_corpus_batch.py"],
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+            timeout=180,
+        )
+        report.checks.append(DodCheck("corpus_batch_smoke", result.returncode == 0, result.stderr or result.stdout))
+    except Exception as exc:
+        report.checks.append(DodCheck("corpus_batch_smoke", False, str(exc)))
+
+    try:
+        import subprocess
+
+        result = subprocess.run(
+            [sys.executable, "scripts/verify_helm_deploy.py"],
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+            timeout=180,
+        )
+        report.checks.append(DodCheck("helm_deploy_smoke", result.returncode == 0, result.stderr or result.stdout))
+    except Exception as exc:
+        report.checks.append(DodCheck("helm_deploy_smoke", False, str(exc)))
+
+    try:
+        import os
+        import subprocess
+
+        result = subprocess.run(
+            [sys.executable, "scripts/verify_live_hooks.py"],
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+            timeout=300,
+            env={**os.environ, "CFI_REQUIRE_DOCKER": "0"},
+        )
+        passed = result.returncode == 0 or "SKIP:" in (result.stdout or result.stderr)
+        report.checks.append(DodCheck("live_hooks_smoke", passed, result.stderr or result.stdout))
+    except Exception as exc:
+        report.checks.append(DodCheck("live_hooks_smoke", False, str(exc)))
         from cfi_governance.audit_sink import AuditSink
         from cfi_governance.audit_worm import read_worm_chain_head
 

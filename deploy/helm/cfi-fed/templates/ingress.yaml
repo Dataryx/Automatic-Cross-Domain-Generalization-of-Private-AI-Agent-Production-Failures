@@ -44,4 +44,34 @@ spec:
                 name: cfi-aggregator
                 port:
                   number: {{ .Values.aggregator.port }}
+          {{- if .Values.replayHooks.enabled }}
+          - path: {{ if .Values.ingress.rewrite }}/replay(/|$)(.*){{ else }}/replay{{ end }}
+            pathType: {{ if .Values.ingress.rewrite }}ImplementationSpecific{{ else }}Prefix{{ end }}
+            backend:
+              service:
+                name: cfi-replay-mock
+                port:
+                  number: {{ .Values.replayHooks.mock.port }}
+          - path: {{ if .Values.ingress.rewrite }}/agentrx(/|$)(.*){{ else }}/agentrx{{ end }}
+            pathType: {{ if .Values.ingress.rewrite }}ImplementationSpecific{{ else }}Prefix{{ end }}
+            backend:
+              service:
+                name: cfi-agentrx
+                port:
+                  number: {{ .Values.replayHooks.agentrx.port }}
+          - path: {{ if .Values.ingress.rewrite }}/causalflow(/|$)(.*){{ else }}/causalflow{{ end }}
+            pathType: {{ if .Values.ingress.rewrite }}ImplementationSpecific{{ else }}Prefix{{ end }}
+            backend:
+              service:
+                name: cfi-causalflow
+                port:
+                  number: {{ .Values.replayHooks.causalflow.port }}
+          - path: {{ if .Values.ingress.rewrite }}/tau(/|$)(.*){{ else }}/tau{{ end }}
+            pathType: {{ if .Values.ingress.rewrite }}ImplementationSpecific{{ else }}Prefix{{ end }}
+            backend:
+              service:
+                name: cfi-tau
+                port:
+                  number: {{ .Values.replayHooks.tau.port }}
+          {{- end }}
 {{- end }}

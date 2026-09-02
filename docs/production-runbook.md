@@ -36,7 +36,31 @@ helm install cfi-fed deploy/helm/cfi-fed \
   --set ingress.host=cfi-fed.example.com
 ```
 
-## Live AgentRx / CausalFlow hooks
+## Helm replay hook services
+
+Enable in-cluster replay stubs (AgentRx, CausalFlow, mock, tau):
+
+```bash
+helm install cfi-fed deploy/helm/cfi-fed \
+  --set registry.databaseUrl='postgresql://user:pass@postgres:5432/cfi' \
+  --set ingress.enabled=true \
+  --set replayHooks.enabled=true
+```
+
+Validate render + kubectl dry-run locally:
+
+```bash
+python scripts/verify_helm_deploy.py
+```
+
+## Multi-tenant corpus batch
+
+```bash
+python scripts/verify_corpus_batch.py
+# or manually materialize tenants then ingest-publish:
+python -c "from eval.corpus_tenants import materialize_tenant_corpus; from pathlib import Path; materialize_tenant_corpus(Path('eval/benchmarks/corpus/bundles'), Path('/data/tenants'), tenant_count=10)"
+```
+
 
 Default stubs run on ports 8020/8021. For production agent runtimes:
 

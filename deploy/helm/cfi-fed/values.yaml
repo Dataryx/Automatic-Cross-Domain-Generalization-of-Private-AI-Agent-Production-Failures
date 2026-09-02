@@ -48,4 +48,19 @@ ingress:
   # Strip /registry, /coordinator, /aggregator prefixes before forwarding (matches compose nginx).
   rewrite: true
 
+replayHooks:
+  enabled: false
+  mock:
+    port: 8010
+    command: services/replay_mock/main.py
+  agentrx:
+    port: 8020
+    command: services/agentrx_stub/main.py
+  causalflow:
+    port: 8021
+    command: services/causalflow_stub/main.py
+  tau:
+    port: 8022
+    command: services/tau_stub/main.py
+
 resources: {}
