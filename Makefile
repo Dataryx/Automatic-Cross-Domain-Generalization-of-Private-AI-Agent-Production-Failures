@@ -1,6 +1,6 @@
 # CFI-Fed developer commands
 
-.PHONY: install test sim dod golden tau tau-live agent-hooks cross-boundary stack stack-postgres stack-tls stack-mtls health live-replay replay-profiles eval-harnesses compose-smoke postgres-smoke helm-chart remote-registry contribute-publish audit-attest mypy figures field-study ingest-corpus eval-all certs observability hardening auth release verify-release mtls
+.PHONY: install test sim dod golden tau tau-live agent-hooks cross-boundary corpus-publish end-to-end federation stack stack-postgres stack-tls stack-mtls health live-replay replay-profiles eval-harnesses compose-smoke postgres-smoke helm-chart remote-registry contribute-publish audit-attest mypy figures field-study ingest-corpus eval-all certs observability hardening auth release verify-release mtls
 
 install:
 	pip install -e ".[dev]"
@@ -59,6 +59,15 @@ agent-hooks:
 
 cross-boundary:
 	python scripts/verify_cross_boundary.py
+
+corpus-publish:
+	python scripts/verify_corpus_publish.py
+
+end-to-end:
+	python scripts/verify_end_to_end.py
+
+federation:
+	python scripts/verify_federation_workflow.py
 
 audit-attest:
 	python scripts/verify_audit_attestation.py

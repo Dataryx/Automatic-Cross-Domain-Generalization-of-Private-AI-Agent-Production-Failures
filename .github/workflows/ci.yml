@@ -53,6 +53,12 @@ jobs:
         run: python scripts/verify_agent_hooks.py
       - name: Cross boundary
         run: python scripts/verify_cross_boundary.py
+      - name: Corpus publish
+        run: python scripts/verify_corpus_publish.py
+      - name: End-to-end workflow
+        run: python scripts/verify_end_to_end.py
+      - name: Federation workflow
+        run: python scripts/verify_federation_workflow.py
   compose:
     runs-on: ubuntu-latest
     steps:

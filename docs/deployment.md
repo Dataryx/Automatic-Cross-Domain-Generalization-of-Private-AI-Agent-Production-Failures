@@ -31,7 +31,7 @@ docker compose -f docker-compose.postgres.yml up --build
 # TLS-terminated stack (dev self-signed certs on :8443):
 python scripts/generate_dev_certs.py
 docker compose -f docker-compose.tls.yml up --build
-# TLS paths: /registry/, /coordinator/, /aggregator/, /replay/, /agentrx/, /causalflow/
+# TLS paths: /registry/, /coordinator/, /aggregator/, /replay/, /agentrx/, /causalflow/, /tau/
 # mTLS-terminated stack (optional client certs):
 docker compose -f docker-compose.mtls.yml up --build
 # or individually:
@@ -81,6 +81,8 @@ cfi-contribute publish --output cfi.json --registry-url http://127.0.0.1:8000
 cfi-contribute status --invariant-id CFI-EXCEPTION-PRECEDENCE-0001
 cfi-recipient fetch --invariant-id CFI-EXCEPTION-PRECEDENCE-0001 --output fetched.json
 cfi-recipient pull --invariant-id CFI-EXCEPTION-PRECEDENCE-0001 --domain procurement
+cfi-recipient assess --invariant-id CFI-EXCEPTION-PRECEDENCE-0001 --domain procurement --output assess.json
+cfi-recipient contribute --invariant-id CFI-EXCEPTION-PRECEDENCE-0001 --tenant-id tenant-a --envelope-output envelope.json
 ```
 
 ## Production checklist
@@ -93,7 +95,8 @@ cfi-recipient pull --invariant-id CFI-EXCEPTION-PRECEDENCE-0001 --domain procure
 5. Require human review via `/review/ui` before lifecycle `active`.
 6. Monitor privacy accountant `remaining_epsilon` on aggregator (`GET /accountant`, `GET /metrics`).
 7. Re-run `python eval/verify_dod.py` after deploy.
-8. Ingest private incident bundles locally: `cfi-contribute ingest-corpus --input-dir ./bundles --output-dir ./out --extract`.
+8. Ingest private incident bundles locally: `cfi-contribute ingest-corpus --input-dir ./bundles --output-dir ./out --extract
+cfi-contribute ingest-publish --input-dir ./bundles --output-dir ./out --registry-url http://127.0.0.1:8000`.
 9. Configure external audit sink (`CFI_AUDIT_SINK_PATH` or `CFI_AUDIT_SINK_URL`) and flush via `POST /audit/sink`.
 10. Build signed release checkpoint: `make verify-release` (writes `eval/output/release_manifest.json`).
 11. For reproducible release signatures: `python scripts/generate_release_signing_key.py` then set `CFI_RELEASE_SIGNING_KEY_PATH`.

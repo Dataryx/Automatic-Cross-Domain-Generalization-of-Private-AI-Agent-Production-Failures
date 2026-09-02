@@ -22,6 +22,7 @@ class IngestRecord:
     validated: bool
     extracted: bool = False
     cfi_id: str | None = None
+    package_path: str | None = None
     error: str | None = None
 
 
@@ -98,6 +99,7 @@ def ingest_directory(
     replay_profile: str | None = None,
     seed: int = 421337,
     key_pair: KeyPair | None = None,
+    packages_dir: Path | None = None,
 ) -> IngestReport:
     """Validate local incident bundles; optionally run contributor extraction."""
     report = IngestReport()
@@ -107,6 +109,8 @@ def ingest_directory(
         eta=0.9, delta=0.05, lambda_nodes=1.0, lambda_edges=1.0, lambda_literals=1.0, lambda_replay=1.0
     )
     pipeline = ContributorPipeline(key, replay=replay, seed=seed)
+    if packages_dir is not None:
+        packages_dir.mkdir(parents=True, exist_ok=True)
 
     for path in discover_bundles(input_dir):
         record = IngestRecord(bundle_path=str(path), incident_id=path.stem, validated=False)
@@ -123,6 +127,13 @@ def ingest_directory(
                 if extraction.package and extraction.package.success and extraction.package.cfi is not None:
                     record.extracted = True
                     record.cfi_id = extraction.package.cfi.id
+                    if packages_dir is not None:
+                        package_path = packages_dir / f"{extraction.package.cfi.id}.json"
+                        package_path.write_text(
+                            json.dumps(extraction.package.cfi.model_dump(mode="json"), indent=2),
+                            encoding="utf-8",
+                        )
+                        record.package_path = str(package_path)
                 else:
                     record.error = "extraction_failed"
         except Exception as exc:

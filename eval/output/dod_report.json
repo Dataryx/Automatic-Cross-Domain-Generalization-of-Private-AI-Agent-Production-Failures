@@ -1,7 +1,7 @@
 {
   "all_passed": true,
-  "passed": 96,
-  "total": 96,
+  "passed": 106,
+  "total": 106,
   "checks": [
     {
       "name": "cfi_schema_exists",
@@ -354,6 +354,41 @@
       "detail": ""
     },
     {
+      "name": "corpus_publish_module",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "verify_corpus_publish_script",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "recipient_assess_module",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "verify_end_to_end_script",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "aggregator_client_module",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "federation_contrib_module",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "verify_federation_workflow_script",
+      "passed": true,
+      "detail": ""
+    },
+    {
       "name": "verify_postgres_compose_script",
       "passed": true,
       "detail": ""
@@ -480,6 +515,21 @@
     },
     {
       "name": "cross_boundary_smoke",
+      "passed": true,
+      "detail": "C:\\Indominus\\Project\\Automatic Cross-Domain Generalization of Private AI-Agent Production Failures\\packages\\cfi_core\\src\\cfi_core\\models.py:182: UserWarning: Field name \"schema\" in \"CausalFailureInvariant\" shadows an attribute in parent \"BaseModel\"\n  class CausalFailureInvariant(BaseModel):\n"
+    },
+    {
+      "name": "corpus_publish_smoke",
+      "passed": true,
+      "detail": "C:\\Indominus\\Project\\Automatic Cross-Domain Generalization of Private AI-Agent Production Failures\\packages\\cfi_core\\src\\cfi_core\\models.py:182: UserWarning: Field name \"schema\" in \"CausalFailureInvariant\" shadows an attribute in parent \"BaseModel\"\n  class CausalFailureInvariant(BaseModel):\n"
+    },
+    {
+      "name": "end_to_end_smoke",
+      "passed": true,
+      "detail": "C:\\Indominus\\Project\\Automatic Cross-Domain Generalization of Private AI-Agent Production Failures\\packages\\cfi_core\\src\\cfi_core\\models.py:182: UserWarning: Field name \"schema\" in \"CausalFailureInvariant\" shadows an attribute in parent \"BaseModel\"\n  class CausalFailureInvariant(BaseModel):\n"
+    },
+    {
+      "name": "federation_workflow_smoke",
       "passed": true,
       "detail": "C:\\Indominus\\Project\\Automatic Cross-Domain Generalization of Private AI-Agent Production Failures\\packages\\cfi_core\\src\\cfi_core\\models.py:182: UserWarning: Field name \"schema\" in \"CausalFailureInvariant\" shadows an attribute in parent \"BaseModel\"\n  class CausalFailureInvariant(BaseModel):\n"
     }

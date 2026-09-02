@@ -145,6 +145,49 @@ def ingest_corpus_local(
         raise typer.Exit(1)
 
 
+@contribute_app.command("ingest-publish")
+def ingest_publish_corpus(
+    input_dir: str = typer.Option(..., help="Directory of incident-bundle JSON files"),
+    output_dir: str = typer.Option(..., help="Output directory for manifests and extracted CFIs"),
+    registry_url: str = typer.Option("http://127.0.0.1:8000", help="Registry base URL"),
+    replay_profile: str | None = typer.Option(None, help="Optional replay profile"),
+    seed: int = typer.Option(421337),
+    api_token: str | None = typer.Option(None, help="Bearer token (or CFI_API_TOKEN)"),
+) -> None:
+    """Ingest private bundles locally, extract CFIs, publish signed packages to registry."""
+    from pathlib import Path
+
+    from cfi_contributor.corpus_ingest import ingest_directory, write_manifest
+    from cfi_contributor.corpus_publish import publish_packages, write_publish_manifest
+    from cfi_registry.client import RegistryClient
+
+    out = Path(output_dir)
+    packages_dir = out / "packages"
+    report = ingest_directory(
+        Path(input_dir),
+        extract=True,
+        replay_profile=replay_profile,
+        seed=seed,
+        packages_dir=packages_dir,
+    )
+    ingest_manifest = write_manifest(report, out)
+    for note in report.assumptions:
+        typer.echo(f"Assumption: {note}")
+    if report.extracted_count == 0:
+        typer.echo("No CFIs extracted from corpus", err=True)
+        raise typer.Exit(1)
+    with RegistryClient(registry_url, token=api_token) as client:
+        publish_report = publish_packages(packages_dir, client)
+    publish_manifest = write_publish_manifest(publish_report, out)
+    typer.echo(
+        f"Ingest-publish complete: extracted={report.extracted_count} "
+        f"registered={publish_report.registered_count} "
+        f"ingest={ingest_manifest} publish={publish_manifest}"
+    )
+    if publish_report.registered_count == 0:
+        raise typer.Exit(1)
+
+
 @contribute_app.command("replay-profiles")
 def list_replay_profiles() -> None:
     """List production replay profiles and environment variables."""
@@ -350,6 +393,112 @@ def pull_and_compile(
         f"Pulled {invariant_id} from {registry_url} and compiled {len(result.cases)} cases "
         f"for domain={domain}"
     )
+
+
+@recipient_app.command("assess")
+def assess_remote(
+    invariant_id: str = typer.Option(..., help="CFI invariant id"),
+    domain: str = typer.Option("procurement", help="Recipient domain"),
+    registry_url: str = typer.Option("http://127.0.0.1:8000", help="Registry base URL"),
+    output: str | None = typer.Option(None, help="Optional JSON report output path"),
+    api_token: str | None = typer.Option(None, help="Bearer token (or CFI_API_TOKEN)"),
+) -> None:
+    """Fetch CFI from registry and assess locally (compile + Table III metrics)."""
+    import json
+    from pathlib import Path
+
+    from cfi_core.models import CausalFailureInvariant
+    from cfi_recipient.assess import assess_cfi
+    from cfi_registry.client import RegistryClient
+
+    with RegistryClient(registry_url, token=api_token) as client:
+        payload = client.get_cfi(invariant_id)
+    cfi = CausalFailureInvariant.model_validate(payload)
+    result = assess_cfi(cfi, domain, spec_id="recipient-assess", cohort_id=f"remote-{domain}")
+    report = {
+        "invariant_id": invariant_id,
+        "domain": domain,
+        "case_count": len(result.compilation.cases),
+        "assumptions": result.assumptions,
+        "metrics": result.report.to_dict(),
+    }
+    text = json.dumps(report, indent=2)
+    if output:
+        Path(output).write_text(text, encoding="utf-8")
+    typer.echo(text)
+
+
+@recipient_app.command("contribute")
+def contribute_federation(
+    invariant_id: str = typer.Option(..., help="CFI invariant id"),
+    domain: str = typer.Option("procurement", help="Recipient domain"),
+    tenant_id: str = typer.Option("tenant-local", help="Pseudonymous tenant id"),
+    registry_url: str = typer.Option("http://127.0.0.1:8000", help="Registry base URL"),
+    aggregator_url: str = typer.Option("http://127.0.0.1:8002", help="Aggregator base URL"),
+    minimum_k: int = typer.Option(1, help="Minimum cohort k for aggregate request"),
+    epsilon: float = typer.Option(1.0, help="Privacy budget epsilon for this release"),
+    envelope_output: str | None = typer.Option(None, help="Optional local share-envelope JSON path"),
+    api_token: str | None = typer.Option(None, help="Bearer token (or CFI_API_TOKEN)"),
+) -> None:
+    """Fetch CFI, evaluate locally, submit clipped contribution to aggregator."""
+    import json
+    from pathlib import Path
+
+    from cfi_core.models import CausalFailureInvariant
+    from cfi_core.wire import CohortManifest, MeasurementSpec
+    from cfi_federation.aggregator_client import AggregatorClient
+    from cfi_recipient.federation_contrib import contribute_from_package
+    from cfi_registry.client import RegistryClient
+
+    with RegistryClient(registry_url, token=api_token) as registry:
+        package = registry.get_cfi(invariant_id)
+    cfi = CausalFailureInvariant.model_validate(package)
+    spec = MeasurementSpec(
+        spec_id=f"contrib-{tenant_id}",
+        invariant_id=cfi.id,
+        simulated_user="stub",
+        tool_behavior="stubbed",
+        judge="state_first",
+        evidence_bar="high",
+        trial_count=3,
+        aggregation_rule="mean",
+        compiler_version="0.1.0",
+    )
+    manifest = CohortManifest(
+        invariant_id=cfi.id,
+        eligible_compiler_versions=["0.1.0"],
+        measurement_spec=spec,
+        trial_count=3,
+        clipping_f=10,
+        clipping_n=100,
+        privacy_budget_epsilon=epsilon,
+        aggregation_epoch=f"contrib-{tenant_id}",
+        expiration="2026-12-31",
+        minimum_cohort_k=minimum_k,
+    )
+    result = contribute_from_package(
+        package,
+        domain=domain,
+        tenant_id=tenant_id,
+        manifest=manifest,
+        roles=cfi.required_mapping_roles,
+    )
+    if envelope_output:
+        Path(envelope_output).write_text(json.dumps(result.share_envelope, indent=2), encoding="utf-8")
+    with AggregatorClient(aggregator_url, token=api_token) as aggregator:
+        release = aggregator.aggregate(
+            [result.contribution],
+            epsilon=epsilon,
+            minimum_k=minimum_k,
+            measurement_spec_id=spec.spec_id,
+            cohort_id=manifest.aggregation_epoch,
+        )
+    typer.echo(
+        f"Contributed tenant={tenant_id} failures={result.contribution.failures} "
+        f"released={release.get('released')} envelope_local={bool(envelope_output)}"
+    )
+    for note in result.assumptions:
+        typer.echo(f"Assumption: {note}")
 
 
 @recipient_app.command("compile")

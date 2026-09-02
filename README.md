@@ -104,6 +104,9 @@ Re-running `sim/run_cfi_sim.py` recreates all CSVs and figures from fixed seed 4
 - Phase 29: remote registry client (`cfi_registry.client`), `cfi-contribute register/status`, `cfi-recipient fetch`
 - Phase 30: `cfi-contribute publish` (extract + register), τ-bench live hook (`CFI_TAU_BENCH_URL`), `tau_stub` service (`:8022`)
 - Phase 31: agent hook probes (`cfi_contributor.agent_hooks`), `cfi-recipient pull`, cross-boundary smoke (`verify_cross_boundary.py`)
+- Phase 32: corpus ingest-publish (`cfi-contribute ingest-publish`), `corpus_publish` module, `tau_stub` in TLS/mTLS stacks
+- Phase 33: `cfi-recipient assess` (remote fetch + local metrics), `verify_end_to_end.py` publish→assess workflow
+- Phase 34: `cfi-recipient contribute` (clipped federation shares), `AggregatorClient`, `verify_federation_workflow.py`
 - Release-gate adversaries auto-scored in `ReleaseGate.run()`
 - CI workflow (`.github/workflows/ci.yml`) + `docker-compose.yml` for services
 - `eval/run_all.py` — runs pytest, DoD checks, and all pilots

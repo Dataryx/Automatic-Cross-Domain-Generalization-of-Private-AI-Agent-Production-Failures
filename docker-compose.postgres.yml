@@ -73,5 +73,14 @@ services:
     ports:
       - "8021:8021"
 
+  tau_stub:
+    build: .
+    command: python services/tau_stub/main.py
+    environment:
+      CFI_HOST: 0.0.0.0
+      CFI_PORT: 8022
+    ports:
+      - "8022:8022"
+
 volumes:
   pg_data:

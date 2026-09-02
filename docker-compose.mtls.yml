@@ -44,6 +44,13 @@ services:
       CFI_HOST: 0.0.0.0
       CFI_PORT: 8021
 
+  tau_stub:
+    build: .
+    command: python services/tau_stub/main.py
+    environment:
+      CFI_HOST: 0.0.0.0
+      CFI_PORT: 8022
+
   nginx:
     image: nginx:1.27-alpine
     ports:
@@ -58,6 +65,7 @@ services:
       - replay_mock
       - agentrx_stub
       - causalflow_stub
+      - tau_stub
 
 volumes:
   registry_data:

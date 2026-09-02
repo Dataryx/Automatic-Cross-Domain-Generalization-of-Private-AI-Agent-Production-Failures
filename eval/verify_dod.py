@@ -154,6 +154,13 @@ def verify() -> DodReport:
     report.checks.append(DodCheck("agent_hooks_module", (ROOT / "packages" / "cfi_contributor" / "src" / "cfi_contributor" / "agent_hooks.py").exists()))
     report.checks.append(DodCheck("verify_agent_hooks_script", (ROOT / "scripts" / "verify_agent_hooks.py").exists()))
     report.checks.append(DodCheck("verify_cross_boundary_script", (ROOT / "scripts" / "verify_cross_boundary.py").exists()))
+    report.checks.append(DodCheck("corpus_publish_module", (ROOT / "packages" / "cfi_contributor" / "src" / "cfi_contributor" / "corpus_publish.py").exists()))
+    report.checks.append(DodCheck("verify_corpus_publish_script", (ROOT / "scripts" / "verify_corpus_publish.py").exists()))
+    report.checks.append(DodCheck("recipient_assess_module", (ROOT / "packages" / "cfi_recipient" / "src" / "cfi_recipient" / "assess.py").exists()))
+    report.checks.append(DodCheck("verify_end_to_end_script", (ROOT / "scripts" / "verify_end_to_end.py").exists()))
+    report.checks.append(DodCheck("aggregator_client_module", (ROOT / "packages" / "cfi_federation" / "src" / "cfi_federation" / "aggregator_client.py").exists()))
+    report.checks.append(DodCheck("federation_contrib_module", (ROOT / "packages" / "cfi_recipient" / "src" / "cfi_recipient" / "federation_contrib.py").exists()))
+    report.checks.append(DodCheck("verify_federation_workflow_script", (ROOT / "scripts" / "verify_federation_workflow.py").exists()))
     report.checks.append(DodCheck("verify_postgres_compose_script", (ROOT / "scripts" / "verify_postgres_compose.py").exists()))
     report.checks.append(DodCheck("mypy_ci_job", "mypy:" in (ROOT / ".github" / "workflows" / "ci.yml").read_text()))
     report.checks.append(
@@ -607,6 +614,43 @@ def verify() -> DodReport:
         )
     except Exception as exc:
         report.checks.append(DodCheck("cross_boundary_smoke", False, str(exc)))
+
+    try:
+        result = subprocess.run(
+            [sys.executable, "scripts/verify_corpus_publish.py"],
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+        )
+        report.checks.append(
+            DodCheck("corpus_publish_smoke", result.returncode == 0, result.stderr or result.stdout)
+        )
+    except Exception as exc:
+        report.checks.append(DodCheck("corpus_publish_smoke", False, str(exc)))
+
+    try:
+        result = subprocess.run(
+            [sys.executable, "scripts/verify_end_to_end.py"],
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+        )
+        report.checks.append(DodCheck("end_to_end_smoke", result.returncode == 0, result.stderr or result.stdout))
+    except Exception as exc:
+        report.checks.append(DodCheck("end_to_end_smoke", False, str(exc)))
+
+    try:
+        result = subprocess.run(
+            [sys.executable, "scripts/verify_federation_workflow.py"],
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+        )
+        report.checks.append(
+            DodCheck("federation_workflow_smoke", result.returncode == 0, result.stderr or result.stdout)
+        )
+    except Exception as exc:
+        report.checks.append(DodCheck("federation_workflow_smoke", False, str(exc)))
 
     return report
 
