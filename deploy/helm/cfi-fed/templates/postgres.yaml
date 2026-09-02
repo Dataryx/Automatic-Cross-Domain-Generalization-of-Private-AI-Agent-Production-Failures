@@ -1,0 +1,46 @@
+{{- if .Values.localDev.postgres.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: cfi-postgres
+  namespace: {{ .Values.namespace }}
+spec:
+  selector:
+    app: cfi-postgres
+  ports:
+    - port: 5432
+      targetPort: 5432
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cfi-postgres
+  namespace: {{ .Values.namespace }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cfi-postgres
+  template:
+    metadata:
+      labels:
+        app: cfi-postgres
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:16-alpine
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_USER
+              value: {{ .Values.localDev.postgres.user | quote }}
+            - name: POSTGRES_PASSWORD
+              value: {{ .Values.localDev.postgres.password | quote }}
+            - name: POSTGRES_DB
+              value: {{ .Values.localDev.postgres.database | quote }}
+          readinessProbe:
+            exec:
+              command: ["pg_isready", "-U", {{ .Values.localDev.postgres.user | quote }}]
+            initialDelaySeconds: 5
+            periodSeconds: 5
+{{- end }}

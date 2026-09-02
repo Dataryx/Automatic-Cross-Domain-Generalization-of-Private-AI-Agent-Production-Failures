@@ -20,13 +20,20 @@ from cfi_registry.client import RegistryClient
 from eval.corpus_tenants import materialize_tenant_corpus
 
 SOURCE_BUNDLES = ROOT / "eval" / "benchmarks" / "corpus" / "bundles"
+TENANT_ROOT = ROOT / "eval" / "benchmarks" / "corpus" / "tenants"
 TENANT_COUNT = 5
 
 
 def main() -> int:
-    if not SOURCE_BUNDLES.exists():
-        print(f"Missing source bundles: {SOURCE_BUNDLES}", file=sys.stderr)
-        return 1
+    if TENANT_ROOT.exists() and any(TENANT_ROOT.rglob("*.json")):
+        tenant_root = TENANT_ROOT
+        expected_bundles = len(list(tenant_root.rglob("*.json")))
+        tenant_label = f"prebuilt tenants ({expected_bundles} bundles)"
+    else:
+        tenant_label = f"{TENANT_COUNT} tenants"
+        if not SOURCE_BUNDLES.exists():
+            print(f"Missing source bundles: {SOURCE_BUNDLES}", file=sys.stderr)
+            return 1
 
     app = create_app(RegistryStore())
 
@@ -42,9 +49,17 @@ def main() -> int:
 
     with tempfile.TemporaryDirectory() as tmp:
         tmp_path = Path(tmp)
-        tenant_root = tmp_path / "tenants"
-        materialize_tenant_corpus(SOURCE_BUNDLES, tenant_root, tenant_count=TENANT_COUNT)
-        expected_bundles = TENANT_COUNT * len(list(SOURCE_BUNDLES.glob("*.json")))
+        if TENANT_ROOT.exists() and any(TENANT_ROOT.rglob("*.json")):
+            tenant_root = TENANT_ROOT
+        else:
+            tenant_root = tmp_path / "tenants"
+            materialize_tenant_corpus(SOURCE_BUNDLES, tenant_root, tenant_count=TENANT_COUNT)
+            expected_bundles = TENANT_COUNT * len(list(SOURCE_BUNDLES.glob("*.json")))
+
+        if not (TENANT_ROOT.exists() and any(TENANT_ROOT.rglob("*.json"))):
+            pass  # expected_bundles set above
+        else:
+            expected_bundles = len(list(tenant_root.rglob("*.json")))
 
         ingest = CliRunner().invoke(
             contribute_app,
@@ -96,7 +111,7 @@ def main() -> int:
             return 1
 
     print(
-        f"Tenant corpus batch OK: tenants={TENANT_COUNT} bundles={expected_bundles} "
+        f"Tenant corpus batch OK: {tenant_label} bundles={expected_bundles} "
         f"registered={registered} (structural collapse may dedupe CFIs)"
     )
     return 0

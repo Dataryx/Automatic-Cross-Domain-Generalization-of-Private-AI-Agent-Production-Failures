@@ -12,7 +12,7 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from eval.compose_docker import compose_down, compose_up, docker_available, require_docker_enabled, wait_for_url
+from eval.compose_docker import docker_available, require_docker_enabled, wait_for_url
 
 
 def _ensure_hook_stubs() -> tuple[bool, bool]:
@@ -39,16 +39,36 @@ def _ensure_hook_stubs() -> tuple[bool, bool]:
     if agentrx_ok and causalflow_ok:
         return False, True
 
-    if not docker_available(require=require_docker_enabled()):
+    if not require_docker_enabled():
         return False, agentrx_ok and causalflow_ok
 
+    if not docker_available(require=True):
+        return False, False
+
     compose_file = ROOT / "docker-compose.yml"
-    if compose_up(compose_file) != 0:
+    up = subprocess.run(
+        [
+            "docker",
+            "compose",
+            "-f",
+            str(compose_file),
+            "up",
+            "-d",
+            "--build",
+            "agentrx_stub",
+            "causalflow_stub",
+        ],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+    )
+    if up.returncode != 0:
+        print(up.stderr or up.stdout, file=sys.stderr)
         return False, False
     started_compose = True
 
-    ok_agentrx, _ = wait_for_url(f"{agentrx_base}/health", timeout_s=120.0)
-    ok_causalflow, _ = wait_for_url(f"{causalflow_base}/health", timeout_s=120.0)
+    ok_agentrx, _ = wait_for_url(f"{agentrx_base}/health", timeout_s=180.0)
+    ok_causalflow, _ = wait_for_url(f"{causalflow_base}/health", timeout_s=180.0)
     return started_compose, ok_agentrx and ok_causalflow
 
 
@@ -94,11 +114,16 @@ def main() -> int:
     started_compose, ready = _ensure_hook_stubs()
     if not ready:
         if not require_docker_enabled():
-            print("SKIP: Docker unavailable; using in-process live hook fallback")
+            print("SKIP: hook endpoints unavailable; using in-process live hook fallback")
             return _probe_inprocess_live()
         print("AgentRx/CausalFlow hook endpoints not reachable", file=sys.stderr)
         if started_compose:
-            compose_down(ROOT / "docker-compose.yml")
+            subprocess.run(
+                ["docker", "compose", "-f", str(ROOT / "docker-compose.yml"), "stop", "agentrx_stub", "causalflow_stub"],
+                cwd=ROOT,
+                capture_output=True,
+                text=True,
+            )
         return 1
 
     os.environ.setdefault("CFI_HOOK_MODE", "live")
@@ -116,7 +141,12 @@ def main() -> int:
     if result.exit_code != 0:
         print(result.stdout, result.stderr, file=sys.stderr)
         if started_compose:
-            compose_down(ROOT / "docker-compose.yml")
+            subprocess.run(
+                ["docker", "compose", "-f", str(ROOT / "docker-compose.yml"), "stop", "agentrx_stub", "causalflow_stub"],
+                cwd=ROOT,
+                capture_output=True,
+                text=True,
+            )
         return result.exit_code
 
     result = CliRunner().invoke(
@@ -124,7 +154,12 @@ def main() -> int:
         ["probe-hooks", "--live", "--profile", "causalflow"],
     )
     if started_compose:
-        compose_down(ROOT / "docker-compose.yml")
+        subprocess.run(
+            ["docker", "compose", "-f", str(ROOT / "docker-compose.yml"), "stop", "agentrx_stub", "causalflow_stub"],
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+        )
     if result.exit_code != 0:
         print(result.stdout, result.stderr, file=sys.stderr)
         return result.exit_code

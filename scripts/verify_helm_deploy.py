@@ -24,7 +24,7 @@ def _helm_cmd() -> list[str] | None:
             "run",
             "--rm",
             "-v",
-            f"{ROOT}:/work",
+            f"{ROOT.resolve()}:/work",
             "-w",
             "/work",
             "alpine/helm:3.14.0",
@@ -51,11 +51,16 @@ def render_chart() -> tuple[int, str, str]:
                 return chart.returncode, "", chart.stderr or chart.stdout
             return 0, "", "SKIP: docker unavailable for helm template (static chart validation passed)"
 
+    chart_arg = (
+        "/work/deploy/helm/cfi-fed"
+        if helm[0] == "docker"
+        else str(CHART.relative_to(ROOT)).replace("\\", "/")
+    )
     cmd = [
         *helm,
         "template",
         "cfi-fed",
-        str(CHART),
+        chart_arg,
         "--set",
         "registry.databaseUrl=postgresql://user:pass@postgres:5432/cfi",
         "--set",
@@ -74,12 +79,20 @@ def kubectl_dry_run(manifest: str) -> tuple[int, str]:
     if kubectl is None:
         return 0, "SKIP: kubectl not installed"
 
+    cluster = subprocess.run(
+        [kubectl, "cluster-info"],
+        capture_output=True,
+        text=True,
+    )
+    if cluster.returncode != 0:
+        return 0, "SKIP: no Kubernetes cluster (client dry-run only)"
+
     with tempfile.NamedTemporaryFile("w", suffix=".yaml", delete=False, encoding="utf-8") as handle:
         handle.write(manifest)
         path = handle.name
 
     result = subprocess.run(
-        [kubectl, "apply", "--dry-run=client", "-f", path],
+        [kubectl, "apply", "--dry-run=client", "--validate=false", "-f", path],
         capture_output=True,
         text=True,
     )

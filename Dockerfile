@@ -10,4 +10,6 @@ COPY sim ./sim
 
 RUN pip install --no-cache-dir -e ".[dev]"
 
-EXPOSE 8000 8001 8002
+ENV PYTHONPATH=/app
+
+EXPOSE 8000 8001 8002 8010 8020 8021 8022

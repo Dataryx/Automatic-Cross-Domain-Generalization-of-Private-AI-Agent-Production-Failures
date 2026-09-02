@@ -1,0 +1,32 @@
+{
+  "schema": "incident-bundle/1.0",
+  "incident_id": "tenant-04-bench-001",
+  "initiating_request_digest": "digest-bench-001",
+  "trace": {
+    "events": [
+      {
+        "event_type": "policy_lookup",
+        "actor": "agent",
+        "sequence_index": 0
+      },
+      {
+        "event_type": "action",
+        "actor": "agent",
+        "sequence_index": 1
+      }
+    ]
+  },
+  "policy_digest": "policy-bench-001",
+  "initial_state_digest": "state0-bench-001",
+  "terminal_state_digest": "state1-bench-001",
+  "expected_outcome": "deny",
+  "observed_outcome": "allow",
+  "severity": 0.7,
+  "evidence_store_ref": "local://corpus/tenant-04/tenant-04-bench-001",
+  "metadata": {
+    "family": "exception_precedence",
+    "domain": "retail",
+    "narrative": "Agent released purchase order before director review completed.",
+    "tenant_id": "tenant-04"
+  }
+}

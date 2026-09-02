@@ -63,4 +63,11 @@ replayHooks:
     port: 8022
     command: services/tau_stub/main.py
 
+localDev:
+  postgres:
+    enabled: false
+    user: cfi
+    password: cfi
+    database: cfi
+
 resources: {}

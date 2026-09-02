@@ -108,6 +108,12 @@ figures:
 field-study:
 	python scripts/verify_field_study.py
 
+materialize-corpus:
+	python scripts/materialize_tenant_corpus.py --clean
+
+deploy-helm-local:
+	python scripts/deploy_helm_local.py
+
 ingest-corpus:
 	python scripts/verify_corpus_ingest.py
 

@@ -107,6 +107,11 @@ def verify() -> DodReport:
     report.checks.append(DodCheck("tau_adapter", (ROOT / "eval" / "benchmarks" / "tau_adapter.py").exists()))
     report.checks.append(DodCheck("deployment_docs", (ROOT / "docs" / "deployment.md").exists()))
     report.checks.append(DodCheck("production_runbook_docs", (ROOT / "docs" / "production-runbook.md").exists()))
+    report.checks.append(DodCheck("production_integration_docs", (ROOT / "docs" / "production-integration.md").exists()))
+    report.checks.append(DodCheck("production_env_example", (ROOT / "config" / "production.env.example").exists()))
+    report.checks.append(DodCheck("materialize_tenant_corpus_script", (ROOT / "scripts" / "materialize_tenant_corpus.py").exists()))
+    report.checks.append(DodCheck("deploy_helm_local_script", (ROOT / "scripts" / "deploy_helm_local.py").exists()))
+    report.checks.append(DodCheck("tenant_corpus_data", (ROOT / "eval" / "benchmarks" / "corpus" / "tenants").exists()))
     report.checks.append(DodCheck("health_check_script", (ROOT / "scripts" / "health_check.py").exists()))
     report.checks.append(DodCheck("postgres_compose", (ROOT / "docker-compose.postgres.yml").exists()))
     report.checks.append(DodCheck("sandbox_egress_tests", (ROOT / "tests" / "adversarial" / "test_sandbox_egress.py").exists()))
@@ -606,6 +611,9 @@ def verify() -> DodReport:
         report.checks.append(DodCheck("live_hooks_smoke", passed, result.stderr or result.stdout))
     except Exception as exc:
         report.checks.append(DodCheck("live_hooks_smoke", False, str(exc)))
+
+    try:
+        from cfi_governance.audit_idempotency import AuditIdempotencyLedger
         from cfi_governance.audit_sink import AuditSink
         from cfi_governance.audit_worm import read_worm_chain_head
 

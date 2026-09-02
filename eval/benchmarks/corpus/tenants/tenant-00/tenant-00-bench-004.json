@@ -1,0 +1,32 @@
+{
+  "schema": "incident-bundle/1.0",
+  "incident_id": "tenant-00-bench-004",
+  "initiating_request_digest": "digest-bench-004",
+  "trace": {
+    "events": [
+      {
+        "event_type": "policy_lookup",
+        "actor": "agent",
+        "sequence_index": 0
+      },
+      {
+        "event_type": "state_mutation",
+        "actor": "agent",
+        "sequence_index": 1
+      }
+    ]
+  },
+  "policy_digest": "policy-bench-004",
+  "initial_state_digest": "state0-bench-004",
+  "terminal_state_digest": "state1-bench-004",
+  "expected_outcome": "block",
+  "observed_outcome": "publish",
+  "severity": 0.6,
+  "evidence_store_ref": "local://corpus/tenant-00/tenant-00-bench-004",
+  "metadata": {
+    "family": "stale_policy",
+    "domain": "data_operations",
+    "narrative": "Published production table despite schema contract break.",
+    "tenant_id": "tenant-00"
+  }
+}
