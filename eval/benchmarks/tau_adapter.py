@@ -6,6 +6,7 @@ Maps external agent-benchmark JSON tasks to local CFI compile/eval plumbing.
 from __future__ import annotations
 
 import json
+import os
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -13,7 +14,12 @@ from cfi_core.examples import build_exception_precedence_cfi
 from cfi_recipient.compiler import fail_closed_compile
 from cfi_recipient.ontology import build_recipient_context
 
-DEFAULT_TASKS = Path(__file__).resolve().parent / "tau_tasks.json"
+from eval.benchmarks.tau_live import LIVE_ASSUMPTIONS, load_tasks
+
+LOCAL_ASSUMPTIONS = [
+    "Adapter format only; not connected to live τ-bench runtime.",
+    "Uses golden exception-precedence CFI as structural template.",
+]
 
 
 @dataclass
@@ -22,19 +28,13 @@ class TauTaskResult:
     domain: str
     compiled: bool
     notes: str = ""
-    assumptions: list[str] = field(default_factory=lambda: [
-        "Adapter format only; not connected to live τ-bench runtime.",
-        "Uses golden exception-precedence CFI as structural template.",
-    ])
-
-
-def load_tasks(path: Path | None = None) -> list[dict]:
-    return json.loads((path or DEFAULT_TASKS).read_text(encoding="utf-8"))
+    assumptions: list[str] = field(default_factory=lambda: list(LOCAL_ASSUMPTIONS))
 
 
 def evaluate_tasks(path: Path | None = None) -> list[TauTaskResult]:
     cfi = build_exception_precedence_cfi()
     results: list[TauTaskResult] = []
+    assumptions = list(LIVE_ASSUMPTIONS) if path is None and os.getenv("CFI_TAU_BENCH_URL") else list(LOCAL_ASSUMPTIONS)
     for task in load_tasks(path):
         domain = task.get("domain", "procurement")
         if domain in ("retail", "finance"):
@@ -47,6 +47,7 @@ def evaluate_tasks(path: Path | None = None) -> list[TauTaskResult]:
                 domain=task.get("domain", domain),
                 compiled=not compilation.abstained,
                 notes=task.get("instruction", "")[:120],
+                assumptions=assumptions,
             )
         )
     return results

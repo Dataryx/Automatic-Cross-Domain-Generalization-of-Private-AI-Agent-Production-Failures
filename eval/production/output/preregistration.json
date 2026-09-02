@@ -1,6 +1,6 @@
 {
   "study_id": "cfi-fed-prod-001",
-  "signed_commitment": "D4CAcKp92OYqYrXYlm0enhp/vYv2l4x2qVLEllHBc/jxzpJvXYImHKGlVqEn276TK7skuAvJgI/TVLH+2Y7SDQ==",
+  "signed_commitment": "fmt2rXBZjQT1iJjBbODzGXRUzdYq2xuofTuaJJN8iPL3UaYhcFi+RCLrbxUGO+PuFdKIBfNpZL/FXiZrGcTQDQ==",
   "baselines": [
     "raw_incident_replay",
     "pii_redacted_narrative",

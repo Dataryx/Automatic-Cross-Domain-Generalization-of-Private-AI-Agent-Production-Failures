@@ -155,6 +155,96 @@ def list_replay_profiles() -> None:
         typer.echo(f"  {spec.notes}")
 
 
+@contribute_app.command("register")
+def register_remote(
+    package_path: str = typer.Option(..., help="Signed CFI package JSON"),
+    registry_url: str = typer.Option("http://127.0.0.1:8000", help="Registry base URL"),
+    api_token: str | None = typer.Option(None, help="Bearer token (or CFI_API_TOKEN)"),
+) -> None:
+    """Register a signed CFI with a remote registry (package egress only)."""
+    import json
+    from pathlib import Path
+
+    from cfi_registry.client import RegistryClient
+
+    package = json.loads(Path(package_path).read_text(encoding="utf-8"))
+    with RegistryClient(registry_url, token=api_token) as client:
+        result = client.register(package)
+    typer.echo(f"Registered {result['invariant_id']} status={result['status']}")
+
+
+@contribute_app.command("status")
+def remote_cfi_status(
+    invariant_id: str = typer.Option(..., help="CFI invariant id"),
+    registry_url: str = typer.Option("http://127.0.0.1:8000", help="Registry base URL"),
+    api_token: str | None = typer.Option(None, help="Bearer token (or CFI_API_TOKEN)"),
+) -> None:
+    """Fetch lifecycle state for a CFI from a remote registry."""
+    import json
+
+    from cfi_registry.client import RegistryClient
+
+    with RegistryClient(registry_url, token=api_token) as client:
+        lifecycle = client.get_lifecycle(invariant_id)
+    typer.echo(json.dumps(lifecycle, indent=2))
+
+
+@contribute_app.command("publish")
+def publish_remote(
+    output: str = typer.Option(..., help="Local path for signed CFI JSON"),
+    registry_url: str = typer.Option("http://127.0.0.1:8000", help="Registry base URL"),
+    seed: int = typer.Option(421337),
+    replay_url: str | None = typer.Option(None, help="HTTP replay endpoint for live agent"),
+    replay_profile: str | None = typer.Option(None, help="Named replay profile: mock, agentrx, causalflow"),
+    api_token: str | None = typer.Option(None, help="Bearer token (or CFI_API_TOKEN)"),
+) -> None:
+    """Extract locally, then register signed CFI with remote registry (package egress only)."""
+    import json
+    from pathlib import Path
+
+    from cfi_contributor.pipeline import ContributorPipeline
+    from cfi_contributor.replay_profiles import profile_assumptions, resolve_replay_provider
+    from cfi_core.models import EventType
+    from cfi_core.signing import KeyPair
+    from cfi_core.wire import Incident, MinimizationConfig, TraceEvent, TypedTrace
+    from cfi_registry.client import RegistryClient
+
+    incident = Incident(
+        incident_id="local-inc-1",
+        initiating_request_digest="digest-init",
+        trace=TypedTrace(events=[TraceEvent(event_type=EventType.POLICY_LOOKUP, actor="agent")]),
+        policy_digest="policy-digest",
+        initial_state_digest="s0",
+        terminal_state_digest="s1",
+        expected_outcome="deny",
+        observed_outcome="allow",
+        severity=0.7,
+        evidence_store_ref="local://evidence/1",
+    )
+    raw = {"events": [{"type": "policy_lookup", "actor": "agent", "index": 0}]}
+    minimization = MinimizationConfig(
+        eta=0.9, delta=0.05, lambda_nodes=1.0, lambda_edges=1.0, lambda_literals=1.0, lambda_replay=1.0
+    )
+    try:
+        replay = resolve_replay_provider(replay_url=replay_url, replay_profile=replay_profile)
+    except ValueError as exc:
+        typer.echo(str(exc), err=True)
+        raise typer.Exit(1) from exc
+    for note in profile_assumptions(replay_profile):
+        typer.echo(f"Assumption: {note}")
+    report = ContributorPipeline(KeyPair.generate("contributor"), replay=replay, seed=seed).extract_from_incident(
+        incident, raw, minimization, {i: True for i in range(1, 13)}
+    )
+    if not report.package or not report.package.success or report.package.cfi is None:
+        typer.echo(f"Extraction failed: {report.package}", err=True)
+        raise typer.Exit(1)
+    package = report.package.cfi.model_dump(mode="json")
+    Path(output).write_text(json.dumps(package, indent=2), encoding="utf-8")
+    with RegistryClient(registry_url, token=api_token) as client:
+        result = client.register(package)
+    typer.echo(f"Published {result['invariant_id']} -> {registry_url} (local copy: {output})")
+
+
 @registry_app.command("serve")
 def serve_registry(
     host: str = typer.Option("127.0.0.1"),
@@ -208,6 +298,58 @@ def audit_verify(input_path: str = typer.Argument(..., help="Signed audit export
         raise typer.Exit(1)
     event_count = len(payload.get("events", []))
     typer.echo(f"Signed audit export valid ({event_count} events)")
+
+
+@recipient_app.command("fetch")
+def fetch_remote(
+    invariant_id: str = typer.Option(..., help="CFI invariant id"),
+    output: str = typer.Option(..., help="Output path for signed CFI JSON"),
+    registry_url: str = typer.Option("http://127.0.0.1:8000", help="Registry base URL"),
+    api_token: str | None = typer.Option(None, help="Bearer token (or CFI_API_TOKEN)"),
+) -> None:
+    """Download a signed CFI from a remote registry for local compilation."""
+    import json
+    from pathlib import Path
+
+    from cfi_registry.client import RegistryClient
+
+    with RegistryClient(registry_url, token=api_token) as client:
+        payload = client.get_cfi(invariant_id)
+    Path(output).write_text(json.dumps(payload, indent=2), encoding="utf-8")
+    typer.echo(f"Fetched {invariant_id} -> {output}")
+
+
+@recipient_app.command("pull")
+def pull_and_compile(
+    invariant_id: str = typer.Option(..., help="CFI invariant id"),
+    domain: str = typer.Option("procurement", help="Recipient domain for local compilation"),
+    registry_url: str = typer.Option("http://127.0.0.1:8000", help="Registry base URL"),
+    output: str | None = typer.Option(None, help="Optional path to save fetched CFI JSON"),
+    api_token: str | None = typer.Option(None, help="Bearer token (or CFI_API_TOKEN)"),
+) -> None:
+    """Fetch CFI from registry and compile locally inside recipient trust boundary."""
+    import json
+    from pathlib import Path
+
+    from cfi_core.models import CausalFailureInvariant
+    from cfi_recipient.compiler import fail_closed_compile
+    from cfi_recipient.ontology import build_recipient_context
+    from cfi_registry.client import RegistryClient
+
+    with RegistryClient(registry_url, token=api_token) as client:
+        payload = client.get_cfi(invariant_id)
+    if output:
+        Path(output).write_text(json.dumps(payload, indent=2), encoding="utf-8")
+    cfi = CausalFailureInvariant.model_validate(payload)
+    ctx = build_recipient_context(domain, cfi.required_mapping_roles)
+    result = fail_closed_compile(cfi, ctx, manifest=None)
+    if result.abstained:
+        typer.echo(f"Abstained: {result.abstention_reason}", err=True)
+        raise typer.Exit(1)
+    typer.echo(
+        f"Pulled {invariant_id} from {registry_url} and compiled {len(result.cases)} cases "
+        f"for domain={domain}"
+    )
 
 
 @recipient_app.command("compile")

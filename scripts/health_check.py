@@ -18,6 +18,7 @@ from services.coordinator.main import app as coordinator_app
 from services.agentrx_stub.main import app as agentrx_app
 from services.causalflow_stub.main import app as causalflow_app
 from services.replay_mock.main import app as replay_app
+from services.tau_stub.main import app as tau_stub_app
 
 
 def main() -> int:
@@ -28,6 +29,7 @@ def main() -> int:
         ("replay_mock", TestClient(replay_app), ["/health"]),
         ("agentrx_stub", TestClient(agentrx_app), ["/health"]),
         ("causalflow_stub", TestClient(causalflow_app), ["/health"]),
+        ("tau_stub", TestClient(tau_stub_app), ["/health", "/ready"]),
     ]
     failed = []
     for name, client, paths in checks:

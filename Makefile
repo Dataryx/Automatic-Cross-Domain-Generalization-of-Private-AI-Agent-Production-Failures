@@ -1,6 +1,6 @@
 # CFI-Fed developer commands
 
-.PHONY: install test sim dod golden tau stack stack-postgres stack-tls stack-mtls health live-replay replay-profiles eval-harnesses compose-smoke postgres-smoke helm-chart audit-attest mypy figures field-study ingest-corpus eval-all certs observability hardening auth release verify-release mtls
+.PHONY: install test sim dod golden tau tau-live agent-hooks cross-boundary stack stack-postgres stack-tls stack-mtls health live-replay replay-profiles eval-harnesses compose-smoke postgres-smoke helm-chart remote-registry contribute-publish audit-attest mypy figures field-study ingest-corpus eval-all certs observability hardening auth release verify-release mtls
 
 install:
 	pip install -e ".[dev]"
@@ -20,6 +20,9 @@ golden:
 
 tau:
 	python eval/benchmarks/tau_adapter.py
+
+tau-live:
+	python scripts/verify_tau_live.py
 
 eval-all:
 	python eval/run_all.py
@@ -44,6 +47,18 @@ postgres-smoke:
 
 helm-chart:
 	python scripts/verify_helm_chart.py
+
+remote-registry:
+	python scripts/verify_remote_registry_cli.py
+
+contribute-publish:
+	python scripts/verify_contribute_publish.py
+
+agent-hooks:
+	python scripts/verify_agent_hooks.py
+
+cross-boundary:
+	python scripts/verify_cross_boundary.py
 
 audit-attest:
 	python scripts/verify_audit_attestation.py
@@ -87,7 +102,7 @@ stack-mtls:
 	docker compose -f docker-compose.mtls.yml up --build
 
 mypy:
-	mypy packages/cfi_core/src packages/cfi_contributor/src packages/cfi_registry/src packages/cfi_recipient/src packages/cfi_federation/src packages/cfi_governance/src packages/cfi_cli/src services/replay_common.py services/registry services/coordinator services/aggregator services/replay_mock services/agentrx_stub services/causalflow_stub
+	mypy packages/cfi_core/src packages/cfi_contributor/src packages/cfi_registry/src packages/cfi_recipient/src packages/cfi_federation/src packages/cfi_governance/src packages/cfi_cli/src services/replay_common.py services/registry services/coordinator services/aggregator services/replay_mock services/agentrx_stub services/causalflow_stub services/tau_stub
 
 stack:
 	docker compose up --build

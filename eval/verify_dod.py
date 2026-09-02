@@ -145,6 +145,15 @@ def verify() -> DodReport:
     report.checks.append(DodCheck("audit_worm_module", (ROOT / "packages" / "cfi_governance" / "src" / "cfi_governance" / "audit_worm.py").exists()))
     report.checks.append(DodCheck("helm_chart", (ROOT / "deploy" / "helm" / "cfi-fed" / "Chart.yaml").exists()))
     report.checks.append(DodCheck("verify_helm_chart_script", (ROOT / "scripts" / "verify_helm_chart.py").exists()))
+    report.checks.append(DodCheck("registry_client_module", (ROOT / "packages" / "cfi_registry" / "src" / "cfi_registry" / "client.py").exists()))
+    report.checks.append(DodCheck("verify_remote_registry_cli_script", (ROOT / "scripts" / "verify_remote_registry_cli.py").exists()))
+    report.checks.append(DodCheck("tau_live_module", (ROOT / "eval" / "benchmarks" / "tau_live.py").exists()))
+    report.checks.append(DodCheck("tau_stub_service", (ROOT / "services" / "tau_stub" / "main.py").exists()))
+    report.checks.append(DodCheck("verify_tau_live_script", (ROOT / "scripts" / "verify_tau_live.py").exists()))
+    report.checks.append(DodCheck("verify_contribute_publish_script", (ROOT / "scripts" / "verify_contribute_publish.py").exists()))
+    report.checks.append(DodCheck("agent_hooks_module", (ROOT / "packages" / "cfi_contributor" / "src" / "cfi_contributor" / "agent_hooks.py").exists()))
+    report.checks.append(DodCheck("verify_agent_hooks_script", (ROOT / "scripts" / "verify_agent_hooks.py").exists()))
+    report.checks.append(DodCheck("verify_cross_boundary_script", (ROOT / "scripts" / "verify_cross_boundary.py").exists()))
     report.checks.append(DodCheck("verify_postgres_compose_script", (ROOT / "scripts" / "verify_postgres_compose.py").exists()))
     report.checks.append(DodCheck("mypy_ci_job", "mypy:" in (ROOT / ".github" / "workflows" / "ci.yml").read_text()))
     report.checks.append(
@@ -537,6 +546,67 @@ def verify() -> DodReport:
             )
     except Exception as exc:
         report.checks.append(DodCheck("audit_worm_idempotency_smoke", False, str(exc)))
+
+    try:
+        result = subprocess.run(
+            [sys.executable, "scripts/verify_remote_registry_cli.py"],
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+        )
+        report.checks.append(
+            DodCheck("remote_registry_cli_smoke", result.returncode == 0, result.stderr or result.stdout)
+        )
+    except Exception as exc:
+        report.checks.append(DodCheck("remote_registry_cli_smoke", False, str(exc)))
+
+    try:
+        result = subprocess.run(
+            [sys.executable, "scripts/verify_tau_live.py"],
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+        )
+        report.checks.append(DodCheck("tau_live_smoke", result.returncode == 0, result.stderr or result.stdout))
+    except Exception as exc:
+        report.checks.append(DodCheck("tau_live_smoke", False, str(exc)))
+
+    try:
+        result = subprocess.run(
+            [sys.executable, "scripts/verify_contribute_publish.py"],
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+        )
+        report.checks.append(
+            DodCheck("contribute_publish_smoke", result.returncode == 0, result.stderr or result.stdout)
+        )
+    except Exception as exc:
+        report.checks.append(DodCheck("contribute_publish_smoke", False, str(exc)))
+
+    try:
+        result = subprocess.run(
+            [sys.executable, "scripts/verify_agent_hooks.py"],
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+        )
+        report.checks.append(DodCheck("agent_hooks_smoke", result.returncode == 0, result.stderr or result.stdout))
+    except Exception as exc:
+        report.checks.append(DodCheck("agent_hooks_smoke", False, str(exc)))
+
+    try:
+        result = subprocess.run(
+            [sys.executable, "scripts/verify_cross_boundary.py"],
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+        )
+        report.checks.append(
+            DodCheck("cross_boundary_smoke", result.returncode == 0, result.stderr or result.stdout)
+        )
+    except Exception as exc:
+        report.checks.append(DodCheck("cross_boundary_smoke", False, str(exc)))
 
     return report
 

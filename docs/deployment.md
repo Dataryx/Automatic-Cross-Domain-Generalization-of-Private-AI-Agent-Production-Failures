@@ -20,6 +20,7 @@ make golden                     # end-to-end smoke (in-process)
 | Replay mock | 8010 | HTTP agent replay stub |
 | AgentRx stub | 8020 | Sandboxed AgentRx diagnostic hook |
 | CausalFlow stub | 8021 | Sandboxed counterfactual replay hook |
+| τ-bench stub | 8022 | Task-format stub for live τ adapter smoke |
 
 ```bash
 docker compose up --build
@@ -53,6 +54,7 @@ python services/causalflow_stub/main.py
 | `CFI_REPLAY_MOCK_URL` | `http://127.0.0.1:8010/replay` | Mock replay profile |
 | `CFI_AGENTRX_URL` | `http://127.0.0.1:8020/v1/replay` | AgentRx sandbox endpoint |
 | `CFI_CAUSALFLOW_URL` | `http://127.0.0.1:8021/v1/counterfactual` | CausalFlow sandbox endpoint |
+| `CFI_TAU_BENCH_URL` | unset | Optional τ-bench task JSON endpoint (format adapter only) |
 | `CFI_RATE_LIMIT_RPM` | `0` (disabled) | Per-client requests/minute; set e.g. `120` in production |
 | `CFI_API_TOKEN` | unset | Bearer token for mutating API calls; health/metrics bypass |
 | `CFI_OTEL_ENDPOINT` | unset | OTLP HTTP trace exporter URL (requires `pip install -e ".[otel]"`) |
@@ -74,6 +76,11 @@ python services/causalflow_stub/main.py
 cfi-contribute replay-profiles
 cfi-contribute extract --output cfi.json --replay-profile mock
 cfi-contribute extract --output cfi.json --replay-url http://127.0.0.1:8010/replay
+cfi-contribute register --package-path cfi.json --registry-url http://127.0.0.1:8000
+cfi-contribute publish --output cfi.json --registry-url http://127.0.0.1:8000
+cfi-contribute status --invariant-id CFI-EXCEPTION-PRECEDENCE-0001
+cfi-recipient fetch --invariant-id CFI-EXCEPTION-PRECEDENCE-0001 --output fetched.json
+cfi-recipient pull --invariant-id CFI-EXCEPTION-PRECEDENCE-0001 --domain procurement
 ```
 
 ## Production checklist
