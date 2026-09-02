@@ -62,7 +62,8 @@ def wait_for_url(
     last_error = ""
     while time.time() < deadline:
         try:
-            response = httpx.get(url, timeout=5.0, **request_opts)
+            with httpx.Client(timeout=5.0, **request_opts) as client:
+                response = client.get(url)
             if response.status_code == 200:
                 return True, f"{url} OK"
             last_error = f"HTTP {response.status_code}"

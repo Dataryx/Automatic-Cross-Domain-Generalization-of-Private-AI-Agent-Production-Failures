@@ -1,7 +1,7 @@
 {
   "all_passed": true,
-  "passed": 123,
-  "total": 123,
+  "passed": 138,
+  "total": 138,
   "checks": [
     {
       "name": "cfi_schema_exists",
@@ -110,6 +110,11 @@
     },
     {
       "name": "deployment_docs",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "production_runbook_docs",
       "passed": true,
       "detail": ""
     },
@@ -309,6 +314,31 @@
       "detail": ""
     },
     {
+      "name": "verify_helm_deploy_script",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "verify_live_hooks_script",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "verify_corpus_batch_script",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "corpus_tenants_module",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "helm_replay_hooks_template",
+      "passed": true,
+      "detail": ""
+    },
+    {
       "name": "registry_client_module",
       "passed": true,
       "detail": ""
@@ -439,6 +469,36 @@
       "detail": ""
     },
     {
+      "name": "verify_pipeline_matrix_ci_script",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "postgres_tls_compose",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "mtls_required_compose",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "nginx_mtls_required_config",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "verify_postgres_tls_full_pipeline_script",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "verify_mtls_required_full_pipeline_script",
+      "passed": true,
+      "detail": ""
+    },
+    {
       "name": "http_tls_module",
       "passed": true,
       "detail": ""
@@ -480,6 +540,11 @@
     },
     {
       "name": "ci_eval_all_job",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "ci_pipeline_matrix_job",
       "passed": true,
       "detail": ""
     },
@@ -559,9 +624,19 @@
       "detail": "Helm chart OK (static validation; helm CLI not installed)\n"
     },
     {
-      "name": "audit_worm_idempotency_smoke",
+      "name": "corpus_batch_smoke",
       "passed": true,
-      "detail": ""
+      "detail": "C:\\Users\\sumit\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\pydantic\\_internal\\_fields.py:192: UserWarning: Field name \"schema\" in \"CausalFailureInvariant\" shadows an attribute in parent \"BaseModel\"\n  warnings.warn(\n"
+    },
+    {
+      "name": "helm_deploy_smoke",
+      "passed": true,
+      "detail": "SKIP: Docker daemon not running\nSKIP: docker unavailable for helm template (static chart validation passed)\n"
+    },
+    {
+      "name": "live_hooks_smoke",
+      "passed": true,
+      "detail": "C:\\Users\\sumit\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\pydantic\\_internal\\_fields.py:192: UserWarning: Field name \"schema\" in \"CausalFailureInvariant\" shadows an attribute in parent \"BaseModel\"\n  warnings.warn(\n"
     },
     {
       "name": "remote_registry_cli_smoke",
