@@ -18,6 +18,8 @@ make golden                     # end-to-end smoke (in-process)
 | Coordinator | 8001 | Cohort epochs, consortium rounds |
 | Aggregator | 8002 | DP secure aggregation |
 | Replay mock | 8010 | HTTP agent replay stub |
+| AgentRx stub | 8020 | Sandboxed AgentRx diagnostic hook |
+| CausalFlow stub | 8021 | Sandboxed counterfactual replay hook |
 
 ```bash
 docker compose up --build
@@ -33,6 +35,8 @@ cfi-registry serve
 python services/coordinator/main.py
 python services/aggregator/main.py
 python services/replay_mock/main.py
+python services/agentrx_stub/main.py
+python services/causalflow_stub/main.py
 ```
 
 ## Environment variables
@@ -55,6 +59,7 @@ python services/replay_mock/main.py
 | `CFI_RELEASE_SIGNING_ORG` | `cfi-fed-release` | Org id embedded in signed release manifest |
 | `CFI_RELEASE_SIGNING_KEY_PEM` | unset | Ed25519 private key PEM for stable release signatures |
 | `CFI_RELEASE_SIGNING_KEY_PATH` | unset | Path to Ed25519 private key PEM (alternative to inline PEM) |
+| `CFI_AUDIT_SINK_WATERMARK_PATH` | unset | Persist audit sink cursor across restarts |
 
 ```bash
 cfi-contribute replay-profiles

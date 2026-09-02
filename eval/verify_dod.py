@@ -131,6 +131,10 @@ def verify() -> DodReport:
     report.checks.append(DodCheck("release_attestation_module", (ROOT / "packages" / "cfi_governance" / "src" / "cfi_governance" / "release_attestation.py").exists()))
     report.checks.append(DodCheck("verify_release_script", (ROOT / "scripts" / "verify_release.py").exists()))
     report.checks.append(DodCheck("generate_release_signing_key", (ROOT / "scripts" / "generate_release_signing_key.py").exists()))
+    report.checks.append(DodCheck("verify_replay_profiles_script", (ROOT / "scripts" / "verify_replay_profiles.py").exists()))
+    report.checks.append(DodCheck("agentrx_stub_service", (ROOT / "services" / "agentrx_stub" / "main.py").exists()))
+    report.checks.append(DodCheck("causalflow_stub_service", (ROOT / "services" / "causalflow_stub" / "main.py").exists()))
+    report.checks.append(DodCheck("audit_watermark_module", (ROOT / "packages" / "cfi_governance" / "src" / "cfi_governance" / "audit_watermark.py").exists()))
     report.checks.append(DodCheck("mypy_ci_job", "mypy:" in (ROOT / ".github" / "workflows" / "ci.yml").read_text()))
     report.checks.append(
         DodCheck(
@@ -318,6 +322,19 @@ def verify() -> DodReport:
             )
     except Exception as exc:
         report.checks.append(DodCheck("postgres_audit_persistence_smoke", False, str(exc)))
+
+    try:
+        import subprocess
+
+        result = subprocess.run(
+            [sys.executable, "scripts/verify_replay_profiles.py"],
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+        )
+        report.checks.append(DodCheck("replay_profiles_smoke", result.returncode == 0, result.stderr or result.stdout))
+    except Exception as exc:
+        report.checks.append(DodCheck("replay_profiles_smoke", False, str(exc)))
 
     return report
 

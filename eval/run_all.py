@@ -16,6 +16,7 @@ STEPS = [
     ("verify_sim", [sys.executable, "scripts/verify_sim.py"]),
     ("verify_field_study", [sys.executable, "scripts/verify_field_study.py"]),
     ("live_replay_smoke", [sys.executable, "scripts/live_replay_smoke.py"]),
+    ("verify_replay_profiles", [sys.executable, "scripts/verify_replay_profiles.py"]),
     ("verify_corpus_ingest", [sys.executable, "scripts/verify_corpus_ingest.py"]),
     ("verify_tls_stack", [sys.executable, "scripts/verify_tls_stack.py"]),
     ("verify_observability", [sys.executable, "scripts/verify_observability.py"]),

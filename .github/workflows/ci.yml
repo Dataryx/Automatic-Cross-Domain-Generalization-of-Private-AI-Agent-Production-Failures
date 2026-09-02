@@ -23,6 +23,8 @@ jobs:
         run: python eval/verify_dod.py
       - name: Golden path
         run: python scripts/golden_path.py
+      - name: Replay profiles
+        run: python scripts/verify_replay_profiles.py
   sim:
     runs-on: ubuntu-latest
     steps:

@@ -1,7 +1,7 @@
 {
   "all_passed": true,
-  "passed": 57,
-  "total": 57,
+  "passed": 62,
+  "total": 62,
   "checks": [
     {
       "name": "cfi_schema_exists",
@@ -239,6 +239,26 @@
       "detail": ""
     },
     {
+      "name": "verify_replay_profiles_script",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "agentrx_stub_service",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "causalflow_stub_service",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "audit_watermark_module",
+      "passed": true,
+      "detail": ""
+    },
+    {
       "name": "mypy_ci_job",
       "passed": true,
       "detail": ""
@@ -287,6 +307,11 @@
       "name": "postgres_audit_persistence_smoke",
       "passed": true,
       "detail": ""
+    },
+    {
+      "name": "replay_profiles_smoke",
+      "passed": true,
+      "detail": "C:\\Users\\sumit\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\pydantic\\_internal\\_fields.py:192: UserWarning: Field name \"schema\" in \"CausalFailureInvariant\" shadows an attribute in parent \"BaseModel\"\n  warnings.warn(\n"
     }
   ]
 }

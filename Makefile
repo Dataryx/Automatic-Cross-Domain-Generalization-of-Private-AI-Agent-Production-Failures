@@ -1,6 +1,6 @@
 # CFI-Fed developer commands
 
-.PHONY: install test sim dod golden tau stack stack-postgres stack-tls stack-mtls health live-replay mypy figures field-study ingest-corpus eval-all certs observability hardening auth release verify-release mtls
+.PHONY: install test sim dod golden tau stack stack-postgres stack-tls stack-mtls health live-replay replay-profiles mypy figures field-study ingest-corpus eval-all certs observability hardening auth release verify-release mtls
 
 install:
 	pip install -e ".[dev]"
@@ -29,6 +29,9 @@ health:
 
 live-replay:
 	python scripts/live_replay_smoke.py
+
+replay-profiles:
+	python scripts/verify_replay_profiles.py
 
 figures:
 	python scripts/verify_figures.py

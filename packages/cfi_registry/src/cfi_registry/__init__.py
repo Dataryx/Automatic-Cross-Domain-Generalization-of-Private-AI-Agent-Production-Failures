@@ -17,6 +17,7 @@ from cfi_core.wire import CohortManifest
 from cfi_governance import ArtifactRecord, LifecycleManager, LifecycleState
 from cfi_governance.audit_log import AuditLog
 from cfi_governance.audit_sink import AuditSink, flush_audit_events
+from cfi_governance.audit_watermark import AuditWatermark
 from cfi_governance.review import ReviewQueue, ReviewStatus, ReviewTicket
 from cfi_registry.review_ui import render_review_detail, render_review_ui, ticket_to_dict
 
@@ -68,7 +69,7 @@ class RegistryStoreProtocol(Protocol):
 class RegistryStore:
     """In-memory store; production uses PostgreSQL append-only tables."""
 
-    def __init__(self, audit_sink: AuditSink | None = None) -> None:
+    def __init__(self, audit_sink: AuditSink | None = None, watermark: AuditWatermark | None = None) -> None:
         self._cfis: dict[str, dict[str, Any]] = {}
         self._records: dict[str, ArtifactRecord] = {}
         self._manifests: dict[str, CohortManifest] = {}
@@ -76,6 +77,7 @@ class RegistryStore:
         self._review = ReviewQueue()
         self._audit = AuditLog()
         self._audit_sink = audit_sink if audit_sink is not None else AuditSink.from_env()
+        self._watermark = watermark if watermark is not None else AuditWatermark.from_env()
 
     def _log_audit(self, actor: str, action: str, resource_id: str, detail: dict[str, Any] | None = None) -> None:
         self._audit.append(actor, action, resource_id, detail)
@@ -83,8 +85,17 @@ class RegistryStore:
     def export_audit_log(self) -> list[dict[str, Any]]:
         return self._audit.export()
 
+    def export_audit_log_since(self, after_index: int) -> list[dict[str, Any]]:
+        return self.export_audit_log()[after_index:]
+
     def flush_audit_sink(self) -> dict[str, Any]:
-        return flush_audit_events(self._audit_sink, self.export_audit_log())
+        events = self.export_audit_log_since(self._watermark.value)
+        result = flush_audit_events(self._audit_sink, events)
+        if events and result.get("flushed"):
+            self._watermark.advance(self._watermark.value + len(events))
+        result["watermark"] = self._watermark.value
+        result["exported_count"] = len(events)
+        return result
 
     def register(self, package: dict[str, Any]) -> str:
         from cfi_contributor.adversaries import ReleaseGateAdversaries

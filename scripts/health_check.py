@@ -15,6 +15,8 @@ from fastapi.testclient import TestClient
 from cfi_registry import RegistryStore, create_app
 from services.aggregator.main import app as aggregator_app
 from services.coordinator.main import app as coordinator_app
+from services.agentrx_stub.main import app as agentrx_app
+from services.causalflow_stub.main import app as causalflow_app
 from services.replay_mock.main import app as replay_app
 
 
@@ -24,6 +26,8 @@ def main() -> int:
         ("coordinator", TestClient(coordinator_app), ["/health", "/ready", "/metrics"]),
         ("aggregator", TestClient(aggregator_app), ["/health", "/ready", "/metrics", "/accountant"]),
         ("replay_mock", TestClient(replay_app), ["/health"]),
+        ("agentrx_stub", TestClient(agentrx_app), ["/health"]),
+        ("causalflow_stub", TestClient(causalflow_app), ["/health"]),
     ]
     failed = []
     for name, client, paths in checks:
