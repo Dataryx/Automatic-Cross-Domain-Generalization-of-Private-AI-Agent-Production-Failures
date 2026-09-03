@@ -1,6 +1,6 @@
 # CFI-Fed developer commands
 
-.PHONY: install test sim dod golden tau tau-live agent-hooks cross-boundary corpus-publish end-to-end federation full-pipeline compose-full-pipeline postgres-compose-full-pipeline tls-full-pipeline mtls-full-pipeline stack stack-postgres stack-tls stack-mtls health live-replay replay-profiles eval-harnesses compose-smoke postgres-smoke helm-chart remote-registry contribute-publish audit-attest mypy figures field-study ingest-corpus eval-all certs observability hardening auth release verify-release mtls
+.PHONY: install test sim dod golden tau tau-live agent-hooks cross-boundary corpus-publish end-to-end federation full-pipeline compose-full-pipeline postgres-compose-full-pipeline tls-full-pipeline mtls-full-pipeline stack stack-postgres stack-tls stack-mtls health live-replay replay-profiles eval-harnesses compose-smoke postgres-smoke helm-chart remote-registry contribute-publish audit-attest mypy figures field-study ingest-corpus eval-all certs observability hardening auth release verify-release mtls dashboard dashboard-dev dashboard-build
 
 install:
 	pip install -e ".[dev]"
@@ -163,3 +163,12 @@ stack:
 
 stack-postgres:
 	docker compose -f docker-compose.postgres.yml up --build
+
+dashboard:
+	python scripts/verify_dashboard.py
+
+dashboard-dev:
+	cd dashboard && npm install && npm run dev
+
+dashboard-build:
+	cd dashboard && npm install && npm run build

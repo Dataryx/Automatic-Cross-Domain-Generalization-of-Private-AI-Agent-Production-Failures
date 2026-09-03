@@ -146,12 +146,20 @@ python eval/benchmarks/run_corpus.py
 
 ## Human review
 
-Registry exposes a minimal review queue after CFI registration:
+Registry exposes a review queue after CFI registration. Use the **React operations dashboard** (recommended) or the legacy HTML UI:
 
 ```bash
-cfi-registry serve
-# open http://127.0.0.1:8000/review/ui
+docker compose up --build   # registry :8000, coordinator :8001, aggregator :8002
+
+cd dashboard
+npm install
+npm run dev
+# open http://localhost:5173
 ```
+
+Or from the repo root: `make dashboard-dev`
+
+Legacy minimal UI: `http://127.0.0.1:8000/review/ui` after `cfi-registry serve`.
 
 ## Docker
 

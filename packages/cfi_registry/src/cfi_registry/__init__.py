@@ -305,6 +305,10 @@ def create_app(store: RegistryStoreProtocol | None = None) -> FastAPI:
             },
         )
 
+    @app.get("/stats")
+    def registry_stats() -> dict[str, int]:
+        return registry.stats()
+
     @app.get("/audit/export")
     def export_audit_log() -> dict[str, Any]:
         return {

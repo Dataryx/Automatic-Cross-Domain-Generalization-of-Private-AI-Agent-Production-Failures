@@ -13,3 +13,4 @@ eval/keys/
 *.egg-info/
 dist/
 build/
+dashboard/node_modules/

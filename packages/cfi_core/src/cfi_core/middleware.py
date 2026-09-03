@@ -13,6 +13,7 @@ from starlette.responses import JSONResponse
 from starlette.types import ASGIApp
 
 from cfi_core.auth import ApiTokenMiddleware, api_token_from_env
+from cfi_core.cors import configure_cors
 from cfi_core.observability import new_request_id, trace_span
 
 REQUEST_ID_HEADER = "X-Request-ID"
@@ -93,6 +94,7 @@ def rate_limit_from_env() -> int:
 
 def configure_service_app(app: FastAPI, service: str) -> FastAPI:
     """Install production middleware on a FastAPI service."""
+    configure_cors(app)
     token = api_token_from_env()
     if token:
         app.add_middleware(ApiTokenMiddleware, token=token)
