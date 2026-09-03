@@ -1,6 +1,6 @@
 """τ-bench adapter tests."""
 
-from eval.benchmarks.tau_adapter import evaluate_tasks, load_tasks
+from benchmarks.tau_adapter import evaluate_tasks, load_tasks
 
 
 def test_tau_tasks_load() -> None:

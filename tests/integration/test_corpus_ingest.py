@@ -12,7 +12,7 @@ from cfi_contributor.corpus_ingest import (
 )
 
 ROOT = Path(__file__).resolve().parents[2]
-BUNDLES = ROOT / "eval" / "benchmarks" / "corpus" / "bundles"
+BUNDLES = ROOT / "tools/evaluation" / "benchmarks" / "corpus" / "bundles"
 
 
 def test_discover_benchmark_bundles() -> None:

@@ -10,7 +10,7 @@ Operator guide for deploying CFI-Fed beyond local smoke tests. This does **not**
 4. Privacy budget configured (`CFI_TOTAL_EPSILON`, `CFI_MINIMUM_COHORT_K`).
 5. External audit sink (`CFI_AUDIT_SINK_URL` or `CFI_AUDIT_SINK_PATH`).
 6. Human review workflow enabled before lifecycle `active`.
-7. Re-run `python eval/verify_dod.py` after deploy.
+7. Re-run `python tools/evaluation/verify_dod.py` after deploy.
 
 ## Path layout (compose nginx and Helm ingress)
 
@@ -50,15 +50,15 @@ helm install cfi-fed deploy/helm/cfi-fed \
 Validate render + kubectl dry-run locally:
 
 ```bash
-python scripts/verify_helm_deploy.py
+python scripts/ci/verify_helm_deploy.py
 ```
 
 ## Multi-tenant corpus batch
 
 ```bash
-python scripts/verify_corpus_batch.py
+python scripts/ci/verify_corpus_batch.py
 # or manually materialize tenants then ingest-publish:
-python -c "from eval.corpus_tenants import materialize_tenant_corpus; from pathlib import Path; materialize_tenant_corpus(Path('eval/benchmarks/corpus/bundles'), Path('/data/tenants'), tenant_count=10)"
+python -c "from corpus_tenants import materialize_tenant_corpus; from pathlib import Path; materialize_tenant_corpus(Path('tools/evaluation/benchmarks/corpus/bundles'), Path('/data/tenants'), tenant_count=10)"
 ```
 
 
@@ -104,10 +104,10 @@ cfi-contribute ingest-publish \
 
 ```bash
 # In-process (no Docker):
-python scripts/verify_full_pipeline.py
+python scripts/ci/verify_full_pipeline.py
 
 # All 7 deployment variants (requires Docker):
-CFI_REQUIRE_DOCKER=1 python scripts/verify_pipeline_matrix_ci.py
+CFI_REQUIRE_DOCKER=1 python scripts/ci/verify_pipeline_matrix_ci.py
 
 # Remote against running stack:
 export CFI_REGISTRY_URL=https://cfi-fed.example.com/registry

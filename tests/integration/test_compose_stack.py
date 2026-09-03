@@ -7,7 +7,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-SCRIPT = ROOT / "scripts" / "verify_compose_stack.py"
+SCRIPT = ROOT / "scripts" / "ci" / "verify_compose_stack.py"
 
 
 def _docker_daemon_ready() -> bool:

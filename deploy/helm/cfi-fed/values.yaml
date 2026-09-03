@@ -52,16 +52,16 @@ replayHooks:
   enabled: false
   mock:
     port: 8010
-    command: services/replay_mock/main.py
+    command: services/integrations/replay/main.py
   agentrx:
     port: 8020
-    command: services/agentrx_stub/main.py
+    command: services/integrations/agentrx/main.py
   causalflow:
     port: 8021
-    command: services/causalflow_stub/main.py
+    command: services/integrations/causalflow/main.py
   tau:
     port: 8022
-    command: services/tau_stub/main.py
+    command: services/integrations/tau/main.py
 
 localDev:
   postgres:

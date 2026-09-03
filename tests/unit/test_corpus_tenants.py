@@ -4,10 +4,10 @@ import json
 import tempfile
 from pathlib import Path
 
-from eval.corpus_tenants import materialize_tenant_corpus
+from corpus_tenants import materialize_tenant_corpus
 
 ROOT = Path(__file__).resolve().parents[2]
-SOURCE = ROOT / "eval" / "benchmarks" / "corpus" / "bundles"
+SOURCE = ROOT / "tools/evaluation" / "benchmarks" / "corpus" / "bundles"
 
 
 def test_materialize_tenant_corpus() -> None:

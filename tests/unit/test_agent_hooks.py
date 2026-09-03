@@ -3,7 +3,7 @@
 from fastapi.testclient import TestClient
 
 from cfi_contributor.agent_hooks import PROFILE_PATHS, probe_replay_profile
-from services.agentrx_stub.main import app as agentrx_app
+from services.integrations.agentrx.main import app as agentrx_app
 
 
 class _InProcessReplayClient:

@@ -3,7 +3,7 @@
 import json
 from pathlib import Path
 
-from eval.pipeline_matrix import collect_pipeline_matrix, validate_matrix, write_pipeline_matrix
+from pipeline_matrix import collect_pipeline_matrix, validate_matrix, write_pipeline_matrix
 
 
 def test_collect_pipeline_matrix_inprocess(tmp_path: Path) -> None:

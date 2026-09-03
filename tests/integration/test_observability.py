@@ -54,6 +54,6 @@ def test_aggregator_accountant_decrements_on_release() -> None:
 
 
 def test_verify_observability_script() -> None:
-    script = ROOT / "scripts" / "verify_observability.py"
+    script = ROOT / "scripts" / "ci" / "verify_observability.py"
     result = subprocess.run([sys.executable, str(script)], cwd=ROOT, capture_output=True, text=True)
     assert result.returncode == 0, result.stderr + result.stdout

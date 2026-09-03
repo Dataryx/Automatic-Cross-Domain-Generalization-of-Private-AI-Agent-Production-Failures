@@ -4,7 +4,7 @@
 
 Source incidents, recipient mappings, per-tenant susceptibility, embargoed vulnerability data.
 
-## Adversaries (harnesses in `eval/redteam/`)
+## Adversaries (harnesses in `tools/evaluation/redteam/`)
 
 1. Honest-but-curious registry
 2. Malicious recipient

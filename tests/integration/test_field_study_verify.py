@@ -5,7 +5,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-VERIFY = ROOT / "scripts" / "verify_field_study.py"
+VERIFY = ROOT / "scripts" / "ci" / "verify_field_study.py"
 
 
 def test_field_study_verification_passes() -> None:

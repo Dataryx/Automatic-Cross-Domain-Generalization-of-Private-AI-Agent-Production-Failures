@@ -2,9 +2,9 @@
 
 from fastapi.testclient import TestClient
 
-from services.agentrx_stub.main import app as agentrx_app
-from services.causalflow_stub.main import app as causalflow_app
-from services.replay_mock.main import app as replay_mock_app
+from services.integrations.agentrx.main import app as agentrx_app
+from services.integrations.causalflow.main import app as causalflow_app
+from services.integrations.replay.main import app as replay_mock_app
 
 
 def test_agentrx_stub_returns_diagnostic_id() -> None:

@@ -31,7 +31,7 @@ services:
 
   replay_mock:
     build: .
-    command: python services/replay_mock/main.py
+    command: python services/integrations/replay/main.py
     environment:
       CFI_HOST: 0.0.0.0
       CFI_PORT: 8010
@@ -40,7 +40,7 @@ services:
 
   agentrx_stub:
     build: .
-    command: python services/agentrx_stub/main.py
+    command: python services/integrations/agentrx/main.py
     environment:
       CFI_HOST: 0.0.0.0
       CFI_PORT: 8020
@@ -49,7 +49,7 @@ services:
 
   causalflow_stub:
     build: .
-    command: python services/causalflow_stub/main.py
+    command: python services/integrations/causalflow/main.py
     environment:
       CFI_HOST: 0.0.0.0
       CFI_PORT: 8021
@@ -58,7 +58,7 @@ services:
 
   tau_stub:
     build: .
-    command: python services/tau_stub/main.py
+    command: python services/integrations/tau/main.py
     environment:
       CFI_HOST: 0.0.0.0
       CFI_PORT: 8022

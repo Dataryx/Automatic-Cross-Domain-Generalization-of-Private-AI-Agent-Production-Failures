@@ -1,6 +1,6 @@
 """Benchmark corpus evaluation tests."""
 
-from eval.benchmarks.run_corpus import evaluate_corpus, load_corpus
+from benchmarks.run_corpus import evaluate_corpus, load_corpus
 
 
 def test_corpus_loads() -> None:

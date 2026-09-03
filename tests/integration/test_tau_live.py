@@ -1,8 +1,8 @@
 """τ-bench live loader tests."""
 
-from eval.benchmarks import tau_live
-from eval.benchmarks.tau_adapter import evaluate_tasks
-from eval.benchmarks.tau_live import load_tasks
+from benchmarks import tau_live
+from benchmarks.tau_adapter import evaluate_tasks
+from benchmarks.tau_live import load_tasks
 
 
 def test_tau_live_load_tasks_from_url(monkeypatch) -> None:

@@ -1,7 +1,7 @@
 """Pipeline smoke manifest tests."""
 
 from cfi_core.examples import build_exception_precedence_cfi
-from eval.pipeline_smoke import cohort_manifest
+from pipeline_smoke import cohort_manifest
 
 
 def test_cohort_manifest_epoch() -> None:

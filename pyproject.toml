@@ -89,7 +89,7 @@ pythonpath = [
     "packages/cfi_federation/src",
     "packages/cfi_governance/src",
     "packages/cfi_cli/src",
-    "eval",
+    "tools/evaluation",
     "services",
     "scripts",
     "examples/retail_to_procurement",

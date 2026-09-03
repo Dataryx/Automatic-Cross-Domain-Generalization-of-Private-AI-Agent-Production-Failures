@@ -25,31 +25,31 @@ make golden                     # end-to-end smoke (in-process)
 ```bash
 docker compose up --build
 # End-to-end stack smoke (requires running Docker daemon):
-CFI_REQUIRE_DOCKER=1 python scripts/verify_compose_stack.py
+CFI_REQUIRE_DOCKER=1 python scripts/ci/verify_compose_stack.py
 # Full pipeline against live compose services (publish -> assess -> federate -> consortium):
-CFI_REQUIRE_DOCKER=1 python scripts/verify_compose_full_pipeline.py
+CFI_REQUIRE_DOCKER=1 python scripts/ci/verify_compose_full_pipeline.py
 # Postgres-backed registry:
 docker compose -f docker-compose.postgres.yml up --build
-CFI_REQUIRE_DOCKER=1 python scripts/verify_postgres_compose.py
-CFI_REQUIRE_DOCKER=1 python scripts/verify_postgres_compose_full_pipeline.py
+CFI_REQUIRE_DOCKER=1 python scripts/ci/verify_postgres_compose.py
+CFI_REQUIRE_DOCKER=1 python scripts/ci/verify_postgres_compose_full_pipeline.py
 # TLS-terminated stack (dev self-signed certs on :8443):
-python scripts/generate_dev_certs.py
+python scripts/ops/generate_dev_certs.py
 docker compose -f docker-compose.tls.yml up --build
-CFI_REQUIRE_DOCKER=1 python scripts/verify_tls_full_pipeline.py
+CFI_REQUIRE_DOCKER=1 python scripts/ci/verify_tls_full_pipeline.py
 # TLS paths: /registry/, /coordinator/, /aggregator/, /replay/, /agentrx/, /causalflow/, /tau/
 # mTLS-terminated stack (optional client certs):
 docker compose -f docker-compose.mtls.yml up --build
-CFI_REQUIRE_DOCKER=1 python scripts/verify_mtls_full_pipeline.py
-CFI_REQUIRE_DOCKER=1 python scripts/verify_postgres_tls_full_pipeline.py
-CFI_REQUIRE_DOCKER=1 python scripts/verify_mtls_required_full_pipeline.py
-CFI_REQUIRE_DOCKER=1 python scripts/verify_pipeline_matrix_ci.py
+CFI_REQUIRE_DOCKER=1 python scripts/ci/verify_mtls_full_pipeline.py
+CFI_REQUIRE_DOCKER=1 python scripts/ci/verify_postgres_tls_full_pipeline.py
+CFI_REQUIRE_DOCKER=1 python scripts/ci/verify_mtls_required_full_pipeline.py
+CFI_REQUIRE_DOCKER=1 python scripts/ci/verify_pipeline_matrix_ci.py
 # or individually:
 cfi-registry serve
 python services/coordinator/main.py
 python services/aggregator/main.py
-python services/replay_mock/main.py
-python services/agentrx_stub/main.py
-python services/causalflow_stub/main.py
+python services/integrations/replay/main.py
+python services/integrations/agentrx/main.py
+python services/integrations/causalflow/main.py
 ```
 
 ## Environment variables
@@ -117,12 +117,12 @@ cfi-aggregate round --coordinator-url http://127.0.0.1:8001 --tenants 12 --minim
 4. Wire `HttpAgentReplayProvider` to sandboxed agent runtime (`--replay-url`).
 5. Require human review via `/review/ui` before lifecycle `active`.
 6. Monitor privacy accountant `remaining_epsilon` on aggregator (`GET /accountant`, `GET /metrics`).
-7. Re-run `python eval/verify_dod.py` after deploy.
+7. Re-run `python tools/evaluation/verify_dod.py` after deploy.
 8. Ingest private incident bundles locally: `cfi-contribute ingest-corpus --input-dir ./bundles --output-dir ./out --extract
 cfi-contribute ingest-publish --input-dir ./bundles --output-dir ./out --registry-url http://127.0.0.1:8000`.
 9. Configure external audit sink (`CFI_AUDIT_SINK_PATH` or `CFI_AUDIT_SINK_URL`) and flush via `POST /audit/sink`.
-10. Build signed release checkpoint: `make verify-release` (writes `eval/output/release_manifest.json`).
-11. For reproducible release signatures: `python scripts/generate_release_signing_key.py` then set `CFI_RELEASE_SIGNING_KEY_PATH`.
+10. Build signed release checkpoint: `make verify-release` (writes `tools/evaluation/output/release_manifest.json`).
+11. For reproducible release signatures: `python scripts/ops/generate_release_signing_key.py` then set `CFI_RELEASE_SIGNING_KEY_PATH`.
 12. Kubernetes (prototype): flat manifests `deploy/k8s/cfi-fed.yaml` or Helm chart `deploy/helm/cfi-fed/`.
 13. Operator runbook: `docs/production-runbook.md` (ingress paths, live hooks, corpus ingest at scale).
 
@@ -140,10 +140,10 @@ cfi-contribute ingest-publish --input-dir ./bundles --output-dir ./out --registr
 | `POST /audit/sink` | registry | Flush audit events to external sink |
 
 ```bash
-python scripts/verify_observability.py
+python scripts/ci/verify_observability.py
 make health
-python scripts/verify_production_hardening.py
-python scripts/verify_auth.py
+python scripts/ci/verify_production_hardening.py
+python scripts/ci/verify_auth.py
 make verify-release
 ```
 
@@ -152,4 +152,4 @@ make verify-release
 - Causal extraction from production traces is not solved.
 - Canonicalization is not a confidentiality proof.
 - DP protects tenant influence on aggregates, not poorly generalized CFIs.
-- Synthetic benchmarks (`sim/`, `eval/benchmarks/`) are protocol smoke tests only.
+- Synthetic benchmarks (`tools/feasibility/`, `tools/evaluation/benchmarks/`) are protocol smoke tests only.

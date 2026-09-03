@@ -1,6 +1,6 @@
 """Definition of Done verification tests."""
 
-from eval.verify_dod import verify
+from verify_dod import verify
 
 
 def test_dod_checks_pass() -> None:

@@ -5,7 +5,7 @@ from fastapi.testclient import TestClient
 from cfi_contributor.graph import GraphEdge, IncidentGraph, RelationClass
 from cfi_contributor.replay import HttpAgentReplayProvider
 from cfi_core.models import ProvenanceClass
-from services.replay_mock.main import app
+from services.integrations.replay.main import app
 
 
 def test_replay_mock_server_and_http_provider() -> None:

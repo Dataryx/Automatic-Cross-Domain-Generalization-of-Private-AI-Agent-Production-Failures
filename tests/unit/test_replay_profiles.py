@@ -31,7 +31,7 @@ def test_resolve_mock_profile_against_replay_service(monkeypatch: pytest.MonkeyP
     from cfi_contributor.graph import GraphEdge, IncidentGraph, RelationClass
     from cfi_contributor.replay import HttpAgentReplayProvider
     from cfi_core.models import ProvenanceClass
-    from services.replay_mock.main import app as replay_app
+    from services.integrations.replay.main import app as replay_app
 
     client = TestClient(replay_app)
     monkeypatch.setenv("CFI_REPLAY_MOCK_URL", "http://testserver/replay")

@@ -1,7 +1,7 @@
 """Computed production baseline tests."""
 
-from eval.production.baselines import BASELINE_RUNNERS
-from eval.production.harness import run_baseline
+from production.baselines import BASELINE_RUNNERS
+from production.harness import run_baseline
 
 
 def test_all_stub_baselines_are_computed() -> None:

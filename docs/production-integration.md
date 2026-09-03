@@ -16,7 +16,7 @@ Point at your sandboxed diagnostic endpoints (not raw production traces):
 ```bash
 set -a && source config/production.env && set +a
 cfi-contribute probe-hooks --live
-python scripts/verify_live_hooks.py
+python scripts/ci/verify_live_hooks.py
 ```
 
 Required when `CFI_HOOK_MODE=live`:
@@ -31,26 +31,26 @@ Required when `CFI_HOOK_MODE=live`:
 Materialize tenant subdirectories (local only, no egress):
 
 ```bash
-python scripts/materialize_tenant_corpus.py --tenants 10 --clean
+python scripts/ops/materialize_tenant_corpus.py --tenants 10 --clean
 cfi-contribute ingest-corpus \
-  --input-dir eval/benchmarks/corpus/tenants \
+  --input-dir tools/evaluation/benchmarks/corpus/tenants \
   --output-dir /data/out/ingest \
   --extract --recursive
 cfi-contribute ingest-publish \
-  --input-dir eval/benchmarks/corpus/tenants \
+  --input-dir tools/evaluation/benchmarks/corpus/tenants \
   --output-dir /data/out/publish \
   --registry-url "$CFI_REGISTRY_URL" \
   --replay-profile agentrx
 ```
 
-Replace `eval/benchmarks/corpus/tenants` with your private bundle root.
+Replace `tools/evaluation/benchmarks/corpus/tenants` with your private bundle root.
 
 ## 4. Local Kubernetes (kind)
 
 Requires Docker Desktop running:
 
 ```bash
-python scripts/deploy_helm_local.py
+python scripts/ops/deploy_helm_local.py
 kubectl -n cfi-fed port-forward svc/cfi-registry 8000:8000
 curl http://127.0.0.1:8000/health
 ```
@@ -59,7 +59,7 @@ curl http://127.0.0.1:8000/health
 
 ```bash
 # All 7 compose variants (Docker required):
-CFI_REQUIRE_DOCKER=1 python scripts/verify_pipeline_matrix_ci.py
+CFI_REQUIRE_DOCKER=1 python scripts/ci/verify_pipeline_matrix_ci.py
 
 # Remote against running stack:
 cfi-contribute run-pipeline --output pipeline_summary.json

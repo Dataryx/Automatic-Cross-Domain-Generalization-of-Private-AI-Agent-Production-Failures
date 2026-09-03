@@ -5,8 +5,8 @@ COPY pyproject.toml README.md ./
 COPY packages ./packages
 COPY services ./services
 COPY schemas ./schemas
-COPY eval ./eval
-COPY sim ./sim
+COPY tools/evaluation ./tools/evaluation
+COPY tools/feasibility ./tools/feasibility
 
 RUN pip install --no-cache-dir -e ".[dev]"
 

@@ -9,7 +9,7 @@ from cfi_registry import RegistryStore, create_app
 from cfi_registry.client import RegistryClient
 
 ROOT = Path(__file__).resolve().parents[2]
-BUNDLES = ROOT / "eval" / "benchmarks" / "corpus" / "bundles"
+BUNDLES = ROOT / "tools/evaluation" / "benchmarks" / "corpus" / "bundles"
 
 
 def test_ingest_writes_packages_and_publish_registers(tmp_path: Path) -> None:

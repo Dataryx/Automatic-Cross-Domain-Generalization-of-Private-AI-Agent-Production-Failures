@@ -1,0 +1,727 @@
+{
+  "all_passed": false,
+  "passed": 143,
+  "total": 144,
+  "checks": [
+    {
+      "name": "cfi_schema_exists",
+      "passed": true,
+      "detail": "C:\\Indominus\\Project\\Automatic Cross-Domain Generalization of Private AI-Agent Production Failures\\schemas\\cfi\\1.0\\schema.json"
+    },
+    {
+      "name": "doc_architecture",
+      "passed": true,
+      "detail": "C:\\Indominus\\Project\\Automatic Cross-Domain Generalization of Private AI-Agent Production Failures\\docs\\architecture.md"
+    },
+    {
+      "name": "doc_threat_model",
+      "passed": true,
+      "detail": "C:\\Indominus\\Project\\Automatic Cross-Domain Generalization of Private AI-Agent Production Failures\\docs\\threat_model.md"
+    },
+    {
+      "name": "doc_governance",
+      "passed": true,
+      "detail": "C:\\Indominus\\Project\\Automatic Cross-Domain Generalization of Private AI-Agent Production Failures\\docs\\governance.md"
+    },
+    {
+      "name": "doc_release_gate_checklist",
+      "passed": true,
+      "detail": "C:\\Indominus\\Project\\Automatic Cross-Domain Generalization of Private AI-Agent Production Failures\\docs\\release_gate_checklist.md"
+    },
+    {
+      "name": "doc_limitations",
+      "passed": true,
+      "detail": "C:\\Indominus\\Project\\Automatic Cross-Domain Generalization of Private AI-Agent Production Failures\\docs\\limitations.md"
+    },
+    {
+      "name": "doc_deviations",
+      "passed": true,
+      "detail": "C:\\Indominus\\Project\\Automatic Cross-Domain Generalization of Private AI-Agent Production Failures\\docs\\deviations.md"
+    },
+    {
+      "name": "appendix_a_validates",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "cross_domain_compiles",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "twelve_baselines_defined",
+      "passed": true,
+      "detail": "count=12"
+    },
+    {
+      "name": "seven_redteam_adversaries",
+      "passed": true,
+      "detail": "count=7"
+    },
+    {
+      "name": "example_procurement",
+      "passed": true,
+      "detail": "C:\\Indominus\\Project\\Automatic Cross-Domain Generalization of Private AI-Agent Production Failures\\examples\\retail_to_procurement\\mappings.py"
+    },
+    {
+      "name": "example_healthcare",
+      "passed": true,
+      "detail": "C:\\Indominus\\Project\\Automatic Cross-Domain Generalization of Private AI-Agent Production Failures\\examples\\retail_to_healthcare\\mappings.py"
+    },
+    {
+      "name": "example_data_operations",
+      "passed": true,
+      "detail": "C:\\Indominus\\Project\\Automatic Cross-Domain Generalization of Private AI-Agent Production Failures\\examples\\retail_to_dataops\\mappings.py"
+    },
+    {
+      "name": "sim_script",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "consortium_pilot",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "field_pilot",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "corpus_benchmark",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "review_ui_route",
+      "passed": true,
+      "detail": "GET /review/ui on registry"
+    },
+    {
+      "name": "golden_path_script",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "tau_adapter",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "deployment_docs",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "production_runbook_docs",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "production_integration_docs",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "production_env_example",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "materialize_tenant_corpus_script",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "deploy_helm_local_script",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "tenant_corpus_data",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "health_check_script",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "postgres_compose",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "sandbox_egress_tests",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "live_replay_smoke",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "verify_figures_script",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "verify_field_study_script",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "replay_profiles_module",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "corpus_ingest_module",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "tls_compose",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "nginx_tls_config",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "incident_bundle_corpus",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "observability_module",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "verify_observability_script",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "middleware_module",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "verify_production_hardening",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "auth_module",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "tracing_module",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "verify_auth_script",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "audit_log_module",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "mtls_compose",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "package_release_script",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "audit_sink_module",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "release_attestation_module",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "verify_release_script",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "generate_release_signing_key",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "verify_replay_profiles_script",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "agentrx_stub_service",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "causalflow_stub_service",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "audit_watermark_module",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "verify_eval_harnesses_script",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "verify_compose_stack_script",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "audit_attestation_module",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "verify_audit_attestation_script",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "k8s_manifests",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "audit_flush_module",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "audit_idempotency_module",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "audit_worm_module",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "helm_chart",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "verify_helm_chart_script",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "verify_helm_deploy_script",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "verify_live_hooks_script",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "verify_corpus_batch_script",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "corpus_tenants_module",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "helm_replay_hooks_template",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "registry_client_module",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "verify_remote_registry_cli_script",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "tau_live_module",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "tau_stub_service",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "verify_tau_live_script",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "verify_contribute_publish_script",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "agent_hooks_module",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "verify_agent_hooks_script",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "verify_cross_boundary_script",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "corpus_publish_module",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "verify_corpus_publish_script",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "recipient_assess_module",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "verify_end_to_end_script",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "aggregator_client_module",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "federation_contrib_module",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "verify_federation_workflow_script",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "coordinator_client_module",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "verify_full_pipeline_script",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "verify_compose_full_pipeline_script",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "verify_postgres_compose_full_pipeline_script",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "verify_tls_full_pipeline_script",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "verify_mtls_full_pipeline_script",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "verify_cli_endpoints_script",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "pipeline_runner_module",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "pipeline_matrix_module",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "verify_pipeline_matrix_script",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "verify_pipeline_matrix_ci_script",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "postgres_tls_compose",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "mtls_required_compose",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "nginx_mtls_required_config",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "verify_postgres_tls_full_pipeline_script",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "verify_mtls_required_full_pipeline_script",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "http_tls_module",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "pipeline_smoke_module",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "service_urls_module",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "verify_postgres_compose_script",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "mypy_ci_job",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "ci_release_job",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "ci_compose_job",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "ci_postgres_compose_job",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "ci_eval_all_job",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "ci_pipeline_matrix_job",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "registry_audit_route",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "baselines_computed",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "corpus_ingest_smoke",
+      "passed": true,
+      "detail": "validated=5 extracted=5"
+    },
+    {
+      "name": "observability_smoke",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "audit_export_smoke",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "release_attestation_smoke",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "audit_sink_smoke",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "postgres_audit_persistence_smoke",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "replay_profiles_smoke",
+      "passed": true,
+      "detail": "C:\\Users\\sumit\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\pydantic\\_internal\\_fields.py:192: UserWarning: Field name \"schema\" in \"CausalFailureInvariant\" shadows an attribute in parent \"BaseModel\"\n  warnings.warn(\n"
+    },
+    {
+      "name": "audit_status_smoke",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "postgres_governance_persistence_smoke",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "eval_harnesses_smoke",
+      "passed": true,
+      "detail": "C:\\Users\\sumit\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\pydantic\\_internal\\_fields.py:192: UserWarning: Field name \"schema\" in \"CausalFailureInvariant\" shadows an attribute in parent \"BaseModel\"\n  warnings.warn(\nC:\\Users\\sumit\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\pydantic\\_internal\\_fields.py:192: UserWarning: Field name \"schema\" in \"CausalFailureInvariant\" shadows an attribute in parent \"BaseModel\"\n  warnings.warn(\nC:\\Users\\sumit\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\pydantic\\_internal\\_fields.py:192: UserWarning: Field name \"schema\" in \"CausalFailureInvariant\" shadows an attribute in parent \"BaseModel\"\n  warnings.warn(\nC:\\Users\\sumit\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\pydantic\\_internal\\_fields.py:192: UserWarning: Field name \"schema\" in \"CausalFailureInvariant\" shadows an attribute in parent \"BaseModel\"\n  warnings.warn(\n"
+    },
+    {
+      "name": "audit_attestation_smoke",
+      "passed": true,
+      "detail": "C:\\Users\\sumit\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\pydantic\\_internal\\_fields.py:192: UserWarning: Field name \"schema\" in \"CausalFailureInvariant\" shadows an attribute in parent \"BaseModel\"\n  warnings.warn(\n"
+    },
+    {
+      "name": "signed_audit_sink_smoke",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "helm_chart_smoke",
+      "passed": true,
+      "detail": "Helm chart OK (static validation; helm CLI not installed)\n"
+    },
+    {
+      "name": "corpus_batch_smoke",
+      "passed": true,
+      "detail": "C:\\Users\\sumit\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\pydantic\\_internal\\_fields.py:192: UserWarning: Field name \"schema\" in \"CausalFailureInvariant\" shadows an attribute in parent \"BaseModel\"\n  warnings.warn(\n"
+    },
+    {
+      "name": "helm_deploy_smoke",
+      "passed": true,
+      "detail": "Helm deploy validation OK: 529 rendered lines | SKIP: no Kubernetes cluster (client dry-run only)\n"
+    },
+    {
+      "name": "live_hooks_smoke",
+      "passed": true,
+      "detail": "C:\\Users\\sumit\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\pydantic\\_internal\\_fields.py:192: UserWarning: Field name \"schema\" in \"CausalFailureInvariant\" shadows an attribute in parent \"BaseModel\"\n  warnings.warn(\n"
+    },
+    {
+      "name": "audit_worm_idempotency_smoke",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "remote_registry_cli_smoke",
+      "passed": true,
+      "detail": "C:\\Users\\sumit\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\pydantic\\_internal\\_fields.py:192: UserWarning: Field name \"schema\" in \"CausalFailureInvariant\" shadows an attribute in parent \"BaseModel\"\n  warnings.warn(\n"
+    },
+    {
+      "name": "tau_live_smoke",
+      "passed": false,
+      "detail": "C:\\Users\\sumit\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\pydantic\\_internal\\_fields.py:192: UserWarning: Field name \"schema\" in \"CausalFailureInvariant\" shadows an attribute in parent \"BaseModel\"\n  warnings.warn(\nTraceback (most recent call last):\n  File \"C:\\Indominus\\Project\\Automatic Cross-Domain Generalization of Private AI-Agent Production Failures\\scripts\\ci\\verify_tau_live.py\", line 23, in <module>\n    from services.integrations.tau.main import app\n  File \"C:\\Indominus\\Project\\Automatic Cross-Domain Generalization of Private AI-Agent Production Failures\\services\\integrations\\tau\\main.py\", line 17, in <module>\n    TASKS = json.loads(TASKS_PATH.read_text(encoding=\"utf-8\"))\n                       ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\sumit\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\pathlib\\_local.py\", line 546, in read_text\n    return PathBase.read_text(self, encoding, errors, newline)\n           ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\sumit\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\pathlib\\_abc.py\", line 632, in read_text\n    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:\n         ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\sumit\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\pathlib\\_local.py\", line 537, in open\n    return io.open(self, mode, buffering, encoding, errors, newline)\n           ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nFileNotFoundError: [Errno 2] No such file or directory: 'C:\\\\Indominus\\\\Project\\\\tools\\\\evaluation\\\\benchmarks\\\\tau_tasks.json'\n"
+    },
+    {
+      "name": "contribute_publish_smoke",
+      "passed": true,
+      "detail": "C:\\Users\\sumit\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\pydantic\\_internal\\_fields.py:192: UserWarning: Field name \"schema\" in \"CausalFailureInvariant\" shadows an attribute in parent \"BaseModel\"\n  warnings.warn(\n"
+    },
+    {
+      "name": "agent_hooks_smoke",
+      "passed": true,
+      "detail": "C:\\Users\\sumit\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\pydantic\\_internal\\_fields.py:192: UserWarning: Field name \"schema\" in \"CausalFailureInvariant\" shadows an attribute in parent \"BaseModel\"\n  warnings.warn(\n"
+    },
+    {
+      "name": "cross_boundary_smoke",
+      "passed": true,
+      "detail": "C:\\Users\\sumit\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\pydantic\\_internal\\_fields.py:192: UserWarning: Field name \"schema\" in \"CausalFailureInvariant\" shadows an attribute in parent \"BaseModel\"\n  warnings.warn(\n"
+    },
+    {
+      "name": "corpus_publish_smoke",
+      "passed": true,
+      "detail": "C:\\Users\\sumit\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\pydantic\\_internal\\_fields.py:192: UserWarning: Field name \"schema\" in \"CausalFailureInvariant\" shadows an attribute in parent \"BaseModel\"\n  warnings.warn(\n"
+    },
+    {
+      "name": "end_to_end_smoke",
+      "passed": true,
+      "detail": "C:\\Users\\sumit\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\pydantic\\_internal\\_fields.py:192: UserWarning: Field name \"schema\" in \"CausalFailureInvariant\" shadows an attribute in parent \"BaseModel\"\n  warnings.warn(\n"
+    },
+    {
+      "name": "federation_workflow_smoke",
+      "passed": true,
+      "detail": "C:\\Users\\sumit\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\pydantic\\_internal\\_fields.py:192: UserWarning: Field name \"schema\" in \"CausalFailureInvariant\" shadows an attribute in parent \"BaseModel\"\n  warnings.warn(\n"
+    },
+    {
+      "name": "full_pipeline_smoke",
+      "passed": true,
+      "detail": "C:\\Users\\sumit\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\pydantic\\_internal\\_fields.py:192: UserWarning: Field name \"schema\" in \"CausalFailureInvariant\" shadows an attribute in parent \"BaseModel\"\n  warnings.warn(\n"
+    },
+    {
+      "name": "cli_endpoints_smoke",
+      "passed": true,
+      "detail": "CLI endpoints OK: registry=http://registry.example:9000\n"
+    },
+    {
+      "name": "pipeline_matrix_smoke",
+      "passed": true,
+      "detail": "C:\\Users\\sumit\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\pydantic\\_internal\\_fields.py:192: UserWarning: Field name \"schema\" in \"CausalFailureInvariant\" shadows an attribute in parent \"BaseModel\"\n  warnings.warn(\n"
+    }
+  ]
+}
